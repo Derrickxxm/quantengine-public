@@ -28,3 +28,18 @@ Each module is designed to be testable in isolation and runnable from the CLI.
 ## Gate Contract
 
 The gate is intentionally strict about artifacts. A process exit code alone is not enough. The expected JSON files must exist, be hashable, and be referenced from the manifest.
+
+## Artifact Directory Contract
+
+`quantengine-public demo` writes a self-contained artifact directory:
+
+```text
+artifacts/demo/
+  actual_state.json
+  replay_errors.json
+  reconcile.json
+  release_gate.json
+  run_manifest.json
+```
+
+`quantengine-public validate --artifact-dir artifacts/demo` reuses that directory and recomputes the gate result from the manifest and reports.

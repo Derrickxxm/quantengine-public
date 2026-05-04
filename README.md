@@ -1,5 +1,7 @@
 # QuantEngine Public Edition
 
+[![CI](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml/badge.svg)](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml)
+
 QuantEngine Public Edition is a sanitized backend platform inspired by a private production-style verification system. It demonstrates deterministic replay, order lifecycle simulation, risk-control boundaries, reconciliation, artifact manifests, and release gates using synthetic data only.
 
 This repository does not contain trading strategies, exchange adapters, real orders, account data, production configuration, or private deployment logic.
@@ -12,6 +14,7 @@ python -m venv .venv
 .venv/bin/python -m pytest
 .venv/bin/quantengine-public --version
 .venv/bin/quantengine-public demo
+.venv/bin/quantengine-public validate --artifact-dir artifacts/demo
 ```
 
 Expected demo output:
@@ -81,6 +84,12 @@ quantengine-public gate \
   --out artifacts/demo/release_gate_from_cli.json
 ```
 
+Validate a complete artifact directory:
+
+```bash
+quantengine-public validate --artifact-dir artifacts/demo
+```
+
 Run the complete verification loop:
 
 ```bash
@@ -96,6 +105,12 @@ The release gate fails closed when:
 - expected artifacts are missing
 - artifact hashes are incomplete
 - the manifest is structurally incomplete
+
+## Repository Hygiene
+
+- `CONTRIBUTING.md` describes local development.
+- `SECURITY.md` defines what must never be submitted.
+- GitHub Actions runs tests and the demo command.
 
 ## What This Project Does Not Include
 

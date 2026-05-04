@@ -39,6 +39,9 @@ def build_parser() -> argparse.ArgumentParser:
     gate.add_argument("--replay-errors", required=True, type=Path)
     gate.add_argument("--out", type=Path)
 
+    validate = subparsers.add_parser("validate", help="Validate a demo artifact directory.")
+    validate.add_argument("--artifact-dir", required=True, type=Path)
+
     demo = subparsers.add_parser("demo", help="Run the synthetic verification demo.")
     demo.add_argument("--artifact-dir", type=Path, default=Path("artifacts/demo"))
     return parser
@@ -73,21 +76,53 @@ def main(argv: list[str] | None = None) -> int:
         manifest = _read_json(args.manifest)
         reconcile = _read_json(args.reconcile)
         replay_errors = _read_json(args.replay_errors)
-        gate = evaluate_gate(
-            replay_ok=not replay_errors.get("errors"),
-            reconcile_ok=reconcile.get("status") == "pass",
-            manifest=manifest,
-        )
+        gate = _evaluate_gate_from_reports(manifest, reconcile, replay_errors)
         if args.out:
             write_json(args.out, gate)
         print(json.dumps(gate, indent=2, sort_keys=True))
         return 0 if gate["release_gate"] == "pass" else 1
+
+    if args.command == "validate":
+        return _validate_artifact_dir(args.artifact_dir)
 
     if args.command == "demo":
         return _run_demo(args.artifact_dir)
 
     parser.print_help()
     return 0
+
+
+def _validate_artifact_dir(artifact_dir: Path) -> int:
+    manifest_path = artifact_dir / "run_manifest.json"
+    reconcile_path = artifact_dir / "reconcile.json"
+    replay_errors_path = artifact_dir / "replay_errors.json"
+    gate_path = artifact_dir / "release_gate.json"
+
+    missing = [
+        path
+        for path in [manifest_path, reconcile_path, replay_errors_path]
+        if not path.exists()
+    ]
+    if missing:
+        gate = {
+            "release_gate": "fail",
+            "checks": {
+                "artifact_dir": "fail",
+            },
+            "missing": [str(path) for path in missing],
+        }
+        write_json(gate_path, gate)
+        print(json.dumps(gate, indent=2, sort_keys=True))
+        return 1
+
+    gate = _evaluate_gate_from_reports(
+        _read_json(manifest_path),
+        _read_json(reconcile_path),
+        _read_json(replay_errors_path),
+    )
+    write_json(gate_path, gate)
+    print(json.dumps(gate, indent=2, sort_keys=True))
+    return 0 if gate["release_gate"] == "pass" else 1
 
 
 def _run_demo(artifact_dir: Path) -> int:
@@ -159,6 +194,18 @@ def _load_yaml_mapping(path: Path) -> dict:
 
 def _read_json(path: Path):
     return json.loads(path.read_text())
+
+
+def _evaluate_gate_from_reports(
+    manifest: dict,
+    reconcile: dict,
+    replay_errors: dict,
+) -> dict:
+    return evaluate_gate(
+        replay_ok=not replay_errors.get("errors"),
+        reconcile_ok=reconcile.get("status") == "pass",
+        manifest=manifest,
+    )
 
 
 if __name__ == "__main__":
