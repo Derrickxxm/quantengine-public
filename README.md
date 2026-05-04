@@ -6,6 +6,25 @@ QuantEngine Public Edition is a sanitized backend platform inspired by a private
 
 This repository does not contain trading strategies, exchange adapters, real orders, account data, production configuration, or private deployment logic.
 
+## What This Shows
+
+Many backend systems need to answer a simple question before a change is trusted:
+
+```text
+Given the same input events, does the system produce the expected state, and can we prove how that result was produced?
+```
+
+This project demonstrates that workflow with a small synthetic order/payment domain:
+
+1. Read synthetic order events.
+2. Replay them deterministically.
+3. Apply order lifecycle and risk rules.
+4. Compare actual state with expected state.
+5. Write artifacts and a run manifest.
+6. Pass or fail a release gate.
+
+The point is not trading. The point is backend verification: replay, state transitions, reconciliation, artifacts, and release evidence.
+
 ## Quick Start
 
 ```bash
@@ -32,12 +51,25 @@ Expected demo output:
 }
 ```
 
+In plain English, this means:
+
+- `replay`: the synthetic events were processed without errors.
+- `reconcile`: actual state matched expected state.
+- `expected_outputs`: required artifact files were produced.
+- `artifact_hashes`: output files were hashable and recorded.
+- `manifest`: the run produced a structured evidence record.
+- `release_gate`: all checks passed.
+
 ## Project Goals
 
 - Demonstrate backend verification patterns with small, readable code.
 - Keep runtime behavior deterministic and testable.
 - Produce structured artifacts that can support release gates.
 - Use only synthetic events and synthetic configuration.
+
+## Five-Minute Walkthrough
+
+See [Walkthrough](docs/walkthrough.md) for a plain-language explanation of the demo input, output, artifacts, and release gate.
 
 ## MVP Scope
 
@@ -110,6 +142,8 @@ The release gate fails closed when:
 
 ## Documentation
 
+- [Walkthrough](docs/walkthrough.md)
+- [Synthetic Event Examples](docs/synthetic_events.md)
 - [Architecture](docs/architecture.md)
 - [Design Decisions](docs/design_decisions.md)
 - [Example Manifest](docs/example_manifest.md)
