@@ -90,6 +90,8 @@ Validate a complete artifact directory:
 quantengine-public validate --artifact-dir artifacts/demo
 ```
 
+`validate` recomputes artifact integrity from files on disk and fails if an artifact was edited after the manifest was generated.
+
 Run the complete verification loop:
 
 ```bash
@@ -112,6 +114,7 @@ The release gate fails closed when:
 - [Design Decisions](docs/design_decisions.md)
 - [Example Manifest](docs/example_manifest.md)
 - [Release Gate Examples](docs/release_gate_examples.md)
+- [Security And P0 Bug Hunt](docs/security_bug_hunt_2026-05-04.md)
 - [Roadmap](ROADMAP.md)
 
 ## Repository Hygiene

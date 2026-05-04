@@ -30,6 +30,9 @@ def _manifest_ok(manifest: dict[str, Any]) -> bool:
         and manifest.get("run_id")
         and manifest.get("created_at")
         and isinstance(manifest.get("command"), list)
+        and isinstance(manifest.get("expected_outputs"), list)
+        and isinstance(manifest.get("artifact_hashes"), dict)
+        and manifest.get("status") in {"completed", "failed"}
     )
 
 
@@ -38,9 +41,11 @@ def _artifact_hashes_ok(manifest: dict[str, Any]) -> bool:
     artifact_hashes = manifest.get("artifact_hashes", {})
     if not isinstance(expected_outputs, list) or not isinstance(artifact_hashes, dict):
         return False
+    if not expected_outputs:
+        return False
     existing_paths = [
         item.get("path")
         for item in expected_outputs
         if item.get("exists") is True
     ]
-    return all(path in artifact_hashes for path in existing_paths)
+    return all(isinstance(artifact_hashes.get(path), str) and artifact_hashes[path] for path in existing_paths)

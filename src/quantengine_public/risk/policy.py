@@ -25,9 +25,17 @@ class RiskPolicy:
             isinstance(item, str) for item in currencies
         ):
             raise ValueError("allowed_currencies must be a list of strings")
+        max_order_amount = float(data.get("max_order_amount", 1000.0))
+        max_open_orders = int(data.get("max_open_orders", 10))
+        if max_order_amount <= 0:
+            raise ValueError("max_order_amount must be positive")
+        if max_open_orders < 0:
+            raise ValueError("max_open_orders must be non-negative")
+        if not currencies:
+            raise ValueError("allowed_currencies must not be empty")
         return cls(
-            max_order_amount=float(data.get("max_order_amount", 1000.0)),
-            max_open_orders=int(data.get("max_open_orders", 10)),
+            max_order_amount=max_order_amount,
+            max_open_orders=max_open_orders,
             allowed_currencies=tuple(currencies),
         )
 

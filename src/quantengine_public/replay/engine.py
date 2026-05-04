@@ -32,7 +32,9 @@ def replay_events_file(events_path: Path, policy: RiskPolicy | None = None) -> R
             if event.get("type") == "order_created":
                 decision = active_policy.check_create(state, event)
                 if not decision.allowed:
-                    order_id = str(event.get("order_id"))
+                    order_id = event.get("order_id")
+                    if not isinstance(order_id, str) or not order_id:
+                        raise ValueError("event must include a non-empty order_id")
                     state.setdefault("orders", {})[order_id] = {
                         "status": "rejected",
                         "amount": float(event.get("amount", 0)),

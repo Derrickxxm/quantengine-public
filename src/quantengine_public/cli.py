@@ -6,7 +6,7 @@ from pathlib import Path
 from time import strftime
 
 from quantengine_public import __version__
-from quantengine_public.artifacts import build_manifest, write_json
+from quantengine_public.artifacts import build_manifest, verify_manifest_artifacts, write_json
 from quantengine_public.gates import evaluate_gate
 from quantengine_public.reconcile import reconcile_states
 from quantengine_public.replay import replay_events_file
@@ -77,6 +77,13 @@ def main(argv: list[str] | None = None) -> int:
         reconcile = _read_json(args.reconcile)
         replay_errors = _read_json(args.replay_errors)
         gate = _evaluate_gate_from_reports(manifest, reconcile, replay_errors)
+        artifact_mismatches = verify_manifest_artifacts(manifest)
+        if artifact_mismatches:
+            gate["release_gate"] = "fail"
+            gate["checks"]["artifact_integrity"] = "fail"
+            gate["artifact_mismatches"] = artifact_mismatches
+        else:
+            gate["checks"]["artifact_integrity"] = "pass"
         if args.out:
             write_json(args.out, gate)
         print(json.dumps(gate, indent=2, sort_keys=True))
@@ -120,6 +127,13 @@ def _validate_artifact_dir(artifact_dir: Path) -> int:
         _read_json(reconcile_path),
         _read_json(replay_errors_path),
     )
+    artifact_mismatches = verify_manifest_artifacts(_read_json(manifest_path))
+    if artifact_mismatches:
+        gate["release_gate"] = "fail"
+        gate["checks"]["artifact_integrity"] = "fail"
+        gate["artifact_mismatches"] = artifact_mismatches
+    else:
+        gate["checks"]["artifact_integrity"] = "pass"
     write_json(gate_path, gate)
     print(json.dumps(gate, indent=2, sort_keys=True))
     return 0 if gate["release_gate"] == "pass" else 1

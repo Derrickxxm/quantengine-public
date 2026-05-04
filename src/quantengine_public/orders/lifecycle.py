@@ -27,7 +27,7 @@ def apply_event(state: dict[str, Any], event: dict[str, Any]) -> None:
 
     if event_type == "order_created":
         if order_id in orders:
-            return
+            raise OrderLifecycleError(f"duplicate order_id: {order_id}")
         amount = _positive_number(event, "amount")
         currency = _string_value(event, "currency", default="USD")
         orders[order_id] = {
@@ -86,7 +86,7 @@ def _require_status(order: dict[str, Any], order_id: str, allowed: set[str]) -> 
 
 def _positive_number(event: dict[str, Any], key: str) -> float:
     value = event.get(key)
-    if not isinstance(value, int | float) or value <= 0:
+    if isinstance(value, bool) or not isinstance(value, int | float) or value <= 0:
         raise OrderLifecycleError(f"{key} must be a positive number")
     return float(value)
 

@@ -27,7 +27,7 @@ Each module is designed to be testable in isolation and runnable from the CLI.
 
 ## Gate Contract
 
-The gate is intentionally strict about artifacts. A process exit code alone is not enough. The expected JSON files must exist, be hashable, and be referenced from the manifest.
+The gate is intentionally strict about artifacts. A process exit code alone is not enough. The expected JSON files must exist, be hashable, be referenced from the manifest, and match the manifest hashes when `gate` or `validate` is run.
 
 ## Artifact Directory Contract
 

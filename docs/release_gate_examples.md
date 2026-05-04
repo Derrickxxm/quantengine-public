@@ -7,6 +7,7 @@ The release gate converts replay, reconciliation, artifact, and manifest checks 
 ```json
 {
   "checks": {
+    "artifact_integrity": "pass",
     "artifact_hashes": "pass",
     "expected_outputs": "pass",
     "manifest": "pass",
@@ -30,6 +31,7 @@ This means:
 ```json
 {
   "checks": {
+    "artifact_integrity": "pass",
     "artifact_hashes": "pass",
     "expected_outputs": "pass",
     "manifest": "pass",
@@ -61,6 +63,7 @@ The corresponding `reconcile.json` should explain the exact mismatch:
 ```json
 {
   "checks": {
+    "artifact_integrity": "fail",
     "artifact_hashes": "fail",
     "expected_outputs": "fail",
     "manifest": "pass",
@@ -72,6 +75,32 @@ The corresponding `reconcile.json` should explain the exact mismatch:
 ```
 
 The gate fails even if the process exited successfully, because expected artifacts are part of the verification contract.
+
+## Failing Gate: Tampered Artifact
+
+```json
+{
+  "artifact_mismatches": [
+    {
+      "actual_sha256": "new-sha256",
+      "error": "sha256 mismatch",
+      "expected_sha256": "old-sha256",
+      "path": "artifacts/demo/actual_state.json"
+    }
+  ],
+  "checks": {
+    "artifact_integrity": "fail",
+    "artifact_hashes": "pass",
+    "expected_outputs": "pass",
+    "manifest": "pass",
+    "reconcile": "pass",
+    "replay": "pass"
+  },
+  "release_gate": "fail"
+}
+```
+
+`validate` and `gate` recompute artifact hashes from files on disk. If a report is edited after the manifest is written, the gate fails.
 
 ## CLI Exit Codes
 
