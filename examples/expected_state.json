@@ -1,0 +1,22 @@
+{
+  "orders": {
+    "order-001": {
+      "amount": 100.0,
+      "currency": "USD",
+      "paid_amount": 100.0,
+      "payments": [
+        "payment-001"
+      ],
+      "reject_reason": null,
+      "status": "closed"
+    },
+    "order-002": {
+      "amount": 2500.0,
+      "currency": "USD",
+      "paid_amount": 0,
+      "payments": [],
+      "reject_reason": "max_order_amount",
+      "status": "rejected"
+    }
+  }
+}

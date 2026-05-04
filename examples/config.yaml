@@ -1,0 +1,5 @@
+risk:
+  max_order_amount: 1000
+  max_open_orders: 5
+  allowed_currencies:
+    - USD

@@ -1,0 +1,6 @@
+{"type": "order_created", "order_id": "order-001", "amount": 100, "currency": "USD"}
+{"type": "order_accepted", "order_id": "order-001"}
+{"type": "payment_captured", "order_id": "order-001", "payment_id": "payment-001", "amount": 100}
+{"type": "payment_captured", "order_id": "order-001", "payment_id": "payment-001", "amount": 100}
+{"type": "order_closed", "order_id": "order-001"}
+{"type": "order_created", "order_id": "order-002", "amount": 2500, "currency": "USD"}
