@@ -2,9 +2,15 @@
 
 [![CI](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml/badge.svg)](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml)
 
-QuantEngine Public Edition is a sanitized backend platform inspired by a private production-style verification system. It demonstrates deterministic replay, order lifecycle simulation, risk-control boundaries, reconciliation, artifact manifests, and release gates using synthetic data only.
+QuantEngine Public Edition is a sanitized public edition derived from the architecture and verification patterns of a private backend platform. It is not a mirror of the private codebase. The implementation uses synthetic data and public-safe examples to demonstrate deterministic replay, order lifecycle simulation, risk-control boundaries, reconciliation, artifact manifests, and release gates.
 
 This repository does not contain trading strategies, exchange adapters, real orders, account data, production configuration, or private deployment logic.
+
+## Relationship to Private Work
+
+This project is a public-safe edition derived from real backend architecture and verification patterns developed in a private system. It intentionally does not copy private strategies, production configuration, exchange connectivity, account data, or deployment logic.
+
+The goal is to make the engineering patterns reviewable in public: deterministic replay, lifecycle validation, reconciliation, artifact manifests, and release gates.
 
 ## What This Shows
 

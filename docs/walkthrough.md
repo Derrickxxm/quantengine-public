@@ -1,6 +1,8 @@
 # Five-Minute Walkthrough
 
-This walkthrough explains the demo without assuming prior knowledge of the private system that inspired it.
+This walkthrough explains the demo without assuming prior knowledge of the private system behind the public edition.
+
+QuantEngine Public Edition is derived from real backend architecture and verification patterns, but it is not a copy of private production code. The examples are synthetic and public-safe.
 
 ## The Problem
 
