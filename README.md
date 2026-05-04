@@ -106,6 +106,14 @@ The release gate fails closed when:
 - artifact hashes are incomplete
 - the manifest is structurally incomplete
 
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Design Decisions](docs/design_decisions.md)
+- [Example Manifest](docs/example_manifest.md)
+- [Release Gate Examples](docs/release_gate_examples.md)
+- [Roadmap](ROADMAP.md)
+
 ## Repository Hygiene
 
 - `CONTRIBUTING.md` describes local development.
