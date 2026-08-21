@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml/badge.svg)](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml)
 
-QuantEngine Public Edition is a sanitized public edition derived from the architecture and verification patterns of a private backend platform. It is not a mirror of the private codebase. The implementation uses synthetic data and public-safe examples to demonstrate deterministic replay, order lifecycle simulation, risk-control boundaries, reconciliation, artifact manifests, and release gates.
+QuantEngine Public Edition is a sanitized public edition derived from the architecture and verification patterns of a private quantitative trading platform. It is not a mirror of the private codebase. The implementation uses synthetic data and public-safe examples to demonstrate strategy admission, immutable package identity, Paper runtime semantics, deterministic replay, reconciliation, artifact manifests, and fail-closed release gates.
 
 This repository does not contain trading strategies, exchange adapters, real orders, account data, production configuration, or private deployment logic.
 
@@ -20,16 +20,54 @@ Many backend systems need to answer a simple question before a change is trusted
 Given the same input events, does the system produce the expected state, and can we prove how that result was produced?
 ```
 
-This project demonstrates that workflow with a small synthetic order/payment domain:
+This project demonstrates that workflow with a small synthetic quantitative trading domain:
 
-1. Read synthetic order events.
-2. Replay them deterministically.
-3. Apply order lifecycle and risk rules.
-4. Compare actual state with expected state.
-5. Write artifacts and a run manifest.
-6. Pass or fail a release gate.
+1. Admit a synthetic strategy candidate.
+2. Materialize an immutable Paper package.
+3. Run a bounded Paper scenario with decisions, fills, positions and accounting.
+4. Replay the same window from pinned inputs.
+5. Reconcile Paper and replay evidence.
+6. Emit stress evidence and a fail-closed release verdict.
 
-The point is not trading. The point is backend verification: replay, state transitions, reconciliation, artifacts, and release evidence.
+The point is not alpha. The point is backend verification for a trading system: identity, authority, replay, state transitions, reconciliation, artifacts, and release evidence.
+
+## v2 Architecture
+
+```mermaid
+flowchart LR
+    A["Research Candidate<br/>Synthetic strategy and research evidence"]
+    B["Strategy Admission<br/>Independent validation and leakage guards"]
+    C["Immutable Release Package<br/>Code, config, data and policy identity"]
+    D["Paper Runtime<br/>Decision, risk, order, fill and accounting"]
+    E["Same-Window Replay<br/>Pinned inputs and deterministic reconstruction"]
+    F["Reconciliation<br/>Decision, fill, position and equity comparison"]
+    G["Release Evidence<br/>Manifest, stress result and fail-closed verdict"]
+    H["Synthetic Market Data<br/>Bars, funding and execution facts"]
+    I["Authority Boundary<br/>Research / Paper / Real"]
+
+    A --> B --> C --> D --> F --> G
+    C --> E --> F
+    H --> D
+    H --> E
+    I --> B
+    I --> C
+    I --> D
+    I --> G
+```
+
+The diagram maps to the runnable v2 demo:
+
+- Research Candidate: built-in candidate contract in `src/quantengine_public/demo.py`, written into `input_manifest.json`.
+- Strategy Admission: independent checks written into `strategy_admission.json`.
+- Immutable Release Package: `release-package/` files plus `package.manifest.json` SHA-256 identity.
+- Paper Runtime: `paper_events.jsonl` and `paper_ledger.jsonl`.
+- Same-Window Replay: independent replay evidence in `replay_result.json`.
+- Reconciliation: semantic checks in `reconciliation.json`.
+- Release Evidence: `stress_report.json`, `recovery_receipt.json` and `release_verdict.json`.
+- Synthetic Market Data: built-in `QEP-USD` bars, funding and execution facts.
+- Authority Boundary: Research and Paper are allowed; Real authority is always false.
+
+For the full v2 design, see [QuantEngine Public v2 Design](docs/v2_public_architecture_design.md).
 
 ## Quick Start
 
@@ -40,6 +78,7 @@ python -m venv .venv
 .venv/bin/quantengine-public --version
 .venv/bin/quantengine-public demo
 .venv/bin/quantengine-public validate --artifact-dir artifacts/demo
+.venv/bin/python -m quantengine_public.demo --artifact-dir artifacts/demo-v2
 ```
 
 Expected demo output:
@@ -54,6 +93,21 @@ Expected demo output:
     "replay": "pass"
   },
   "release_gate": "pass"
+}
+```
+
+Expected v2 demo output:
+
+```json
+{
+  "checks": {
+    "admission": "pass",
+    "artifacts_exist": "pass",
+    "package_identity": "pass",
+    "reconciliation": "pass",
+    "stress": "pass"
+  },
+  "verdict": "PASS"
 }
 ```
 
