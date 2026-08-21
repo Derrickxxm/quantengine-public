@@ -17,3 +17,4 @@ jobs:
       - run: pytest
       - run: quantengine-public demo --artifact-dir artifacts/ci-demo
       - run: quantengine-public validate --artifact-dir artifacts/ci-demo
+      - run: quantengine-public demo-v2 --artifact-dir artifacts/ci-demo-v2
