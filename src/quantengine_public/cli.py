@@ -7,6 +7,7 @@ from time import strftime
 
 from quantengine_public import __version__
 from quantengine_public.artifacts import build_manifest, verify_manifest_artifacts, write_json
+from quantengine_public.demo import run_demo as run_demo_v2
 from quantengine_public.gates import evaluate_gate
 from quantengine_public.reconcile import reconcile_states
 from quantengine_public.replay import replay_events_file
@@ -44,6 +45,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     demo = subparsers.add_parser("demo", help="Run the synthetic verification demo.")
     demo.add_argument("--artifact-dir", type=Path, default=Path("artifacts/demo"))
+
+    demo_v2 = subparsers.add_parser("demo-v2", help="Run the QuantEngine Public v2 Paper/replay demo.")
+    demo_v2.add_argument("--artifact-dir", type=Path, default=Path("artifacts/demo-v2"))
     return parser
 
 
@@ -94,6 +98,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "demo":
         return _run_demo(args.artifact_dir)
+
+    if args.command == "demo-v2":
+        result = run_demo_v2(args.artifact_dir)
+        print(json.dumps(result["release_verdict"], indent=2, sort_keys=True))
+        return 0 if result["release_verdict"]["verdict"] == "PASS" else 1
 
     parser.print_help()
     return 0
