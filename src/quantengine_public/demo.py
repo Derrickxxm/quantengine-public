@@ -23,6 +23,7 @@ class DemoPaths:
     strategy: Path
     portfolio: Path
     runtime_dependencies: Path
+    admission_result: Path
     release_lock: Path
     package_manifest: Path
     paper_events: Path
@@ -104,6 +105,7 @@ def _demo_paths(artifact_dir: Path) -> DemoPaths:
         strategy=artifact_dir / "release-package" / "strategy.json",
         portfolio=artifact_dir / "release-package" / "portfolio.json",
         runtime_dependencies=artifact_dir / "release-package" / "runtime_dependencies.json",
+        admission_result=artifact_dir / "release-package" / "admission_result.json",
         release_lock=artifact_dir / "release-package" / "release.lock.json",
         package_manifest=artifact_dir / "package.manifest.json",
         paper_events=artifact_dir / "paper_events.jsonl",
@@ -224,16 +226,20 @@ def _materialize_package(
     write_json(paths.strategy, strategy)
     write_json(paths.portfolio, scenario["portfolio"])
     write_json(paths.runtime_dependencies, scenario["runtime_dependencies"])
+    write_json(paths.admission_result, admission)
     write_json(paths.release_lock, release_lock)
 
     material_paths = [
         paths.strategy,
         paths.portfolio,
         paths.runtime_dependencies,
-        paths.strategy_admission,
+        paths.admission_result,
         paths.release_lock,
     ]
-    file_hashes = {path.name: file_sha256(path) for path in material_paths}
+    file_hashes = {
+        str(path.relative_to(paths.artifact_dir)): file_sha256(path)
+        for path in material_paths
+    }
     package_id = _hash_json(file_hashes)
     manifest = {
         "schema_version": PACKAGE_SCHEMA_VERSION,
@@ -508,6 +514,11 @@ def _release_verdict(
     required_paths = [
         paths.input_manifest,
         paths.strategy_admission,
+        paths.strategy,
+        paths.portfolio,
+        paths.runtime_dependencies,
+        paths.admission_result,
+        paths.release_lock,
         paths.package_manifest,
         paths.paper_events,
         paths.paper_ledger,

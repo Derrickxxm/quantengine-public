@@ -78,7 +78,7 @@ python -m venv .venv
 .venv/bin/quantengine-public --version
 .venv/bin/quantengine-public demo
 .venv/bin/quantengine-public validate --artifact-dir artifacts/demo
-.venv/bin/python -m quantengine_public.demo --artifact-dir artifacts/demo-v2
+.venv/bin/quantengine-public demo-v2 --artifact-dir artifacts/demo-v2
 ```
 
 Expected demo output:
@@ -119,6 +119,8 @@ In plain English, this means:
 - `artifact_hashes`: output files were hashable and recorded.
 - `manifest`: the run produced a structured evidence record.
 - `release_gate`: all checks passed.
+
+For v2, this means the candidate was admitted independently, the package identity is sealed, Paper and replay reconciled, stress checks produced the expected fail-closed outcomes, and Real trading authority was not granted.
 
 ## Project Goals
 
@@ -188,6 +190,18 @@ Run the complete verification loop:
 
 ```bash
 quantengine-public demo --artifact-dir artifacts/demo
+```
+
+Run the v2 Paper/replay architecture demo:
+
+```bash
+quantengine-public demo-v2 --artifact-dir artifacts/demo-v2
+```
+
+The stable module entry point is also available:
+
+```bash
+python -m quantengine_public.demo --artifact-dir artifacts/demo-v2
 ```
 
 ## Release Gate Checks

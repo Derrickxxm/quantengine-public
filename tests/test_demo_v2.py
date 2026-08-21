@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+from quantengine_public.cli import main as cli_main
 from quantengine_public.demo import main
 
 
@@ -22,6 +23,7 @@ def test_demo_v2_generates_public_architecture_artifacts(tmp_path):
         "release-package/strategy.json",
         "release-package/portfolio.json",
         "release-package/runtime_dependencies.json",
+        "release-package/admission_result.json",
         "release-package/release.lock.json",
     ]
     for path in expected_files:
@@ -76,3 +78,11 @@ def test_demo_v2_stress_checks_fail_closed_cases(tmp_path):
     assert stress_report["checks"]["missing_replay_coverage"] == "pass"
     assert stress_report["checks"]["paper_replay_economic_mismatch"] == "pass"
     assert recovery_receipt["status"] == "PASS"
+
+
+def test_demo_v2_is_available_from_installed_cli(tmp_path):
+    assert cli_main(["demo-v2", "--artifact-dir", str(tmp_path)]) == 0
+
+    verdict = json.loads((tmp_path / "release_verdict.json").read_text())
+
+    assert verdict["verdict"] == "PASS"
