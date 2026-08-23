@@ -82,6 +82,7 @@ The older v1 replay demo still exists for comparison:
 - `tests/test_demo_v2.py`: authority, package tamper, event validation, and mismatch tests.
 - `examples/showcase/`: committed synthetic evidence viewable in GitHub.
 - `docs/START_HERE.md`: plain-language walkthrough for recruiters and engineers.
+- `docs/ai_control_system_context.md`: public-safe context diagram for the larger AI-assisted control system.
 - `docs/v2_public_architecture_design.md`: design notes and public boundary.
 - `SECURITY.md`: public content policy and safety scan.
 
