@@ -10,6 +10,18 @@ loop. The surrounding control system exists to keep long-running AI-assisted
 delivery from drifting away from the task, code, runtime, quality bar, and
 evidence.
 
+The public slice focuses on one control loop that can be safely shared:
+
+```text
+reviewed intent
+  -> lineage-bound candidate
+  -> sealed package
+  -> Paper evidence
+  -> independent Replay evidence
+  -> reconciliation evidence
+  -> fail-closed verdict
+```
+
 ## Public-Safe Context Diagram
 
 ```mermaid
@@ -65,6 +77,26 @@ flowchart TB
 | S3 / WORM evidence | Hashes, receipts, manifests, readback | Evidence disappearing or being silently overwritten |
 | Paper / Real authority | Runtime permission boundary | Paper evidence being confused with Real execution authority |
 
+## Identity And Lineage Fingerprints
+
+The larger system treats identity as a chain, not a label attached at the end.
+Each stage must preserve enough information to answer three questions:
+
+1. What upstream artifact was consumed?
+2. What exact output was produced?
+3. Which later decision relied on that output?
+
+In the public repository, that idea is represented by:
+
+- candidate and admission identities;
+- package manifests with SHA-256 file digests;
+- Paper and Replay artifacts bound to the same package and input window;
+- reconciliation evidence that names the compared inputs and outputs;
+- a release verdict that references the exact evidence set it consumed.
+
+This prevents a common AI-assisted delivery failure mode: a later agent or tool
+continues from a plausible story rather than from the actual artifact identity.
+
 ## Public Repository Boundary
 
 This repository does not include the private control plane, private research
@@ -99,3 +131,12 @@ system is designed this way:
 
 The design goal is not to automate everything. The goal is to let AI assist the
 work while preventing task, code, quality, runtime, and evidence drift.
+
+## Reader Path
+
+To review the public capability without private context:
+
+1. Start with [`docs/public_showcase_guide.md`](public_showcase_guide.md).
+2. Inspect [`examples/showcase/release_verdict.json`](../examples/showcase/release_verdict.json).
+3. Compare [`examples/showcase/reconciliation.json`](../examples/showcase/reconciliation.json).
+4. Read the boundary tests in [`tests/test_demo_v2.py`](../tests/test_demo_v2.py).

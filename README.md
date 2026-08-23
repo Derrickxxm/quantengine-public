@@ -6,6 +6,26 @@ QuantEngine Public Edition is a public-safe backend verification slice from a la
 
 This repository does not contain real strategies, exchange adapters, real orders, account data, production configuration, or private deployment logic.
 
+## If You Came From The Resume
+
+This repository is the public, runnable evidence behind a larger AI-assisted engineering control system.
+
+It is not published to show a profitable trading strategy. It is published to show an engineering pattern:
+
+```text
+intent -> reviewed candidate -> sealed package -> bounded runtime
+       -> independent replay -> reconciliation -> release verdict
+```
+
+The larger system uses task tracking, skill-led workflows, code maps, quality checks, fixed runbooks, and immutable evidence to reduce AI-assisted delivery drift. This public repository exposes the narrow slice that can be safely reviewed in the open: identity, authority, replay, accounting, reconciliation, and release evidence.
+
+Recommended review path:
+
+1. Read the [public showcase guide](docs/public_showcase_guide.md).
+2. Open the [AI-assisted control system context](docs/ai_control_system_context.md).
+3. Inspect the committed [release verdict evidence](examples/showcase/release_verdict.json).
+4. Run the demo and tests locally.
+
 ## 60-Second Review
 
 The engineering question is simple:
@@ -44,6 +64,8 @@ Three fail-closed scenarios are tested:
 Start here:
 
 - [60-second walkthrough](docs/START_HERE.md)
+- [Public showcase guide](docs/public_showcase_guide.md)
+- [AI-assisted control system context](docs/ai_control_system_context.md)
 - [Release verdict evidence](examples/showcase/release_verdict.json)
 - [Reconciliation evidence](examples/showcase/reconciliation.json)
 - [Package verification evidence](examples/showcase/package_verification.json)
@@ -82,6 +104,7 @@ The older v1 replay demo still exists for comparison:
 - `tests/test_demo_v2.py`: authority, package tamper, event validation, and mismatch tests.
 - `examples/showcase/`: committed synthetic evidence viewable in GitHub.
 - `docs/START_HERE.md`: plain-language walkthrough for recruiters and engineers.
+- `docs/public_showcase_guide.md`: resume-to-repository review path and capability map.
 - `docs/ai_control_system_context.md`: public-safe context diagram for the larger AI-assisted control system.
 - `docs/v2_public_architecture_design.md`: design notes and public boundary.
 - `SECURITY.md`: public content policy and safety scan.
