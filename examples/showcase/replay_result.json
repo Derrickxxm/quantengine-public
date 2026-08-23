@@ -1,0 +1,256 @@
+{
+  "decisions": [
+    {
+      "decision_id": "decision-0933",
+      "event_type": "decision",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "BUY",
+      "source_event_id": "bar-0933"
+    },
+    {
+      "decision_id": "decision-0938",
+      "event_type": "decision",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10.0,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "SELL",
+      "source_event_id": "bar-0938"
+    }
+  ],
+  "events": [
+    {
+      "decision_id": "decision-0933",
+      "event_type": "decision",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "BUY",
+      "source_event_id": "bar-0933"
+    },
+    {
+      "decision_id": "decision-0933",
+      "event_type": "risk_check",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "BUY",
+      "source_event_id": "bar-0933"
+    },
+    {
+      "decision_id": "decision-0933",
+      "event_type": "execution_intent",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "BUY",
+      "source_event_id": "bar-0933"
+    },
+    {
+      "decision_id": "decision-0933",
+      "event_type": "order_created",
+      "order_id": "order-0933",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "BUY",
+      "source_event_id": "bar-0933"
+    },
+    {
+      "cash": 9381.28,
+      "decision_id": "decision-0933",
+      "event_type": "fill_applied",
+      "ledger_entry_id": "replay-reference-run-fill-buy-a",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 6.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-buy-a"
+    },
+    {
+      "cash": 9381.28,
+      "decision_id": "decision-0933",
+      "event_type": "accounting_projected",
+      "ledger_entry_id": "replay-reference-run-fill-buy-a",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 6.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-buy-a"
+    },
+    {
+      "cash": 8968.4,
+      "decision_id": "decision-0933",
+      "event_type": "fill_applied",
+      "ledger_entry_id": "replay-reference-run-fill-buy-b",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 10.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-buy-b"
+    },
+    {
+      "cash": 8968.4,
+      "decision_id": "decision-0933",
+      "event_type": "accounting_projected",
+      "ledger_entry_id": "replay-reference-run-fill-buy-b",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 10.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-buy-b"
+    },
+    {
+      "cash": 8967.9,
+      "decision_id": null,
+      "event_type": "accounting_projected",
+      "ledger_entry_id": "replay-reference-run-funding-0935",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 10.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "funding-0935"
+    },
+    {
+      "decision_id": "decision-0938",
+      "event_type": "decision",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10.0,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "SELL",
+      "source_event_id": "bar-0938"
+    },
+    {
+      "decision_id": "decision-0938",
+      "event_type": "risk_check",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10.0,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "SELL",
+      "source_event_id": "bar-0938"
+    },
+    {
+      "decision_id": "decision-0938",
+      "event_type": "execution_intent",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10.0,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "SELL",
+      "source_event_id": "bar-0938"
+    },
+    {
+      "decision_id": "decision-0938",
+      "event_type": "order_created",
+      "order_id": "order-0938",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "qty": 10.0,
+      "risk_check": "pass",
+      "run_id": "replay-reference-run",
+      "side": "SELL",
+      "source_event_id": "bar-0938"
+    },
+    {
+      "cash": 9985.7,
+      "decision_id": "decision-0938",
+      "event_type": "fill_applied",
+      "ledger_entry_id": "replay-reference-run-fill-sell",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 0.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-sell"
+    },
+    {
+      "cash": 9985.7,
+      "decision_id": "decision-0938",
+      "event_type": "accounting_projected",
+      "ledger_entry_id": "replay-reference-run-fill-sell",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 0.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-sell"
+    }
+  ],
+  "input_event_ids": [
+    "bar-0930",
+    "bar-0931",
+    "bar-0933",
+    "fill-buy-a",
+    "fill-buy-b",
+    "funding-0935",
+    "bar-0938",
+    "fill-sell"
+  ],
+  "ledger": [
+    {
+      "cash": 9381.28,
+      "cash_delta": -618.6,
+      "decision_id": "decision-0933",
+      "entry_id": "replay-reference-run-fill-buy-a",
+      "entry_type": "fill",
+      "fees": 0.12,
+      "funding": 0.0,
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 6.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-buy-a"
+    },
+    {
+      "cash": 8968.4,
+      "cash_delta": -412.8,
+      "decision_id": "decision-0933",
+      "entry_id": "replay-reference-run-fill-buy-b",
+      "entry_type": "fill",
+      "fees": 0.2,
+      "funding": 0.0,
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 10.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-buy-b"
+    },
+    {
+      "cash": 8967.9,
+      "cash_delta": 0.0,
+      "decision_id": null,
+      "entry_id": "replay-reference-run-funding-0935",
+      "entry_type": "funding",
+      "fees": 0.2,
+      "funding": -0.5,
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 10.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "funding-0935"
+    },
+    {
+      "cash": 9985.7,
+      "cash_delta": 1018.0,
+      "decision_id": "decision-0938",
+      "entry_id": "replay-reference-run-fill-sell",
+      "entry_type": "fill",
+      "fees": 0.4,
+      "funding": -0.5,
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "position": 0.0,
+      "run_id": "replay-reference-run",
+      "source_event_id": "fill-sell"
+    }
+  ],
+  "mode": "replay",
+  "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+  "run_id": "replay-reference-run",
+  "schema_version": "quantengine_public.runtime_result.v1",
+  "status": "PASS",
+  "summary": {
+    "cash": 9985.7,
+    "equity": 9985.7,
+    "fees": 0.4,
+    "funding": -0.5,
+    "last_price": 101.0,
+    "position": 0.0,
+    "realized_pnl": -14.3
+  }
+}

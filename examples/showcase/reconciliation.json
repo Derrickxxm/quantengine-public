@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "decisions": "pass",
+    "input_coverage": "pass",
+    "ledger": "pass",
+    "package_identity": "pass",
+    "real_authority_absent": "pass",
+    "runtime_status": "pass",
+    "summary": "pass"
+  },
+  "gaps": [],
+  "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+  "schema_version": "quantengine_public.reconciliation.v1",
+  "status": "PASS"
+}

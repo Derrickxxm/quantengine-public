@@ -2,234 +2,88 @@
 
 [![CI](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml/badge.svg)](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml)
 
-QuantEngine Public Edition is a sanitized public edition derived from the architecture and verification patterns of a private quantitative trading platform. It is not a mirror of the private codebase. The implementation uses synthetic data and public-safe examples to demonstrate strategy admission, immutable package identity, Paper runtime semantics, deterministic replay, reconciliation, artifact manifests, and fail-closed release gates.
+QuantEngine Public Edition is a public-safe backend verification slice from a larger quantitative trading system. It uses only synthetic data to show strategy admission, tamper-evident package identity, Paper runtime evidence, independent Replay evidence, reconciliation, and fail-closed release gates.
 
-This repository does not contain trading strategies, exchange adapters, real orders, account data, production configuration, or private deployment logic.
+This repository does not contain real strategies, exchange adapters, real orders, account data, production configuration, or private deployment logic.
 
-## Relationship to Private Work
+## 60-Second Review
 
-This project is a public-safe edition derived from real backend architecture and verification patterns developed in a private system. It intentionally does not copy private strategies, production configuration, exchange connectivity, account data, or deployment logic.
-
-The goal is to make the engineering patterns reviewable in public: deterministic replay, lifecycle validation, reconciliation, artifact manifests, and release gates.
-
-## What This Shows
-
-Many backend systems need to answer a simple question before a change is trusted:
+The engineering question is simple:
 
 ```text
-Given the same input events, does the system produce the expected state, and can we prove how that result was produced?
+Given the same sealed input, can Paper and an independent Replay prove the same economic state?
 ```
-
-This project demonstrates that workflow with a small synthetic quantitative trading domain:
-
-1. Admit a synthetic strategy candidate.
-2. Materialize an immutable Paper package.
-3. Run a bounded Paper scenario with decisions, fills, positions and accounting.
-4. Replay the same window from pinned inputs.
-5. Reconcile Paper and replay evidence.
-6. Emit stress evidence and a fail-closed release verdict.
-
-The point is not alpha. The point is backend verification for a trading system: identity, authority, replay, state transitions, reconciliation, artifacts, and release evidence.
-
-## v2 Architecture
 
 ```mermaid
 flowchart LR
-    A["Research Candidate<br/>Synthetic strategy and research evidence"]
-    B["Strategy Admission<br/>Independent validation and leakage guards"]
-    C["Immutable Release Package<br/>Code, config, data and policy identity"]
-    D["Paper Runtime<br/>Decision, risk, order, fill and accounting"]
-    E["Same-Window Replay<br/>Pinned inputs and deterministic reconstruction"]
-    F["Reconciliation<br/>Decision, fill, position and equity comparison"]
-    G["Release Evidence<br/>Manifest, stress result and fail-closed verdict"]
-    H["Synthetic Market Data<br/>Bars, funding and execution facts"]
-    I["Authority Boundary<br/>Research / Paper / Real"]
-
-    A --> B --> C --> D --> F --> G
-    C --> E --> F
-    H --> D
-    H --> E
-    I --> B
-    I --> C
-    I --> D
-    I --> G
+    A["Synthetic strategy candidate"] --> B["Admission checks"]
+    B --> C["Tamper-evident package"]
+    C --> D["Paper runtime"]
+    C --> E["Independent Replay oracle"]
+    F["Synthetic bars, fills, funding"] --> D
+    F --> E
+    D --> G["Reconciliation"]
+    E --> G
+    G --> H["Fail-closed verdict"]
 ```
 
-The diagram maps to the runnable v2 demo:
+Current synthetic showcase result:
 
-- Research Candidate: built-in candidate contract in `src/quantengine_public/demo.py`, written into `input_manifest.json`.
-- Strategy Admission: independent checks written into `strategy_admission.json`.
-- Immutable Release Package: `release-package/` files plus `package.manifest.json` SHA-256 identity.
-- Paper Runtime: `paper_events.jsonl` and `paper_ledger.jsonl`.
-- Same-Window Replay: independent replay evidence in `replay_result.json`.
-- Reconciliation: semantic checks in `reconciliation.json`.
-- Release Evidence: `stress_report.json`, `recovery_receipt.json` and `release_verdict.json`.
-- Synthetic Market Data: built-in `QEP-USD` bars, funding and execution facts.
-- Authority Boundary: Research and Paper are allowed; Real authority is always false.
+- Verdict: `PASS`
+- Package id: `58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011`
+- Paper authority: `true`
+- Real authority: `false`
+- Final equity: `9985.7`
 
-For the full v2 design, see [QuantEngine Public v2 Design](docs/v2_public_architecture_design.md).
+Three fail-closed scenarios are tested:
 
-## Quick Start
+- package tamper: changed, missing, or extra package files fail verification;
+- input coverage gap: Replay missing an event fails reconciliation;
+- economic mismatch: Paper and Replay cash/equity drift fails reconciliation.
+
+Start here:
+
+- [60-second walkthrough](docs/START_HERE.md)
+- [Release verdict evidence](examples/showcase/release_verdict.json)
+- [Reconciliation evidence](examples/showcase/reconciliation.json)
+- [Package verification evidence](examples/showcase/package_verification.json)
+- [Core implementation](src/quantengine_public/demo.py)
+- [Boundary tests](tests/test_demo_v2.py)
+
+## What It Demonstrates
+
+1. Candidate admission produces explicit Paper and Real authority.
+2. A release package is content-addressed and tamper-evident.
+3. Paper and Replay are separate implementations sharing only contracts and input JSON.
+4. Reconciliation compares decisions, ledger entries, positions, cash, fees, funding, equity, and input coverage.
+5. Release verdict authority is derived from admission, package verification, reconciliation, and stress checks.
+
+The point is not alpha. The point is backend control: identity, authority, replay, accounting, reconciliation, and release evidence.
+
+## Run Locally
 
 ```bash
 python -m venv .venv
 .venv/bin/python -m pip install -e ".[dev]"
 .venv/bin/python -m pytest
-.venv/bin/quantengine-public --version
-.venv/bin/quantengine-public demo
-.venv/bin/quantengine-public validate --artifact-dir artifacts/demo
 .venv/bin/quantengine-public demo-v2 --artifact-dir artifacts/demo-v2
 ```
 
-Expected demo output:
-
-```json
-{
-  "checks": {
-    "artifact_hashes": "pass",
-    "expected_outputs": "pass",
-    "manifest": "pass",
-    "reconcile": "pass",
-    "replay": "pass"
-  },
-  "release_gate": "pass"
-}
-```
-
-Expected v2 demo output:
-
-```json
-{
-  "checks": {
-    "admission": "pass",
-    "artifacts_exist": "pass",
-    "package_identity": "pass",
-    "reconciliation": "pass",
-    "stress": "pass"
-  },
-  "verdict": "PASS"
-}
-```
-
-In plain English, this means:
-
-- `replay`: the synthetic events were processed without errors.
-- `reconcile`: actual state matched expected state.
-- `expected_outputs`: required artifact files were produced.
-- `artifact_hashes`: output files were hashable and recorded.
-- `manifest`: the run produced a structured evidence record.
-- `release_gate`: all checks passed.
-
-For v2, this means the candidate was admitted independently, the package identity is sealed, Paper and replay reconciled, stress checks produced the expected fail-closed outcomes, and Real trading authority was not granted.
-
-## Project Goals
-
-- Demonstrate backend verification patterns with small, readable code.
-- Keep runtime behavior deterministic and testable.
-- Produce structured artifacts that can support release gates.
-- Use only synthetic events and synthetic configuration.
-
-## Five-Minute Walkthrough
-
-See [Walkthrough](docs/walkthrough.md) for a plain-language explanation of the demo input, output, artifacts, and release gate.
-
-## MVP Scope
-
-The first version implements this closed loop:
-
-```text
-synthetic events -> replay -> order lifecycle -> risk check -> reconciliation -> manifest -> release gate
-```
-
-The demo writes these artifacts under `artifacts/demo/`:
-
-- `actual_state.json`
-- `replay_errors.json`
-- `reconcile.json`
-- `release_gate.json`
-- `run_manifest.json`
-
-## CLI
-
-Replay synthetic events:
+The older v1 replay demo still exists for comparison:
 
 ```bash
-quantengine-public replay \
-  --events examples/synthetic_events.jsonl \
-  --out artifacts/manual/actual_state.json
+.venv/bin/quantengine-public demo --artifact-dir artifacts/demo
+.venv/bin/quantengine-public validate --artifact-dir artifacts/demo
 ```
 
-Compare expected and actual state:
+## Repository Map
 
-```bash
-quantengine-public reconcile \
-  --expected examples/expected_state.json \
-  --actual artifacts/manual/actual_state.json \
-  --out artifacts/manual/reconcile.json
-```
-
-Evaluate a release gate from artifacts:
-
-```bash
-quantengine-public gate \
-  --manifest artifacts/demo/run_manifest.json \
-  --reconcile artifacts/demo/reconcile.json \
-  --replay-errors artifacts/demo/replay_errors.json \
-  --out artifacts/demo/release_gate_from_cli.json
-```
-
-Validate a complete artifact directory:
-
-```bash
-quantengine-public validate --artifact-dir artifacts/demo
-```
-
-`validate` recomputes artifact integrity from files on disk and fails if an artifact was edited after the manifest was generated.
-
-Run the complete verification loop:
-
-```bash
-quantengine-public demo --artifact-dir artifacts/demo
-```
-
-Run the v2 Paper/replay architecture demo:
-
-```bash
-quantengine-public demo-v2 --artifact-dir artifacts/demo-v2
-```
-
-The stable module entry point is also available:
-
-```bash
-python -m quantengine_public.demo --artifact-dir artifacts/demo-v2
-```
-
-## Release Gate Checks
-
-The release gate fails closed when:
-
-- replay produced errors
-- reconciliation found mismatches
-- expected artifacts are missing
-- artifact hashes are incomplete
-- the manifest is structurally incomplete
-
-## Documentation
-
-- [Walkthrough](docs/walkthrough.md)
-- [Synthetic Event Examples](docs/synthetic_events.md)
-- [Architecture](docs/architecture.md)
-- [Design Decisions](docs/design_decisions.md)
-- [Example Manifest](docs/example_manifest.md)
-- [Release Gate Examples](docs/release_gate_examples.md)
-- [Security And P0 Bug Hunt](docs/security_bug_hunt_2026-05-04.md)
-- [Roadmap](ROADMAP.md)
-
-## Repository Hygiene
-
-- `CONTRIBUTING.md` describes local development.
-- `SECURITY.md` defines what must never be submitted.
-- GitHub Actions runs tests and the demo command.
+- `src/quantengine_public/demo.py`: public v2 Paper/Replay/reconciliation pipeline.
+- `tests/test_demo_v2.py`: authority, package tamper, event validation, and mismatch tests.
+- `examples/showcase/`: committed synthetic evidence viewable in GitHub.
+- `docs/START_HERE.md`: plain-language walkthrough for recruiters and engineers.
+- `docs/v2_public_architecture_design.md`: design notes and public boundary.
+- `SECURITY.md`: public content policy and safety scan.
 
 ## What This Project Does Not Include
 
@@ -237,4 +91,4 @@ The release gate fails closed when:
 - Exchange connectivity.
 - Real orders, positions, balances, or account data.
 - Production deployment scripts.
-- Private paths, hosts, credentials, or environment names.
+- Private paths, hosts, credentials, task data, or environment names.

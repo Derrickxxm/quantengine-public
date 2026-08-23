@@ -109,12 +109,12 @@ Findings:
 .venv/bin/python -m pytest
 .venv/bin/quantengine-public demo --artifact-dir /tmp/qe_public_audit_demo
 .venv/bin/quantengine-public validate --artifact-dir /tmp/qe_public_audit_demo
-rg -n "/Users/|xxm|QuantLab|QuantStrategies|Qwen|studio|Binance|ETHUSDT|BTCUSDT|USDT|leverage|position_size|strategy_id|portfolio_id|api[_-]?key|token|secret|password|prod|paper|shadow" . --glob '!/.venv/**' --glob '!*.egg-info/**'
+python scripts/public_safety_scan.py
 ```
 
 Expected leak-scan interpretation:
 
-- Source, tests, and examples should not match private paths, real trading identifiers, or credential-like strings.
+- Source, tests, and examples should not match private paths, real trading identifiers, private project names, or credential-like strings.
 - README, SECURITY, CONTRIBUTING, ROADMAP, and docs may mention prohibited terms only as explicit out-of-scope or security guidance.
 
 ## Remaining Risk

@@ -12,7 +12,7 @@ The trading engine is one part of that story. The public value is the complete,
 auditable chain:
 
 ```text
-candidate -> admission -> immutable package -> Paper runtime
+candidate -> admission -> tamper-evident package -> Paper runtime
           -> same-window replay -> reconciliation -> release evidence
 ```
 
@@ -71,7 +71,7 @@ ecosystem:
 - reconciliation compares facts; it does not repair them;
 - the release gate judges evidence completeness; it does not deploy or promote.
 
-QuantLab, private strategy repositories, external Quality Shield services and
+private research workspaces, private strategy repositories, external quality services and
 production operations remain outside the public implementation. Their public
 interfaces are represented only by synthetic input or evidence contracts where
 the end-to-end demo requires them.
@@ -232,7 +232,7 @@ steps, plugins, Python expressions, authority flags or arbitrary file reads.
 ```text
 synthetic candidate
   -> independent admission
-  -> immutable Paper package
+  -> tamper-evident Paper package
   -> Paper event execution
   -> same-window replay
   -> reconciliation
@@ -338,7 +338,7 @@ not copied and scrubbed after the fact.
 Public abstractions may preserve these engineering semantics:
 
 - research/Paper/Real authority separation;
-- immutable package and runtime identity;
+- tamper-evident package and runtime identity;
 - causal, same-window replay;
 - order/fill/accounting ownership boundaries;
 - fail-closed reconciliation;
@@ -353,7 +353,7 @@ The repository must not contain:
 - real orders, fills, balances, positions or capital values;
 - private repository paths, task records, hostnames or deployment topology;
 - production configuration, scripts or operational commands;
-- local-model, Qwen or Studio implementation details;
+- local model or private automation implementation details;
 - automatic Real promotion, deployment or capital authority.
 
 Before publication, tracked files and Git history must pass an explicit secret,
@@ -418,7 +418,7 @@ Before a public commit or release:
 
 - implement the synthetic candidate contract;
 - implement independent admission failures;
-- materialize an immutable Research/Paper package;
+- materialize a tamper-evident Research/Paper package;
 - prove every material mutation invalidates prior evidence.
 
 ### P2: Paper, replay and accounting

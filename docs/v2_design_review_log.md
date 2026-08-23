@@ -14,7 +14,7 @@ This log records the three required review-and-revision passes for
    end-to-end identity chain was not explicit.
 3. The decision-to-order-to-accounting action identity was implicit in the
    runtime list and needed to become a load-bearing public contract.
-4. The design needed to say that QuantLab, private strategies, external quality
+4. The design needed to say that private research workspaces, private strategies, external quality
    systems and production operations are outside this repository rather than
    presenting the public slice as the complete private ecosystem.
 5. Compatibility runtime and historical migration machinery should not become
