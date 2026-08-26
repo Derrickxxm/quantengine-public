@@ -1,6 +1,7 @@
 # Evidence-Controlled AI Software Delivery Architecture
 
-Status: target architecture with a runnable public Golden Path
+Status: target architecture with a runnable public Golden Path; OpenAI Agents
+SDK runtime path approved; runtime implementation not started
 
 Reference implementation: QuantEngine public-safe synthetic runtime
 
@@ -142,12 +143,16 @@ Use this when separation of producer and certifier is required.
 
 ### Runtime compatibility
 
-The contracts are runtime-agnostic. An implementation may use the OpenAI Agents
-SDK, another Agent runtime, or a native coding Agent, but it must expose the
-same observable boundaries: specialist instructions, tools, ownership or
-handoffs, guardrails and approvals, resumable state, traces, and eval inputs.
-These boundaries correspond to the runtime capabilities described in the
-[OpenAI Agents SDK guide](https://developers.openai.com/api/docs/guides/agents).
+The contracts remain runtime-agnostic, but the Owner-approved MVP implementation
+uses OpenAI Agents SDK Python as its single Agent runtime dependency. It reuses
+SDK Agent execution, Agent-as-tool, handoffs, SQLite sessions, serializable run
+state, approvals, and tracing instead of rebuilding those mechanisms.
+
+Repository-owned code remains deterministic and narrow: task/source/context
+identity, role transitions, cross-run handoff receipts, evidence admission,
+independent Quality, and Release authority. A second overlapping orchestration
+framework is outside MVP scope. These SDK capabilities are described in the
+[OpenAI Agents SDK repository](https://github.com/openai/openai-agents-python).
 
 Model or provider selection is part of the run identity. Changing it may require
 re-evaluation, but it does not change which system owns task state, evidence, or
@@ -355,8 +360,8 @@ final authority that relies on its own result.
 
 | Current system capability | Public equivalent | Status | Required proof |
 | --- | --- | --- | --- |
-| LDA Control Plane | `public-control-plane` | planned | state transitions, routing, handoff receipts |
-| `lda-agent-sdk` | `public-agent-sdk` | planned | versioned requests, results, fingerprints |
+| LDA Control Plane | thin `public-control-plane` | approved design; implementation not started | deterministic task/source/context state, transitions, cross-run receipts |
+| Agent runtime | OpenAI Agents SDK Python adapter | external SDK selected; adapter not started | versioned requests/results, resume, approvals, trace conversion |
 | Architecture Agent | `public-architecture-agent` | Skill implemented; runtime planned | revision-bound graph and impact packet |
 | Test / Quality Lab Agent | `public-test-agent` | Skill implemented; runtime planned | red tests, negative cases, eval plan |
 | Development Agent | `public-development-agent` | Skill implemented; runtime planned | bounded patch and scope receipt |

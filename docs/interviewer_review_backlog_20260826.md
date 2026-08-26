@@ -7,6 +7,10 @@ and GitHub presentation
 
 Review mode: read-only findings captured before remediation
 
+Alignment status: Owner approved OpenAI Agents SDK Python as the single MVP
+Agent runtime dependency. Development is paused by Owner and resumes only on
+later explicit direction. No M0-M6 implementation is complete.
+
 Current release reviewed: `v0.4.0` at
 `f5e64e5c96d7aad7da1a9203c73eebec37dcd916`
 
@@ -138,6 +142,15 @@ The following remain target architecture or planned public equivalents:
 - role-specific behavioral evals;
 - independent Quality Shield runtime.
 
+The approved implementation route is now narrower:
+
+- reuse OpenAI Agents SDK `Agent`, `Runner`, `SQLiteSession`, serializable
+  `RunState`, handoffs, approvals, and tracing;
+- keep only task/source/context identity, deterministic role transitions,
+  cross-run handoff receipts, evidence admission, independent Quality, and
+  Release authority in repository-owned code;
+- do not add a second Agent orchestration framework.
+
 #### Impact
 
 The repository can support the claim that the control contracts and reference
@@ -148,7 +161,7 @@ multi-Agent software delivery platform was publicly implemented.
 
 - Implement one real collaboration mode, not all planned Agents at once.
 - Use one current source revision and one bounded public task.
-- Invoke at least one Skill-led specialist through a Native-Agent runtime.
+- Invoke at least one Skill-led specialist through OpenAI Agents SDK Python.
 - Record the request, context snapshot, tool use, result, stop reason, and
   handoff or review receipt.
 - Keep final authority deterministic and outside the Agent.
@@ -356,7 +369,8 @@ evidence rather than supplied as trusted labels.
 ### Phase 2: Add one real Native-Agent collaboration slice
 
 1. Select one bounded public task.
-2. Run one Architecture or Test specialist as an Agent-as-tool.
+2. Run one Architecture or Test specialist through OpenAI Agents SDK as an
+   Agent-as-tool.
 3. Record current source identity, context selection, tool use, result, and stop
    reason.
 4. Pass its output through deterministic validation and independent review.
@@ -367,7 +381,9 @@ without creating a workflow platform.
 
 ### Phase 3: Add task recovery, trace, and evals only where the slice needs them
 
-1. Add finite task state and idempotent resume for the public slice.
+1. Reuse SDK `SQLiteSession` and serialized `RunState`; add only the finite,
+   deterministic task state and idempotent cross-run transition data that the
+   SDK must not own.
 2. Correlate task, source, context, Agent, Skill, tool, result, and evidence ids.
 3. Implement the smallest role-specific eval set.
 4. Track false PASS, missed blocker, rework, latency, and cost where observable.
@@ -396,6 +412,8 @@ batch.
 ## 8. Anti-Overdesign Rules
 
 - Do not build a large workflow CLI.
+- Do not combine OpenAI Agents SDK with LangGraph, AutoGen, CrewAI, Microsoft
+  Agent Framework, or another overlapping orchestration framework in the MVP.
 - Do not introduce a service, queue, database, or repository without a proven
   runtime, scale, ownership, or trust boundary.
 - Do not add all specialist Agents before one collaboration slice is proven.

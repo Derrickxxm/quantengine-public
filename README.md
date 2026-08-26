@@ -25,6 +25,20 @@ Human / Release Gate  -> approve decisions that must not be inferred
 Chat memory is never the control plane. Every task must be recoverable from
 authoritative state and content-addressed evidence.
 
+## Current Implementation Decision
+
+The runnable repository today is still the deterministic 14-artifact Golden
+Path plus the synthetic QuantEngine reference runtime. A real multi-Agent
+runtime has not been implemented yet.
+
+The approved MVP route reuses the MIT OpenAI Agents SDK for Python for Agent
+execution, Agent-as-tool, handoffs, SQLite sessions, interruption/resume,
+approvals, and tracing. Repository-owned implementation will remain limited to
+task/source/context identity, deterministic role transitions, cross-run
+handoff receipts, evidence admission, independent Quality, and Release
+authority. Development is paused by Owner and resumes only on later explicit
+direction after Plane and the design documents are aligned.
+
 ## The Delivery Control Loop
 
 ```mermaid
@@ -220,6 +234,10 @@ evidence store, QuantLab, QuantStrategies, tick data, market causality, and
 Komodo runbook. A planned component is not presented as implemented until it
 has code, tests, example evidence, and an explicit authority boundary.
 
+For the MVP, "Agent SDK" means a thin adapter around
+[OpenAI Agents SDK Python](https://github.com/openai/openai-agents-python), not
+a new repository-owned Agent framework.
+
 ## Run Locally
 
 ```bash
@@ -241,6 +259,8 @@ python -m venv .venv
 - `examples/showcase/`: committed runtime evidence.
 - `tests/`: contract, failure, authority, runtime, and evidence tests.
 - `docs/multi_agent_public_architecture.md`: layered target architecture.
+- `docs/native_agent_multi_agent_platform_mvp_design_20260826.md`: approved
+  reuse-first MVP boundary and implementation gate.
 - `docs/public_showcase_content_contract.md`: required public themes.
 - `docs/public_golden_path_implementation_plan.md`: thin implementation plan.
 - `SECURITY.md`: public-content boundary and scan policy.
