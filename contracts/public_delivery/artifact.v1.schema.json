@@ -27,7 +27,7 @@
       "minLength": 1
     },
     "status": {
-      "enum": ["READY", "PASS", "BLOCKED", "EVIDENCE_GAP", "FAIL_CLOSED", "RECORDED"]
+      "enum": ["READY", "PASS", "BLOCKED", "EVIDENCE_GAP", "FAIL_CLOSED", "RECORDED", "REVISION_REQUIRED"]
     },
     "upstream": {
       "type": "array",

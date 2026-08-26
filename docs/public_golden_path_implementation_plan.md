@@ -35,11 +35,12 @@ and evidence chain, not a new trading feature.
   -> 06_patch_manifest.json
   -> 07_test_result.json
   -> 08_ops_delivery_plan.json
-  -> 09_qcs_manifest.json
-  -> 10_qcs_receipt.json
-  -> 11_quality_verdict.json
-  -> 12_release_verdict.json
-  -> 13_aar.json
+  -> 09_runtime_evidence.json
+  -> 10_qcs_manifest.json
+  -> 11_qcs_receipt.json
+  -> 12_quality_verdict.json
+  -> 13_release_verdict.json
+  -> 14_aar.json
 ```
 
 Every artifact records:
@@ -74,10 +75,11 @@ evidence without weakening the failed decision trail.
 | 4 | `public-test-agent` | define tamper tests before implementation evidence | no failing/negative case blocks development handoff |
 | 5 | `public-development-agent` | bind an allowed implementation result | changed file outside scope blocks result |
 | 6 | `public-ops-agent` | bind CI, artifact, readback, and rollback expectations | missing artifact digest blocks delivery plan |
-| 7 | `public-qcs` | select package-integrity risk and collect owner evidence | absent owner test evidence returns `EVIDENCE_GAP` |
-| 8 | `public-quality-shield` | independently judge the closed evidence set | malformed or mismatched provenance returns `FAIL_CLOSED` |
-| 9 | `quantengine-public` | produce package verification and release verdict | tampered package withholds Paper and Real authority |
-| 10 | learning flywheel | retain failure, decision, evidence, and result | AAR cannot omit failed path or negative evidence |
+| 7 | `quantengine-public` | produce zero-authority runtime evidence | package-integrity failure blocks runtime evidence |
+| 8 | `public-qcs` | select package-integrity risk and collect owner evidence | absent owner test evidence returns `EVIDENCE_GAP` |
+| 9 | `public-quality-shield` | judge the complete set including runtime evidence | malformed or mismatched provenance returns `FAIL_CLOSED` |
+| 10 | `public-release-controller` | derive bounded authority from runtime and quality | missing or failed upstream evidence grants no authority |
+| 11 | learning flywheel | retain failure, create regression, and name next action | AAR cannot omit failed path or negative evidence |
 
 ## Skill And Tool Boundary
 
@@ -118,14 +120,14 @@ contracts/public_delivery/
   *.schema.json
 src/quantengine_public/delivery/
   identity.py
-  gates.py
-  artifacts.py
+  golden_path.py
 examples/golden_path/
-  request/
+  reference_request.json
   evidence/
 tests/golden_path/
-  test_positive_path.py
-  test_negative_paths.py
+  test_identity.py
+  test_golden_path.py
+  test_committed_evidence.py
 ```
 
 No service, database, queue, browser bot, generic plugin system, dashboard, or
@@ -142,8 +144,8 @@ new standalone CLI is required for this milestone.
 5. Generate the positive Golden Path artifacts from the existing package-tamper
    invariant.
 6. Generate and commit representative negative receipts.
-7. Bind the current QuantEngine release verdict into the final quality and AAR
-   artifacts.
+7. Bind QuantEngine runtime evidence into independent quality, then derive
+   authority through the deterministic Release Controller.
 8. Run security and private-data scans.
 9. Add the Golden Path to CI and the README reader path.
 
@@ -151,7 +153,7 @@ new standalone CLI is required for this milestone.
 
 The milestone is complete only when:
 
-1. a clean checkout reproduces the complete 13-artifact chain;
+1. a clean checkout reproduces the complete 14-artifact chain;
 2. every artifact digest and upstream edge can be independently recomputed;
    the edge type and producer must match the closed Golden Path inventory;
 3. all declared positive and negative tests pass;
@@ -177,7 +179,7 @@ The milestone is complete only when:
 
 The first local implementation produces:
 
-- 13 connected positive-path artifacts;
+- 14 connected positive-path artifacts;
 - 9 negative receipts at the owning gate;
 - 4 validated public Skills;
 - a fixed single-purpose reproduction entry point;
@@ -185,5 +187,5 @@ The first local implementation produces:
 - a passing full repository test suite at implementation time;
 - a passing current-tree public safety scan.
 
-This result is local and uncommitted. It is not yet a GitHub release or evidence
-of a completed full-provider public architecture.
+This result is committed on the current local branch. It is not yet a GitHub
+release or evidence of a completed full-provider public architecture.

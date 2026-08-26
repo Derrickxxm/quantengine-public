@@ -9,6 +9,7 @@
     "public_delivery.patch_manifest",
     "public_delivery.test_result",
     "public_delivery.ops_plan",
+    "public_delivery.runtime_evidence",
     "public_delivery.qcs_manifest",
     "public_delivery.qcs_receipt",
     "public_delivery.quality_verdict",
@@ -24,12 +25,13 @@
     "public_delivery.patch_manifest": ["public_development_agent"],
     "public_delivery.test_result": ["public_test_agent"],
     "public_delivery.ops_plan": ["public_ops_agent"],
+    "public_delivery.runtime_evidence": ["quantengine_public"],
     "public_delivery.qcs_manifest": ["public_qcs"],
     "public_delivery.qcs_receipt": ["public_qcs"],
     "public_delivery.quality_verdict": ["public_quality_shield"],
-    "public_delivery.release_verdict": ["quantengine_public"],
+    "public_delivery.release_verdict": ["public_release_controller"],
     "public_delivery.aar": ["public_learning_flywheel"]
   },
-  "closed_statuses": ["READY", "PASS", "BLOCKED", "EVIDENCE_GAP", "FAIL_CLOSED", "RECORDED"],
+  "closed_statuses": ["READY", "PASS", "BLOCKED", "EVIDENCE_GAP", "FAIL_CLOSED", "RECORDED", "REVISION_REQUIRED"],
   "authority_keys": ["deployment_allowed", "paper_allowed", "real_allowed"]
 }

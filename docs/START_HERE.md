@@ -1,4 +1,4 @@
-# QuantEngine Public Edition: 60-Second Walkthrough
+# QuantEngine Reference Runtime: 60-Second Walkthrough
 
 This repository shows a small, public-safe part of a larger trading-system architecture: how a system can prove that a Paper run and an independent Replay agree on the same economic result.
 
@@ -6,6 +6,12 @@ If you arrived here from a resume or portfolio, start with the idea that this
 is not a strategy showcase. It is a public evidence slice for AI-assisted
 engineering control: the system binds intent, package identity, runtime facts,
 Replay facts, reconciliation, and release authority into a reviewable chain.
+
+This page explains the domain runtime. For final delivery authority, inspect
+the independent
+[Golden Path release verdict](../examples/golden_path/evidence/13_release_verdict.json).
+The engine verdict below is runtime evidence consumed by Quality and the
+Release Controller; it is not self-issued final delivery authority.
 
 ## What To Look At First
 

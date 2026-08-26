@@ -68,7 +68,7 @@ def scan_current_tree(root: Path) -> list[Failure]:
         path = root / relative_path
         try:
             text = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
+        except (FileNotFoundError, UnicodeDecodeError):
             continue
         for rule_id, pattern in RULES.items():
             if pattern.search(text):

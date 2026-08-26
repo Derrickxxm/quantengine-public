@@ -15,6 +15,7 @@ CLOSED_STATUSES = {
     "EVIDENCE_GAP",
     "FAIL_CLOSED",
     "RECORDED",
+    "REVISION_REQUIRED",
 }
 AUTHORITY_KEYS = {
     "deployment_allowed",
@@ -30,10 +31,11 @@ ARTIFACT_PRODUCERS: dict[str, set[str]] = {
     "public_delivery.patch_manifest": {"public_development_agent"},
     "public_delivery.test_result": {"public_test_agent"},
     "public_delivery.ops_plan": {"public_ops_agent"},
+    "public_delivery.runtime_evidence": {"quantengine_public"},
     "public_delivery.qcs_manifest": {"public_qcs"},
     "public_delivery.qcs_receipt": {"public_qcs"},
     "public_delivery.quality_verdict": {"public_quality_shield"},
-    "public_delivery.release_verdict": {"quantengine_public"},
+    "public_delivery.release_verdict": {"public_release_controller"},
     "public_delivery.aar": {"public_learning_flywheel"},
     "public_delivery.block_receipt": {
         "owner_fixture",
@@ -44,6 +46,7 @@ ARTIFACT_PRODUCERS: dict[str, set[str]] = {
         "public_qcs",
         "public_quality_shield",
         "quantengine_public",
+        "public_release_controller",
     },
 }
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")

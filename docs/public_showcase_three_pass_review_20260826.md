@@ -1,109 +1,129 @@
-# Public Showcase Three-Pass Review
+# Public Architecture Three-Pass Review
 
 Date: 2026-08-26
 
-Scope: README and `docs/multi_agent_public_architecture.md`
+Scope: README, target architecture, system context, Golden Path contracts, and
+committed evidence
 
-Decision: retain all confirmed themes; improve hierarchy and implementation
-truth without deleting content
+Decision: `PASS_WITH_REVISIONS` before implementation; revisions accepted into
+the current local branch
 
-## Pass 1: Reader And Objective Fit
+## Pass 1: Reader Clarity
 
-### Finding
+### Findings
 
-The new README now leads with the specialist-Agent delivery model, but the first
-diagram alone does not show the fingerprints, gates, evidence store, provider
-modules, or learning loop. A reader could still interpret those mechanisms as
-secondary implementation details.
+The previous README mixed three valid but different stories:
 
-### Revision
+1. the AI collaboration and anti-drift method;
+2. the software-delivery control architecture; and
+3. the QuantEngine financial-runtime example.
 
-- Retain the readable Agent-team diagram in the README.
-- Add an expanded end-to-end architecture diagram in the linked architecture
-  document.
-- Freeze fingerprints, gates, evidence, flywheel, and Skill/CLI migration as
-  required public themes.
+The first collaboration diagram was understandable, but the document then
+shifted from software delivery into Paper, Replay, and PnL without first
+explaining that QuantEngine was a reference implementation. The expanded
+architecture also introduced Agent roles, control systems, third-party tools,
+and domain providers in one diagram.
 
-### Result
+### Revisions
 
-The README explains the operating idea quickly; the architecture document must
-show the full causal system without hiding control mechanisms.
-
-## Pass 2: Evidence And Claim Safety
-
-### Finding
-
-The current repository implements the QuantEngine validation slice, not every
-Agent and provider shown in the target architecture. Without explicit status,
-the introduction could make a design target look like a completed public
-implementation.
-
-### Revision
-
-- Keep `quantengine-public` labeled as the current runnable slice.
-- Label every additional public module `PLANNED` until code, contracts, tests,
-  example evidence, and a public boundary exist.
-- Preserve the distinction between private-system evidence and public runnable
-  evidence.
+- Rename the public identity to Evidence-Controlled AI Software Delivery.
+- Position QuantEngine as the first reference implementation.
+- Present the architecture in layers: control thesis, Agent runtime, evidence
+  and evaluation, then the domain reference.
+- Define external reader terms before internal component names.
+- Move the provider catalogue out of the first-reading path.
 
 ### Result
 
-The repository may explain the complete system while remaining honest about
-what a reviewer can execute today.
+A new reader can follow one causal line from objective to bounded authority
+before encountering the full module plan.
 
-## Pass 3: Implementation Minimalism
+## Pass 2: Architectural Closure
 
-### Finding
+### Findings
 
-Creating a separate public repository, service, queue, database, dashboard, or
-large CLI for every private module would reproduce the complexity the
-architecture is intended to remove.
+The architecture correctly separated Agent judgment, Skills, deterministic
+tools, authoritative state, fingerprints, and fail-closed evidence. Four gaps
+remained:
 
-### Revision
+1. collaboration did not distinguish Agent-as-tool, handoff, and independent
+   review;
+2. no finite task state and invalidation model was documented;
+3. trace, evidence, eval, and authority were not explicitly separated; and
+4. Quality Shield issued PASS before consuming QuantEngine runtime evidence,
+   while QuantEngine produced the final release verdict.
 
-- Build the first complete public version as one reviewable repository with
-  multiple explicit logical modules.
-- Use Skills for high-judgment workflows and small tools for deterministic
-  state, identity, evidence, and gates.
-- Implement one end-to-end synthetic Golden Path before expanding individual
-  modules.
-- Enforce module boundaries with contracts, tests, and import rules rather than
-  creating infrastructure for appearance.
+The fourth gap violated the intended producer/certifier separation.
+
+### Revisions
+
+- Define the three collaboration modes and ownership semantics.
+- Add state transitions, idempotency, next-owner, retry, and source-drift rules.
+- Separate observability, factual proof, behavioral evaluation, and permission.
+- Insert a zero-authority runtime evidence artifact before QCS and Quality.
+- Make Quality Shield consume the exact runtime evidence.
+- Move final authority derivation to a deterministic Release Controller.
 
 ### Result
 
-The next implementation milestone is one thin vertical path:
+The public Golden Path now follows:
 
 ```text
-synthetic requirement
-  -> architecture packet
-  -> validation space and failing test
-  -> bounded implementation
-  -> CI/CD artifact
-  -> independent quality verdict
-  -> immutable evidence
-  -> AAR and next-cycle decision
+Ops plan
+  -> runtime evidence with zero authority
+  -> QCS risk evidence
+  -> independent Quality Shield with zero authority
+  -> deterministic Release Controller
+  -> bounded authority
 ```
 
-## Review Conclusion
+## Pass 3: Future AI-System Fit
 
-The direction passes all three reviews with two conditions:
+### Findings
 
-1. the required-content contract remains enforced; and
-2. target architecture and current implementation status remain visibly
-   separate.
+The strongest architectural idea is not Multi-Agent by itself. It is preserving
+model reasoning while external systems control goals, current facts,
+permissions, validation, and evidence.
 
-No existing important theme is approved for deletion.
+The previous version still risked implying that every professional role should
+become an Agent and that an AAR alone completed the learning loop.
 
-## Release-Prep Correctness Addendum
+### Revisions
 
-The implementation review found four evidence-contract gaps after the content
-review: late blockers lacked their valid causal prefix; upstream digest edges
-did not confirm the declared upstream type; artifact types were not checked
-against their owning producer; and a failed or non-release artifact could carry
-non-zero authority.
+- State the one-Agent-first rule and require a real ownership, context, tool,
+  permission, or evaluation reason before splitting a specialist.
+- Define dynamic context assembly from current task, source, graph, evidence,
+  and directly related regressions rather than a static knowledge dump.
+- Extend the learning loop from AAR into eval creation, repair-layer
+  classification, historical replay, independent review, and baseline
+  promotion.
+- Add role-specific eval targets including tool selection, handoff quality,
+  scope adherence, stale-context detection, false PASS, cost, and rework.
 
-The Golden Path now rejects each case. Negative receipts preserve the valid
-prefix, bind the exact rejected request digest, and retain the public-safe input
-beside the receipt. The JSON Schema and runtime verifier both require all
-authority to remain false unless the artifact is a passing release verdict.
+### Result
+
+The architecture now presents Multi-Agent collaboration as a consequence of
+responsibility boundaries, not as the product objective.
+
+## Truthfulness Corrections
+
+- Replace the unsupported phrase `signed verdict` with sealed or bounded
+  verdict; the current public artifacts are content-addressed, not digitally
+  signed.
+- Update the Golden Path from 13 to 14 artifacts.
+- Replace stale planned filenames with the implemented `identity.py` and
+  `golden_path.py` structure.
+- Remove the stale `local and uncommitted` statement while retaining the fact
+  that no public GitHub release has been verified.
+
+## Final Acceptance Conditions
+
+The revision is accepted only when:
+
+1. README and deep architecture preserve every required content-contract theme;
+2. target, implemented, planned, synthetic, and withheld capabilities remain
+   distinguishable;
+3. runtime evidence precedes independent Quality and final authority;
+4. only a passing Release Controller artifact can carry non-zero authority;
+5. all positive and negative evidence is regenerated against the same contract;
+6. tests, schema validation, links, Skill validation, and public safety scan pass.

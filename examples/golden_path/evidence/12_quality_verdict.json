@@ -1,5 +1,5 @@
 {
-  "artifact_digest": "deef21fba596be229aeb9af81319f40d49bde2a3bdb065240fdff76235a0d358",
+  "artifact_digest": "8f05d66ab6b74c77b3f630d2b79d66e0d70450e40ef8a6d4db8498281c36b162",
   "artifact_type": "public_delivery.quality_verdict",
   "authority": {
     "deployment_allowed": false,
@@ -15,8 +15,12 @@
   "status": "PASS",
   "upstream": [
     {
-      "artifact_digest": "e74bea13b2caef03df42ff6defa798c8be1903251e4d508a4a288c631351fc06",
+      "artifact_digest": "09e997a374aa75fb3e7c259506c0bb9627e8a3b9d9f0e17a9a9fb5a61fb499ff",
       "artifact_type": "public_delivery.qcs_receipt"
+    },
+    {
+      "artifact_digest": "dd7708160de0fe981db73292bba9d99638b0797cb1ed1b09e7ea7ecafc0e7652",
+      "artifact_type": "public_delivery.runtime_evidence"
     },
     {
       "artifact_digest": "378bbbf2e3c18959ffb9d0607a9a343e1f4460c38743b7191c4df2d93f2fe533",

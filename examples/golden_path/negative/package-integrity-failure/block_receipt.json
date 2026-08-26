@@ -1,5 +1,5 @@
 {
-  "artifact_digest": "c2550f1302324e30871a10b6943362d06fbc5531284871512fb27c1c6f668a38",
+  "artifact_digest": "d2a131ca2efa4400fa9ae117571a686d28fdafd49f4a78b75be79a736a03d8c6",
   "artifact_type": "public_delivery.block_receipt",
   "authority": {
     "deployment_allowed": false,
@@ -9,15 +9,15 @@
   "payload": {
     "reason": "package_integrity_failure",
     "request_digest": "037bc40a1402ace2115a1a809a932c27501a7979b0337f27065082d3e3cd74d7",
-    "stage": "release_gate"
+    "stage": "runtime_evidence_gate"
   },
   "producer": "quantengine_public",
   "schema_version": "quantengine_public.delivery_artifact.v1",
   "status": "FAIL_CLOSED",
   "upstream": [
     {
-      "artifact_digest": "deef21fba596be229aeb9af81319f40d49bde2a3bdb065240fdff76235a0d358",
-      "artifact_type": "public_delivery.quality_verdict"
+      "artifact_digest": "2a92d47ee3a0f04e10959dfb21aa2a564e92705f62d5e8c9b58711e5207466f2",
+      "artifact_type": "public_delivery.ops_plan"
     }
   ]
 }

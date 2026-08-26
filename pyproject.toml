@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "quantengine-public"
 version = "0.3.0"
-description = "A public-safe backend verification slice with independent replay, reconciliation, manifests, and release gates."
+description = "Evidence-controlled AI software delivery with a QuantEngine reference runtime."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

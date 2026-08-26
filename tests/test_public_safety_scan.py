@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from scripts import public_safety_scan
 from scripts.public_safety_scan import RULES
 
 
@@ -14,3 +15,9 @@ def test_public_architecture_names_are_allowed_but_private_locators_are_not():
     )
     assert rule.search(private_lab_locator) is not None
     assert rule.search(private_strategy_locator) is not None
+
+
+def test_current_tree_scan_skips_tracked_files_deleted_from_worktree(tmp_path, monkeypatch):
+    monkeypatch.setattr(public_safety_scan, "tracked_files", lambda root: ["deleted.json"])
+
+    assert public_safety_scan.scan_current_tree(tmp_path) == []

@@ -1,5 +1,5 @@
 {
-  "artifact_digest": "ebd7ad8675dc329703ee8deb7a9e1a64ed9d0a2695b6c172b6f85016b9672e4d",
+  "artifact_digest": "8075de99b17c5fff646664d09b2976fe688abfb82b9f9bc21f96fd82fc93cb0a",
   "artifact_type": "public_delivery.qcs_manifest",
   "authority": {
     "deployment_allowed": false,
@@ -20,6 +20,10 @@
   "schema_version": "quantengine_public.delivery_artifact.v1",
   "status": "READY",
   "upstream": [
+    {
+      "artifact_digest": "4bda7cfd7368fdeaa83d7617c6d7c9026f775becb8565ef7673637d15eb4de78",
+      "artifact_type": "public_delivery.runtime_evidence"
+    },
     {
       "artifact_digest": "378bbbf2e3c18959ffb9d0607a9a343e1f4460c38743b7191c4df2d93f2fe533",
       "artifact_type": "public_delivery.test_result"

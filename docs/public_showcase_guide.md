@@ -1,91 +1,106 @@
 # Public Showcase Guide
 
-This repository is a public-safe capability slice from a larger AI-assisted
-engineering control system.
+This repository demonstrates an evidence-controlled AI software delivery
+architecture through two connected public-safe slices:
 
-The public demo does not try to prove trading alpha. It proves a narrower
-backend control problem:
+1. a 14-artifact software-delivery Golden Path; and
+2. a synthetic QuantEngine Paper / Replay runtime used as the reference domain.
 
-```text
-Can a candidate move through admission, packaging, Paper execution,
-independent Replay, reconciliation, and a fail-closed verdict with evidence
-that can be inspected after the run?
-```
+The first slice proves how evidence moves between delivery roles. The second
+proves the runtime facts that independent Quality and Release control consume.
 
-## What This Repository Demonstrates
+## Five-Minute Review
+
+### 1. Start with final authority
+
+Open
+[`examples/golden_path/evidence/13_release_verdict.json`](../examples/golden_path/evidence/13_release_verdict.json).
+
+Confirm:
+
+- producer is `public_release_controller`;
+- status is `PASS`;
+- Paper authority is `true`;
+- Real and deployment authority are `false`;
+- upstream includes both runtime evidence and independent Quality.
+
+### 2. Confirm the runtime producer did not authorize itself
+
+Open
+[`examples/golden_path/evidence/09_runtime_evidence.json`](../examples/golden_path/evidence/09_runtime_evidence.json).
+
+The artifact contains QuantEngine package, Paper, Replay, reconciliation,
+stress, recovery, and engine-verdict evidence. Its delivery-level authority is
+entirely false. The nested engine verdict is a runtime recommendation and input
+to release control, not the final delivery authority.
+
+### 3. Confirm independent Quality consumed runtime evidence
+
+Open
+[`examples/golden_path/evidence/12_quality_verdict.json`](../examples/golden_path/evidence/12_quality_verdict.json).
+
+Its upstream edges must include the exact runtime-evidence digest, QCS receipt,
+test result, and Ops plan. Quality itself grants no Paper, Real, or deployment
+authority.
+
+### 4. Inspect a negative path
+
+Open
+[`examples/golden_path/negative/provenance-mismatch/`](../examples/golden_path/negative/provenance-mismatch/).
+
+The directory preserves:
+
+- the rejected request;
+- the valid causal prefix;
+- a request-bound blocker;
+- zero authority.
+
+The blocker does not erase or rewrite the evidence that preceded failure.
+
+### 5. Inspect the QuantEngine runtime proof
+
+Review:
+
+- [package verification](../examples/showcase/package_verification.json);
+- [Paper events](../examples/showcase/paper_events.jsonl);
+- [independent Replay](../examples/showcase/replay_result.json);
+- [reconciliation](../examples/showcase/reconciliation.json);
+- [stress evidence](../examples/showcase/stress_report.json);
+- [recovery evidence](../examples/showcase/recovery_receipt.json);
+- [runtime verdict](../examples/showcase/release_verdict.json).
+
+The reference runtime checks package tampering, input coverage, decisions,
+fills, positions, cash, fees, funding, equity, reconciliation, stress, and
+recovery. It does not prove trading alpha.
+
+## What The Golden Path Demonstrates
 
 | Capability | Public evidence |
 | --- | --- |
-| Candidate admission | `examples/showcase/strategy_admission.json` |
-| Package identity | `examples/showcase/package.manifest.json` |
-| Package tamper detection | `examples/showcase/package_verification.json` and `tests/test_demo_v2.py` |
-| Paper runtime evidence | `examples/showcase/paper_events.jsonl` and `examples/showcase/paper_ledger.jsonl` |
-| Independent Replay | `examples/showcase/replay_result.json` |
-| Paper / Replay reconciliation | `examples/showcase/reconciliation.json` |
-| Fault and recovery behavior | `examples/showcase/stress_report.json` and `examples/showcase/recovery_receipt.json` |
-| Final bounded authority | `examples/showcase/release_verdict.json` |
+| Frozen outcome | `01_ogsm.json`, `02_plane_task.json` |
+| Architecture scope | `03_architecture_packet.json` |
+| Test-first validation | `04_validation_plan.json` |
+| Bounded implementation | `05_worker_handoff.json`, `06_patch_manifest.json` |
+| Deterministic tests and Ops | `07_test_result.json`, `08_ops_delivery_plan.json` |
+| Zero-authority runtime proof | `09_runtime_evidence.json` |
+| Risk evidence | `10_qcs_manifest.json`, `11_qcs_receipt.json` |
+| Independent evidence admission | `12_quality_verdict.json` |
+| Deterministic authority | `13_release_verdict.json` |
+| Learning index | `14_aar.json` |
 
-## What Makes The Slice Useful
+## Run It
 
-The implementation is intentionally small, but the invariants are the important
-part:
-
-- every stage names the upstream identity it consumed;
-- package content is verified by digest, not by filename or trust;
-- Paper and Replay are separate implementations;
-- reconciliation checks input coverage, decisions, fills, positions, cash,
-  fees, funding, equity, and authority;
-- missing or inconsistent evidence produces a fail-closed verdict;
-- the public demo grants Paper authority but withholds Real authority.
-
-This is the same shape required for larger AI-assisted delivery: generated work
-must be bound to reviewed intent, executable artifacts, independent checks, and
-readable evidence.
-
-## How To Review It In Five Minutes
-
-1. Open `examples/showcase/release_verdict.json`.
-   Confirm `release_gate` is `PASS`, `paper_authority` is `true`, and
-   `real_authority` is `false`.
-
-2. Open `examples/showcase/package.manifest.json`.
-   Confirm the package is content-addressed and every material file has a
-   digest.
-
-3. Open `examples/showcase/reconciliation.json`.
-   Confirm Paper and Replay agree on package identity, input coverage, ledger,
-   positions, cash, and final equity.
-
-4. Open `tests/test_demo_v2.py`.
-   Look for negative tests covering package tampering, event duplication,
-   missing replay input, and economic mismatch.
-
-5. Run the project locally:
-
-   ```bash
-   python -m venv .venv
-   .venv/bin/python -m pip install -e ".[dev]"
-   .venv/bin/python -m pytest
-   .venv/bin/quantengine-public demo-v2 --artifact-dir artifacts/demo-v2
-   ```
-
-## Relationship To The Larger System
-
-The private system contains research workspaces, task control, quality tools,
-provider runbooks, runtime environments, and evidence storage. Those pieces are
-not published here.
-
-This repository publishes the reviewable core pattern:
-
-```text
-research candidate
-  -> admission result
-  -> lineage-bound release package
-  -> Paper runtime evidence
-  -> independent Replay evidence
-  -> reconciliation evidence
-  -> bounded release verdict
+```bash
+python -m venv .venv
+.venv/bin/python -m pip install -e ".[dev]"
+.venv/bin/python -m pytest
+.venv/bin/python -m quantengine_public.delivery.golden_path \
+  --artifact-dir artifacts/public-golden-path
 ```
 
-For the surrounding system context, see
-[`docs/ai_control_system_context.md`](ai_control_system_context.md).
+The harness is deterministic and synthetic. It does not dispatch external
+Agents. The four Skills under [`skills/`](../skills/) preserve the operating
+methods that a Native-Agent runtime must follow.
+
+For the complete architecture, see
+[`docs/multi_agent_public_architecture.md`](multi_agent_public_architecture.md).

@@ -1,5 +1,5 @@
 {
-  "artifact_digest": "8ba032283fa12e4280e05f67a7cd008dc77ae090ea3951bfee449e7f99acfc2e",
+  "artifact_digest": "59397e4d2d6b243aecb563b60004d4d578fc4f3e49283ddbcae10277720d39d3",
   "artifact_type": "public_delivery.block_receipt",
   "authority": {
     "deployment_allowed": false,
@@ -16,8 +16,8 @@
   "status": "EVIDENCE_GAP",
   "upstream": [
     {
-      "artifact_digest": "2a92d47ee3a0f04e10959dfb21aa2a564e92705f62d5e8c9b58711e5207466f2",
-      "artifact_type": "public_delivery.ops_plan"
+      "artifact_digest": "294a8e50321bb9a843bd22261d11358fa1df908ccdeb39044053c803e65e757e",
+      "artifact_type": "public_delivery.runtime_evidence"
     }
   ]
 }

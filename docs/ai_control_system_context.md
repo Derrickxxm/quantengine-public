@@ -1,142 +1,161 @@
-# AI-Assisted Control System Context
+# Evidence-Controlled AI System Context
 
-QuantEngine Public Edition is a runnable public slice of a larger engineering
-control system. This page shows the system context behind the slice without
-exposing private strategies, account data, hosts, credentials, or production
-deployment logic.
+QuantEngine Public is the first runnable reference implementation of a larger AI
+software delivery control architecture. The public repository shows two
+connected slices without exposing private prompts, strategies, accounts,
+credentials, hosts, or deployment logic:
 
-The public repository implements the synthetic Paper / Replay / reconciliation
-loop. The surrounding control system exists to keep long-running AI-assisted
-delivery from drifting away from the task, code, runtime, quality bar, and
-evidence.
+1. a 14-artifact software-delivery Golden Path; and
+2. a synthetic QuantEngine Paper / Replay / reconciliation runtime.
 
-The public slice focuses on one control loop that can be safely shared:
+The system exists to keep long-running AI-assisted work aligned with the
+accepted task, current source, quality bar, runtime evidence, and allowed
+authority.
 
-```text
-reviewed intent
-  -> lineage-bound candidate
-  -> sealed package
-  -> Paper evidence
-  -> independent Replay evidence
-  -> reconciliation evidence
-  -> fail-closed verdict
-```
-
-## Public-Safe Context Diagram
+## Public-Safe Context
 
 ```mermaid
 flowchart TB
-    Owner["Owner / Business Lead<br/>intent, constraints, approval"]
-    Plane["Plane<br/>requirements, priority, acceptance criteria"]
-    ACP["Agent Control Plane<br/>task state, routes, permissions, evidence index"]
+    Owner["Owner<br/>outcome, constraints, approval"]
+    Plane["OGSM + Plane<br/>objective, measures, task state"]
+    ACP["Agent Control Plane<br/>context, routes, permissions, evidence index"]
 
-    Skill["Skill-led workflow<br/>small deterministic tools, not a super CLI"]
-    CodeMap["Understand Anything<br/>current code map and freshness"]
-    Quality["Quality boundary<br/>Sonar, QCS, targeted tests"]
-    Research["Research workspace<br/>candidate evidence and experiment results"]
-    Runtime["QuantEngine runtime slice<br/>Paper, Replay, reconciliation"]
-    Ops["Provider / Ops boundary<br/>release check, readback, rollback"]
-    Komodo["Komodo<br/>fixed Research / Paper runbooks"]
-    Evidence["S3 / WORM evidence store<br/>hashes, receipts, manifests"]
-    Paper["Paper environment<br/>bounded runtime authority"]
-    Real["Real environment<br/>withheld unless explicit authority exists"]
+    Skill["Skills<br/>method, evidence, stop, escalation"]
+    Agents["Specialist Agents<br/>Architecture, Test, Development, Ops"]
+    Tools["Small Tools<br/>read, test, hash, record, gate"]
 
-    Owner --> Plane
-    Plane <--> ACP
-    ACP --> Skill
-    ACP --> CodeMap
-    ACP --> Quality
-    ACP --> Research
-    ACP --> Runtime
-    ACP --> Ops
+    Git["Git / CI<br/>source and review identity"]
+    Graph["Understand Anything<br/>revision-bound code graph"]
+    Runtime["QuantEngine<br/>Paper, Replay, reconciliation"]
+    RuntimeEvidence["Runtime evidence<br/>zero authority"]
+    QCS["QCS<br/>risk evidence"]
+    Quality["Quality Shield<br/>independent zero-authority verdict"]
+    Release["Release Controller<br/>deterministic bounded authority"]
+    Evidence["Evidence store<br/>hashes, receipts, manifests"]
+    Flywheel["Learning Flywheel<br/>failure, eval, repair, regression, promotion"]
 
-    Skill --> CodeMap
-    Skill --> Quality
-    Research --> Runtime
-    Quality --> Ops
-    Runtime --> Ops
-    Ops --> Komodo
-    Ops --> Evidence
-    Komodo --> Paper
-    Komodo -. "no implicit authority" .-> Real
-    Paper --> Evidence
-    Real -. "only after separate approval" .-> Evidence
+    Owner --> Plane --> ACP
+    ACP --> Skill --> Agents
+    ACP --> Graph
+    Agents --> Tools
+    Tools --> Git
+    Git --> Runtime
+    Graph --> Agents
+    Runtime --> RuntimeEvidence
+    RuntimeEvidence --> QCS --> Quality
+    Git --> Quality
+    Quality --> Release --> Owner
+    RuntimeEvidence --> Evidence
+    Quality --> Evidence
+    Release --> Evidence
     Evidence --> ACP
+    Evidence --> Flywheel --> Plane
 ```
+
+The arrows do not grant authority. Every transition requires an allowed state,
+matching identities, admitted evidence, an authorized producer, and an explicit
+next owner.
 
 ## What Each Boundary Prevents
 
-| Boundary | Owns | Drift it prevents |
+| Boundary | Owns | Drift prevented |
 | --- | --- | --- |
-| Plane | Task intent, priority, state, approval trail | Goal drift and lost acceptance criteria |
-| Agent Control Plane | Routes, permissions, evidence index | Tool sprawl and hidden authority changes |
-| Skill-led workflow | Human-readable operating procedure | Heavy CLI workflows becoming a second platform |
-| Understand Anything | Code map bound to current source | Stale architecture understanding |
-| Sonar / QCS / tests | Quality baseline and targeted risk checks | Local green tests hiding global quality or risk gaps |
-| Komodo | Fixed Research / Paper runbooks | Runtime template and environment drift |
-| S3 / WORM evidence | Hashes, receipts, manifests, readback | Evidence disappearing or being silently overwritten |
-| Paper / Real authority | Runtime permission boundary | Paper evidence being confused with Real execution authority |
+| OGSM / Plane | objective, measures, state, decisions | goal and acceptance drift |
+| Agent Control Plane | context, routing, permissions, evidence index | hidden ownership and authority changes |
+| Skill | human-readable operating procedure | heavy CLI becoming a second platform |
+| Git / CI | source and review identity | implementation-history drift |
+| Revision-bound graph | current components and dependencies | stale architectural understanding |
+| Runtime evidence | actual package, execution, replay, accounting, readback | plausible stories replacing runtime facts |
+| QCS | selected risk surfaces and advisory evidence | local green tests hiding risk gaps |
+| Quality Shield | independent evidence admission | producer self-certification |
+| Release Controller | deterministic bounded authority | a producer granting permission from its own result |
+| Evidence store | manifests, receipts, traces, evals, decisions | evidence disappearing or being silently replaced |
 
-## Identity And Lineage Fingerprints
+## Identity And Context
 
-The larger system treats identity as a chain, not a label attached at the end.
-Each stage must preserve enough information to answer three questions:
+Every producer answers:
 
-1. What upstream artifact was consumed?
-2. What exact output was produced?
-3. Which later decision relied on that output?
+1. What exact upstream artifact did it consume?
+2. What exact output did it produce?
+3. Which downstream result relied on that output?
 
-In the public repository, that idea is represented by:
+The public implementation binds task, source, artifact, package, runtime,
+quality, and release identities with canonical SHA-256 digests. A digest edge
+must resolve to the declared artifact type and producer.
 
-- candidate and admission identities;
-- package manifests with SHA-256 file digests;
-- Paper and Replay artifacts bound to the same package and input window;
-- reconciliation evidence that names the compared inputs and outputs;
-- a release verdict that references the exact evidence set it consumed.
-
-This prevents a common AI-assisted delivery failure mode: a later agent or tool
-continues from a plausible story rather than from the actual artifact identity.
-
-## Public Repository Boundary
-
-This repository does not include the private control plane, private research
-repositories, Komodo configuration, object-store credentials, production
-deployment scripts, exchange adapters, real strategies, or real account data.
-
-Instead, it publishes a narrow executable pattern:
+Each Agent run should receive a bounded context assembled from:
 
 ```text
-synthetic candidate
-  -> admission
-  -> tamper-evident package
-  -> Paper runtime
-  -> independent Replay
-  -> reconciliation
-  -> fail-closed release verdict
+accepted task and decisions
++ current source revision
++ revision-bound graph
++ role Skill and allowed tools
++ current blockers and evidence
++ directly related regression and AAR index
 ```
 
-That slice is intentionally small, but it is shaped by the larger control
-system: every stage must name its identity, authority, input evidence, output
-evidence, and failure mode.
+A stale graph or mismatched source blocks the run. Chat memory is not a fallback
+source of authority.
 
-## Why This Belongs In The Public Docs
+## Trace, Evidence, Eval, And Authority
 
-The public demo shows what the engine proves. The context diagram shows why the
-system is designed this way:
+- **Trace** records what the Agent, model, tools, guardrails, and handoffs did.
+- **Evidence** records the facts supporting a result.
+- **Eval** judges behavior or output against an accepted standard.
+- **Authority** states which action is allowed next.
 
-- AI can help reason, generate candidates, and review changes.
-- External tools own facts that should not depend on chat memory.
-- Release confidence comes from readback, hashes, independent checks, and
-  explicit authority boundaries.
+These records may reference each other but remain separate. A trace is not proof
+of correctness, evidence is not permission, and an eval cannot invent runtime
+facts.
 
-The design goal is not to automate everything. The goal is to let AI assist the
-work while preventing task, code, quality, runtime, and evidence drift.
+## QuantEngine Reference Path
 
-## Reader Path
+```text
+reviewed candidate
+  -> admission
+  -> tamper-evident package
+  -> synthetic Paper + independent Replay
+  -> reconciliation, stress, recovery
+  -> zero-authority runtime evidence
+  -> QCS risk evidence
+  -> independent Quality Shield
+  -> deterministic bounded Paper authority
+```
 
-To review the public capability without private context:
+The reference scenario makes lineage and authority failures visible. It does not
+prove strategy profitability and grants no Real or production authority.
 
-1. Start with [`docs/public_showcase_guide.md`](public_showcase_guide.md).
-2. Inspect [`examples/showcase/release_verdict.json`](../examples/showcase/release_verdict.json).
-3. Compare [`examples/showcase/reconciliation.json`](../examples/showcase/reconciliation.json).
-4. Read the boundary tests in [`tests/test_demo_v2.py`](../tests/test_demo_v2.py).
+## Learning Instead Of Static Accumulation
+
+The system does not improve by accumulating a large prose archive. It preserves
+a small identity graph over changing authoritative facts:
+
+```text
+failure evidence
+  -> reflection and Owner decision
+  -> new eval or regression
+  -> Skill / Tool / Contract / Model / Data / Process repair
+  -> historical replay
+  -> independent review
+  -> accepted baseline promotion
+```
+
+Plane preserves why. Git preserves what changed. The graph shows what is
+currently connected. Evidence proves what ran. Evals prevent known failures
+from returning.
+
+## Public Boundary
+
+The public repository does not include the private control plane, private Agent
+prompts, production object-store configuration, Komodo configuration, private
+research repositories, real strategies, exchange adapters, credentials, real
+orders, account data, or deployment logic.
+
+To inspect the public capability:
+
+1. read the [README](../README.md);
+2. follow the [Golden Path plan](public_golden_path_implementation_plan.md);
+3. inspect the [runtime evidence](../examples/golden_path/evidence/09_runtime_evidence.json);
+4. inspect the [independent quality verdict](../examples/golden_path/evidence/12_quality_verdict.json);
+5. review the [negative evidence](../examples/golden_path/negative/);
+6. run the repository tests.

@@ -20,11 +20,12 @@ GOLDEN_PATH_FILENAMES = [
     "06_patch_manifest.json",
     "07_test_result.json",
     "08_ops_delivery_plan.json",
-    "09_qcs_manifest.json",
-    "10_qcs_receipt.json",
-    "11_quality_verdict.json",
-    "12_release_verdict.json",
-    "13_aar.json",
+    "09_runtime_evidence.json",
+    "10_qcs_manifest.json",
+    "11_qcs_receipt.json",
+    "12_quality_verdict.json",
+    "13_release_verdict.json",
+    "14_aar.json",
 ]
 _FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 _DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -269,6 +270,39 @@ def run_golden_path(request: dict[str, Any], artifact_dir: Path) -> dict[str, An
             },
         )
 
+    if request["package_integrity"] is not True:
+        return _block(
+            artifact_dir,
+            artifacts,
+            request,
+            "runtime_evidence_gate",
+            "package_integrity_failure",
+            "FAIL_CLOSED",
+        )
+
+    engine_verdict = engine_result["release_verdict"]
+    runtime_evidence = _append(
+        artifacts,
+        "public_delivery.runtime_evidence",
+        "quantengine_public",
+        "PASS" if engine_verdict["verdict"] == "PASS" else "FAIL_CLOSED",
+        [ops_plan, test_result],
+        {
+            "engine_release_verdict": engine_verdict,
+            "engine_evidence_dir": "engine",
+        },
+    )
+    if runtime_evidence["status"] != "PASS":
+        return _block(
+            artifact_dir,
+            artifacts,
+            request,
+            "runtime_evidence_gate",
+            "runtime_verdict_failed",
+            "FAIL_CLOSED",
+            details={"engine_verdict": engine_verdict["verdict"]},
+        )
+
     if not _valid_string_list(request["owner_evidence"]):
         return _block(artifact_dir, artifacts, request, "qcs_gate", "evidence_gap", "EVIDENCE_GAP")
     qcs_manifest = _append(
@@ -276,7 +310,7 @@ def run_golden_path(request: dict[str, Any], artifact_dir: Path) -> dict[str, An
         "public_delivery.qcs_manifest",
         "public_qcs",
         "READY",
-        [test_result, ops_plan],
+        [runtime_evidence, test_result, ops_plan],
         {
             "risk_surfaces": ["package_integrity", "release_authority"],
             "required_owner_evidence": request["owner_evidence"],
@@ -287,7 +321,7 @@ def run_golden_path(request: dict[str, Any], artifact_dir: Path) -> dict[str, An
         "public_delivery.qcs_receipt",
         "public_qcs",
         "PASS",
-        [qcs_manifest, test_result],
+        [qcs_manifest, runtime_evidence, test_result],
         {"owner_evidence": request["owner_evidence"], "advisory_only": True},
     )
 
@@ -305,30 +339,21 @@ def run_golden_path(request: dict[str, Any], artifact_dir: Path) -> dict[str, An
         "public_delivery.quality_verdict",
         "public_quality_shield",
         "PASS",
-        [qcs_receipt, test_result, ops_plan],
+        [qcs_receipt, runtime_evidence, test_result, ops_plan],
         {"provenance_matches": True, "closed_world": True},
     )
-
-    if request["package_integrity"] is not True:
-        return _block(
-            artifact_dir,
-            artifacts,
-            request,
-            "release_gate",
-            "package_integrity_failure",
-            "FAIL_CLOSED",
-        )
-
-    engine_verdict = engine_result["release_verdict"]
     release = _append(
         artifacts,
         "public_delivery.release_verdict",
-        "quantengine_public",
-        "PASS" if engine_verdict["verdict"] == "PASS" else "FAIL_CLOSED",
-        [quality],
+        "public_release_controller",
+        "PASS" if quality["status"] == "PASS" and runtime_evidence["status"] == "PASS" else "FAIL_CLOSED",
+        [quality, runtime_evidence],
         {
-            "engine_release_verdict": engine_verdict,
-            "engine_evidence_dir": "engine",
+            "decision_basis": [
+                "public_delivery.quality_verdict",
+                "public_delivery.runtime_evidence",
+            ],
+            "engine_verdict": engine_verdict["verdict"],
         },
         authority={
             "deployment_allowed": False,
@@ -344,8 +369,13 @@ def run_golden_path(request: dict[str, Any], artifact_dir: Path) -> dict[str, An
         [release, test_result],
         {
             "problem": "A mutable or incomplete package could be mistaken for reviewed input",
+            "reflection": "Package identity must be verified as a closed set before authority is derived",
             "decision": "KEEP",
             "negative_evidence_retained": True,
+            "eval_case": "package-integrity-negative-suite",
+            "repair_layer": "CONTRACT",
+            "historical_regressions_replayed": True,
+            "promotion_status": "PROMOTED",
             "next_action": "extend the same identity contract to the next public module",
         },
     )
@@ -455,8 +485,9 @@ def _producer_for_stage(stage: str) -> str:
         "validation_space_gate": "public_test_agent",
         "ops_gate": "public_ops_agent",
         "qcs_gate": "public_qcs",
+        "runtime_evidence_gate": "quantengine_public",
         "quality_gate": "public_quality_shield",
-        "release_gate": "quantengine_public",
+        "release_gate": "public_release_controller",
     }[stage]
 
 

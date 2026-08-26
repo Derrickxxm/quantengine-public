@@ -5,6 +5,7 @@ from copy import deepcopy
 
 import pytest
 
+import quantengine_public.delivery.golden_path as golden_path_module
 from quantengine_public.delivery.golden_path import (
     GOLDEN_PATH_FILENAMES,
     build_reference_request,
@@ -14,11 +15,11 @@ from quantengine_public.delivery.golden_path import (
 from quantengine_public.delivery.identity import content_digest, verify_artifact, verify_artifact_chain
 
 
-def test_public_golden_path_produces_thirteen_bound_artifacts(tmp_path):
+def test_public_golden_path_produces_fourteen_bound_artifacts(tmp_path):
     result = run_golden_path(build_reference_request(), tmp_path)
 
     assert result["status"] == "PASS"
-    assert result["artifact_count"] == 13
+    assert result["artifact_count"] == 14
     assert [path.name for path in sorted(tmp_path.glob("*.json"))] == sorted(GOLDEN_PATH_FILENAMES)
 
     artifacts = {
@@ -30,8 +31,25 @@ def test_public_golden_path_produces_thirteen_bound_artifacts(tmp_path):
     ordered_artifacts = [artifacts[filename] for filename in GOLDEN_PATH_FILENAMES]
     assert verify_artifact_chain(ordered_artifacts) == []
 
-    final = artifacts["12_release_verdict.json"]
-    aar = artifacts["13_aar.json"]
+    runtime = artifacts["09_runtime_evidence.json"]
+    quality = artifacts["12_quality_verdict.json"]
+    final = artifacts["13_release_verdict.json"]
+    aar = artifacts["14_aar.json"]
+    assert runtime["producer"] == "quantengine_public"
+    assert runtime["authority"] == {
+        "deployment_allowed": False,
+        "paper_allowed": False,
+        "real_allowed": False,
+    }
+    assert any(
+        edge["artifact_digest"] == runtime["artifact_digest"]
+        for edge in quality["upstream"]
+    )
+    assert final["producer"] == "public_release_controller"
+    assert {edge["artifact_type"] for edge in final["upstream"]} == {
+        "public_delivery.runtime_evidence",
+        "public_delivery.quality_verdict",
+    }
     assert final["status"] == "PASS"
     assert final["authority"] == {
         "deployment_allowed": False,
@@ -40,11 +58,15 @@ def test_public_golden_path_produces_thirteen_bound_artifacts(tmp_path):
     }
     assert aar["payload"]["decision"] == "KEEP"
     assert aar["payload"]["negative_evidence_retained"] is True
+    assert aar["payload"]["eval_case"] == "package-integrity-negative-suite"
+    assert aar["payload"]["repair_layer"] == "CONTRACT"
+    assert aar["payload"]["historical_regressions_replayed"] is True
+    assert aar["payload"]["promotion_status"] == "PROMOTED"
 
 
 def test_public_golden_path_has_one_fixed_reproduction_entrypoint(tmp_path):
     assert main(["--artifact-dir", str(tmp_path)]) == 0
-    assert (tmp_path / "13_aar.json").exists()
+    assert (tmp_path / "14_aar.json").exists()
 
 
 @pytest.mark.parametrize(
@@ -74,7 +96,11 @@ def test_public_golden_path_has_one_fixed_reproduction_entrypoint(tmp_path):
         ),
         (lambda request: request.update(owner_evidence=[]), "qcs_gate", "evidence_gap"),
         (lambda request: request.update(provenance_matches=False), "quality_gate", "provenance_mismatch"),
-        (lambda request: request.update(package_integrity=False), "release_gate", "package_integrity_failure"),
+        (
+            lambda request: request.update(package_integrity=False),
+            "runtime_evidence_gate",
+            "package_integrity_failure",
+        ),
     ],
 )
 def test_public_golden_path_fails_closed_at_the_owning_boundary(
@@ -121,3 +147,34 @@ def test_malformed_request_fails_closed_instead_of_crashing(tmp_path):
     blocker = json.loads((tmp_path / "block_receipt.json").read_text(encoding="utf-8"))
     assert verify_artifact(blocker) == []
     assert blocker["payload"]["request_digest"] == content_digest(request)
+
+
+def test_failed_runtime_verdict_stops_before_qcs_and_quality(tmp_path, monkeypatch):
+    original_run_demo = golden_path_module.run_demo
+
+    def run_failed_demo(artifact_dir):
+        result = original_run_demo(artifact_dir)
+        result["release_verdict"]["verdict"] = "FAIL_CLOSED"
+        result["release_verdict"]["authority"]["paper_allowed"] = False
+        return result
+
+    monkeypatch.setattr(golden_path_module, "run_demo", run_failed_demo)
+
+    result = run_golden_path(build_reference_request(), tmp_path)
+
+    assert result == {
+        "status": "FAIL_CLOSED",
+        "stage": "runtime_evidence_gate",
+        "reason": "runtime_verdict_failed",
+    }
+    runtime = json.loads((tmp_path / "09_runtime_evidence.json").read_text(encoding="utf-8"))
+    blocker = json.loads((tmp_path / "block_receipt.json").read_text(encoding="utf-8"))
+    assert runtime["status"] == "FAIL_CLOSED"
+    assert blocker["upstream"] == [
+        {
+            "artifact_type": runtime["artifact_type"],
+            "artifact_digest": runtime["artifact_digest"],
+        }
+    ]
+    assert not (tmp_path / "10_qcs_manifest.json").exists()
+    assert not (tmp_path / "12_quality_verdict.json").exists()
