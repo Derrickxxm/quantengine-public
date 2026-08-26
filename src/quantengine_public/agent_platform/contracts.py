@@ -4,6 +4,7 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Any, Mapping
 
 
@@ -82,6 +83,10 @@ class SourceIdentity:
     @classmethod
     def from_dict(cls, value: Mapping[str, Any]) -> SourceIdentity:
         data = dict(value)
+        if data.get("schema_version") != SCHEMA_VERSION:
+            raise ContractError("schema_version_mismatch")
+        if "identity_digest" not in data:
+            raise ContractError("identity_digest_required")
         supplied = data.pop("identity_digest", None)
         data.pop("schema_version", None)
         result = cls(**data)
@@ -120,6 +125,10 @@ class GraphIdentity:
     @classmethod
     def from_dict(cls, value: Mapping[str, Any]) -> GraphIdentity:
         data = dict(value)
+        if data.get("schema_version") != SCHEMA_VERSION:
+            raise ContractError("schema_version_mismatch")
+        if "identity_digest" not in data:
+            raise ContractError("identity_digest_required")
         supplied = data.pop("identity_digest", None)
         data.pop("schema_version", None)
         result = cls(**data)
@@ -176,6 +185,10 @@ class TaskSnapshot:
     @classmethod
     def from_dict(cls, value: Mapping[str, Any]) -> TaskSnapshot:
         data = dict(value)
+        if data.get("schema_version") != SCHEMA_VERSION:
+            raise ContractError("schema_version_mismatch")
+        if "snapshot_digest" not in data:
+            raise ContractError("snapshot_digest_required")
         supplied = data.pop("snapshot_digest", None)
         result = cls(**data)
         if supplied is not None and supplied != result.snapshot_digest:
@@ -255,6 +268,10 @@ class ContextSnapshot:
     @classmethod
     def from_dict(cls, value: Mapping[str, Any]) -> ContextSnapshot:
         data = dict(value)
+        if data.get("schema_version") != SCHEMA_VERSION:
+            raise ContractError("schema_version_mismatch")
+        if "context_digest" not in data:
+            raise ContractError("context_digest_required")
         supplied = data.pop("context_digest", None)
         data["upstream_artifact_refs"] = tuple(ArtifactRef(**ref) for ref in data.get("upstream_artifact_refs", ()))
         result = cls(**data)
@@ -389,6 +406,10 @@ class HandoffReceipt:
     @classmethod
     def from_dict(cls, value: Mapping[str, Any]) -> HandoffReceipt:
         data = dict(value)
+        if data.get("schema_version") != SCHEMA_VERSION:
+            raise ContractError("schema_version_mismatch")
+        if "receipt_digest" not in data:
+            raise ContractError("receipt_digest_required")
         supplied = data.pop("receipt_digest", None)
         data["required_artifact_refs"] = tuple(ArtifactRef(**ref) for ref in data.get("required_artifact_refs", ()))
         result = cls(**data)
@@ -432,6 +453,7 @@ class EvidenceAdmission:
     status: str
     upstream: tuple[ArtifactRef, ...]
     authority: dict[str, bool] = field(default_factory=lambda: {"deployment_allowed": False, "paper_allowed": False, "real_allowed": False})
+    schema_version: str = SCHEMA_VERSION
     admission_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -448,10 +470,14 @@ class EvidenceAdmission:
             raise EvidenceAdmissionError("authority_invalid")
         if any(self.authority.values()):
             raise EvidenceAdmissionError("authority_cannot_be_granted_by_admission")
+        if self.schema_version != SCHEMA_VERSION:
+            raise EvidenceAdmissionError("schema_version_mismatch")
+        object.__setattr__(self, "authority", MappingProxyType(dict(self.authority)))
         object.__setattr__(self, "admission_digest", content_digest(self._body()))
 
     def _body(self) -> dict[str, Any]:
         return {
+            "schema_version": self.schema_version,
             "task_id": self.task_id,
             "source_identity": self.source_identity,
             "context_digest": self.context_digest,
@@ -464,6 +490,20 @@ class EvidenceAdmission:
 
     def to_dict(self) -> dict[str, Any]:
         return {**self._body(), "admission_digest": self.admission_digest}
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> EvidenceAdmission:
+        data = dict(value)
+        if data.get("schema_version") != SCHEMA_VERSION:
+            raise EvidenceAdmissionError("schema_version_mismatch")
+        if "admission_digest" not in data:
+            raise EvidenceAdmissionError("admission_digest_required")
+        supplied = data.pop("admission_digest")
+        data["upstream"] = tuple(ArtifactRef(**ref) for ref in data.get("upstream", ()))
+        result = cls(**data)
+        if supplied != result.admission_digest:
+            raise EvidenceAdmissionError("admission_digest_mismatch")
+        return result
 
 
 class EvidenceAdmissionError(ContractError):
@@ -485,5 +525,9 @@ def admit_evidence(*, task: TaskSnapshot, source: SourceIdentity, context: Conte
         producer=producer,
         status=status,
         upstream=upstream,
-        authority=authority or {"deployment_allowed": False, "paper_allowed": False, "real_allowed": False},
+        authority=(
+            {"deployment_allowed": False, "paper_allowed": False, "real_allowed": False}
+            if authority is None
+            else authority
+        ),
     )

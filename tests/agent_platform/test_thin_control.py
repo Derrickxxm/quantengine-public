@@ -12,6 +12,7 @@ from quantengine_public.agent_platform.context import (
 from quantengine_public.agent_platform.contracts import (
     ArtifactRef,
     ContextSnapshot,
+    EvidenceAdmission,
     EvidenceAdmissionError,
     GraphIdentity,
     HandoffReceipt,
@@ -70,11 +71,11 @@ def test_contract_identities_are_canonical_and_context_is_revision_bound():
         graph=graph,
         role="Architecture",
         skill_identity="skill://architecture@1",
-        tool_policy_identity="policy://architecture@1",
+        tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
         selected_context_refs=(("finding", "release-topology", "direct"),),
     )
     assert context.context_digest == ContextSnapshot.from_dict(context.to_dict()).context_digest
-    validate_context(context, source, graph)
+    validate_context(context, source, graph, task=task)
 
     changed = SourceIdentity(
         repository=source.repository,
@@ -84,7 +85,7 @@ def test_contract_identities_are_canonical_and_context_is_revision_bound():
         dirty=False,
     )
     with pytest.raises(StaleContextError, match="source_revision_mismatch"):
-        validate_context(context, changed, graph)
+        validate_context(context, changed, graph, task=task)
 
 
 def test_graph_mismatch_fails_closed():
@@ -100,7 +101,7 @@ def test_graph_mismatch_fails_closed():
             ),
             role="Architecture",
             skill_identity="skill://architecture@1",
-            tool_policy_identity="policy://architecture@1",
+            tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
         )
 
 
@@ -259,7 +260,7 @@ def test_handoff_is_bound_to_all_cross_run_identities():
         graph=graph,
         role="Architecture",
         skill_identity="skill://architecture@1",
-        tool_policy_identity="policy://architecture@1",
+        tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
     )
     receipt = HandoffReceipt(
         task_id=task.task_id,
@@ -287,7 +288,7 @@ def test_evidence_admission_never_grants_authority():
         graph=graph,
         role="Quality",
         skill_identity="skill://quality@1",
-        tool_policy_identity="policy://quality@1",
+        tool_policy_identity=ToolPolicy.for_role("Quality").policy_digest,
     )
     evidence = admit_evidence(
         task=task,
@@ -310,3 +311,75 @@ def test_evidence_admission_never_grants_authority():
             upstream=(),
             authority={"deployment_allowed": True, "paper_allowed": False, "real_allowed": False},
         )
+
+
+def test_evidence_authority_cannot_be_mutated_after_admission():
+    task, source, graph = identities()
+    context = build_context_snapshot(
+        task=task,
+        source=source,
+        graph=graph,
+        role="Quality",
+        skill_identity="skill://quality@1",
+        tool_policy_identity=ToolPolicy.for_role("Quality").policy_digest,
+    )
+    evidence = admit_evidence(
+        task=task,
+        source=source,
+        context=context,
+        artifact_type="quality_verdict",
+        producer="quality-agent",
+        status="PASS",
+    )
+    with pytest.raises(TypeError):
+        evidence.authority["real_allowed"] = True
+    assert EvidenceAdmission.from_dict(evidence.to_dict()) == evidence
+    tampered = evidence.to_dict()
+    tampered["status"] = "FAIL"
+    with pytest.raises(EvidenceAdmissionError, match="digest"):
+        EvidenceAdmission.from_dict(tampered)
+
+
+def test_context_validation_requires_matching_task_and_approved_policy():
+    task, source, graph = identities()
+    context = build_context_snapshot(
+        task=task,
+        source=source,
+        graph=graph,
+        role="Architecture",
+        skill_identity="skill://architecture@1",
+        tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
+    )
+    with pytest.raises(StaleContextError):
+        validate_context(context, source, graph, task=TaskSnapshot(
+            task_id="other-task",
+            task_revision=task.task_revision,
+            objective=task.objective,
+            measures=task.measures,
+            acceptance_criteria=task.acceptance_criteria,
+            non_goals=task.non_goals,
+            approved_scope=task.approved_scope,
+            required_approvals=task.required_approvals,
+            source_reference=source.identity_digest,
+        ))
+
+
+def test_all_contract_from_dict_requires_schema_and_digest():
+    task, source, graph = identities()
+    context = build_context_snapshot(
+        task=task,
+        source=source,
+        graph=graph,
+        role="Architecture",
+        skill_identity="skill://architecture@1",
+        tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
+    )
+    for factory, payload, field in (
+        (SourceIdentity.from_dict, source.to_dict(), "identity_digest"),
+        (GraphIdentity.from_dict, graph.to_dict(), "identity_digest"),
+        (TaskSnapshot.from_dict, task.to_dict(), "snapshot_digest"),
+        (ContextSnapshot.from_dict, context.to_dict(), "context_digest"),
+    ):
+        payload.pop(field)
+        with pytest.raises(ValueError):
+            factory(payload)

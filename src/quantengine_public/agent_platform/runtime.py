@@ -10,13 +10,18 @@ authority policy explicitly covers their approval and evidence semantics.
 from __future__ import annotations
 
 import importlib.metadata
+import json
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .contracts import SCHEMA_VERSION, content_digest
+
 SDK_PACKAGE = "openai-agents"
 SDK_REQUIRED_VERSION = "0.22.0"
+RUN_STATE_ENVELOPE_VERSION = f"{SCHEMA_VERSION}.run-state"
+MAX_TURNS = 100
 try:
     SDK_VERSION: str | None = importlib.metadata.version(SDK_PACKAGE)
 except importlib.metadata.PackageNotFoundError:
@@ -64,6 +69,55 @@ def _validate_tools(tools: Iterable[Any]) -> tuple[Any, ...]:
     return checked
 
 
+def _agent_graph_payload(agent: Any, sdk: Any, seen: set[int]) -> dict[str, Any]:
+    if not isinstance(agent, sdk.Agent):
+        raise UnsupportedToolError("agent_graph_contains_non_agent")
+    marker = id(agent)
+    if marker in seen:
+        raise UnsupportedToolError("agent_graph_cycle")
+    seen.add(marker)
+    if getattr(agent, "mcp_servers", ()) or getattr(agent, "mcp_config", {}):
+        raise UnsupportedToolError("agent_graph_contains_mcp_tools")
+    tools = _validate_tools(agent.tools)
+    handoffs = []
+    for handoff in agent.handoffs:
+        if not isinstance(handoff, sdk.Agent):
+            raise UnsupportedToolError("agent_graph_contains_opaque_handoff")
+        handoffs.append(_agent_graph_payload(handoff, sdk, seen))
+    seen.remove(marker)
+    instructions = agent.instructions if isinstance(agent.instructions, str) else type(agent.instructions).__qualname__
+    return {
+        "name": agent.name,
+        "instructions": instructions,
+        "output_type": getattr(agent.output_type, "__qualname__", None),
+        "tools": [
+            {
+                "type": type(tool).__qualname__,
+                "name": getattr(tool, "name", None),
+                "needs_approval": getattr(tool, "needs_approval", None),
+            }
+            for tool in tools
+        ],
+        "handoffs": handoffs,
+    }
+
+
+def _agent_graph_identity(agent: Any, sdk: Any) -> str:
+    return content_digest(_agent_graph_payload(agent, sdk, set()))
+
+
+def _require_text(value: Any, name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{name}_required")
+    return value
+
+
+def _require_digest(value: Any, name: str) -> str:
+    if not isinstance(value, str) or len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
+        raise ValueError(f"{name}_invalid")
+    return value
+
+
 @dataclass(frozen=True)
 class AgentsSdkRuntime:
     """Small adapter exposing only the approved SDK runtime seams."""
@@ -75,6 +129,11 @@ class AgentsSdkRuntime:
         _require_sdk()
         assert SDK_VERSION is not None
         return SDK_VERSION
+
+    def agent_graph_identity(self, agent: Any) -> str:
+        """Return the deterministic identity used by durable RunState envelopes."""
+
+        return _agent_graph_identity(agent, _require_sdk())
 
     def agent(
         self,
@@ -89,12 +148,15 @@ class AgentsSdkRuntime:
         """Construct an SDK Agent after applying the default tool boundary."""
 
         sdk = _require_sdk()
+        handoff_list = tuple(handoffs)
+        if any(not isinstance(handoff, sdk.Agent) for handoff in handoff_list):
+            raise UnsupportedToolError("agent_graph_contains_opaque_handoff")
         return sdk.Agent(
             name=name,
             instructions=instructions,
             model=model,
             tools=list(_validate_tools(tools)),
-            handoffs=list(handoffs),
+            handoffs=list(handoff_list),
             output_type=output_type,
         )
 
@@ -116,6 +178,11 @@ class AgentsSdkRuntime:
         """Run or resume an SDK workflow without introducing another state machine."""
 
         sdk = _require_sdk()
+        if not isinstance(agent, sdk.Agent):
+            raise UnsupportedToolError("agent_required")
+        _agent_graph_identity(agent, sdk)
+        if not isinstance(max_turns, int) or isinstance(max_turns, bool) or not 1 <= max_turns <= MAX_TURNS:
+            raise ValueError(f"max_turns_must_be_between_1_and_{MAX_TURNS}")
         self._reject_sandbox(run_config)
         return await sdk.Runner.run(
             agent,
@@ -136,43 +203,102 @@ class AgentsSdkRuntime:
     ) -> Any:
         """Expose the SDK's Agent-as-tool seam with explicit approval opt-in."""
 
-        _require_sdk()
+        sdk = _require_sdk()
+        _agent_graph_identity(agent, sdk)
         return agent.as_tool(
             tool_name=tool_name,
             tool_description=tool_description,
             needs_approval=needs_approval,
         )
 
-    def serialize_state(self, state: Any) -> dict[str, Any]:
+    def serialize_state(
+        self,
+        state: Any,
+        *,
+        task_id: str,
+        source_identity: str,
+        context_digest: str,
+        graph_identity: str | None,
+        skill_identity: str,
+        tool_policy_identity: str,
+    ) -> dict[str, Any]:
         """Serialize an SDK RunState for an external durable store."""
 
-        _require_sdk()
+        sdk = _require_sdk()
         to_json = getattr(state, "to_json", None)
         if not callable(to_json):
             raise TypeError("state must be an OpenAI Agents SDK RunState")
-        return to_json(strict_context=True)
+        starting_agent = getattr(state, "_starting_agent", None)
+        if starting_agent is None:
+            raise ValueError("state_agent_required")
+        body = {
+            "schema_version": RUN_STATE_ENVELOPE_VERSION,
+            "sdk_package": SDK_PACKAGE,
+            "sdk_version": SDK_REQUIRED_VERSION,
+            "task_id": _require_text(task_id, "task_id"),
+            "source_identity": _require_digest(source_identity, "source_identity"),
+            "context_digest": _require_digest(context_digest, "context_digest"),
+            "graph_identity": None if graph_identity is None else _require_digest(graph_identity, "graph_identity"),
+            "skill_identity": _require_text(skill_identity, "skill_identity"),
+            "tool_policy_identity": _require_text(tool_policy_identity, "tool_policy_identity"),
+            "agent_graph_identity": _agent_graph_identity(starting_agent, sdk),
+            "state": to_json(strict_context=True),
+        }
+        return {**body, "envelope_digest": content_digest(body)}
 
     async def deserialize_state(
         self,
         initial_agent: Any,
         state: Mapping[str, Any] | str,
         *,
+        task_id: str,
+        source_identity: str,
+        context_digest: str,
+        graph_identity: str | None,
+        skill_identity: str,
+        tool_policy_identity: str,
         context_override: Any = None,
     ) -> Any:
         """Restore a serialized SDK RunState with the supplied agent graph."""
 
         sdk = _require_sdk()
+        if context_override is not None:
+            raise ValueError("context_override_forbidden")
         if isinstance(state, str):
-            return await sdk.RunState.from_string(
-                initial_agent,
-                state,
-                context_override=context_override,
-                strict_context=True,
-            )
+            try:
+                state = json.loads(state)
+            except json.JSONDecodeError as exc:
+                raise ValueError("run_state_envelope_invalid") from exc
+        if not isinstance(state, Mapping):
+            raise ValueError("run_state_envelope_required")
+        envelope = dict(state)
+        supplied = envelope.pop("envelope_digest", None)
+        if envelope.get("schema_version") != RUN_STATE_ENVELOPE_VERSION:
+            raise ValueError("run_state_envelope_schema_mismatch")
+        if supplied is None or supplied != content_digest(envelope):
+            raise ValueError("run_state_envelope_digest_mismatch")
+        expected = {
+            "task_id": _require_text(task_id, "task_id"),
+            "source_identity": _require_digest(source_identity, "source_identity"),
+            "context_digest": _require_digest(context_digest, "context_digest"),
+            "graph_identity": None if graph_identity is None else _require_digest(graph_identity, "graph_identity"),
+            "skill_identity": _require_text(skill_identity, "skill_identity"),
+            "tool_policy_identity": _require_text(tool_policy_identity, "tool_policy_identity"),
+        }
+        for name, value in expected.items():
+            if envelope.get(name) != value:
+                raise ValueError(f"run_state_{name}_mismatch")
+        if envelope.get("sdk_package") != SDK_PACKAGE or envelope.get("sdk_version") != SDK_REQUIRED_VERSION:
+            raise ValueError("run_state_sdk_identity_mismatch")
+        if envelope.get("agent_graph_identity") != _agent_graph_identity(initial_agent, sdk):
+            raise ValueError("run_state_agent_graph_identity_mismatch")
+        snapshot = envelope.get("state")
+        if not isinstance(snapshot, Mapping):
+            raise ValueError("run_state_snapshot_required")
         return await sdk.RunState.from_json(
             initial_agent,
-            dict(state),
-            context_override=context_override,
+            dict(snapshot),
+            context_override=None,
             strict_context=True,
         )
 
