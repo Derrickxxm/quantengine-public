@@ -26,6 +26,7 @@ from quantengine_public.agent_platform.control_state import (
     InvalidTransitionError,
 )
 from quantengine_public.agent_platform.tool_policy import (
+    ToolCallReceipt,
     ToolDeniedError,
     ToolPolicy,
     record_tool_call,
@@ -127,7 +128,7 @@ def test_state_is_append_only_optimistic_idempotent_and_survives_reopen(tmp_path
         next_state="ACCEPTED",
         owner="Owner",
         source=source,
-        reason="retry",
+        reason="accepted scope",
         idempotency_key="accept-1",
         next_owner="Architecture",
     ) == first
@@ -146,6 +147,35 @@ def test_state_is_append_only_optimistic_idempotent_and_survives_reopen(tmp_path
     reopened = ControlStateStore(path)
     assert reopened.get_task(task.task_id).version == 1
     assert len(reopened.list_transitions(task.task_id)) == 1
+
+
+def test_idempotency_key_cannot_replay_a_different_transition(tmp_path):
+    task, source, _ = identities()
+    store = ControlStateStore(tmp_path / "control.sqlite3")
+    store.create_task(task, source, owner="Owner")
+    store.transition(
+        task_id=task.task_id,
+        expected_version=0,
+        expected_state="DRAFT",
+        next_state="ACCEPTED",
+        owner="Owner",
+        source=source,
+        reason="accepted scope",
+        idempotency_key="accept-1",
+        next_owner="Architecture",
+    )
+    with pytest.raises(ConcurrentTransitionError, match="idempotency_key_collision"):
+        store.transition(
+            task_id=task.task_id,
+            expected_version=99,
+            expected_state="RELEASE_DECIDED",
+            next_state="LEARNING_RECORDED",
+            owner="attacker",
+            source=source,
+            reason="different operation",
+            idempotency_key="accept-1",
+            next_owner="attacker",
+        )
 
 
 def test_state_machine_and_source_identity_are_fail_closed(tmp_path):
@@ -205,6 +235,20 @@ def test_tool_allowlist_returns_denied_receipt_without_authority():
     assert denied.value.receipt.allowed is False
     assert denied.value.receipt.error_class == "PERMISSION_DENIED"
     assert denied.value.receipt.authority_granted is False
+
+
+def test_tool_receipt_cannot_claim_authority():
+    with pytest.raises(ValueError, match="authority"):
+        ToolCallReceipt(
+            run_id="run-forged",
+            role="Quality",
+            tool_id="release",
+            allowed=True,
+            arguments_digest="1" * 64,
+            result_digest="2" * 64,
+            error_class=None,
+            authority_granted=True,
+        )
 
 
 def test_handoff_is_bound_to_all_cross_run_identities():

@@ -51,6 +51,8 @@ class ToolCallReceipt:
     receipt_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
+        if self.authority_granted is not False:
+            raise ValueError("tool_receipt_authority_cannot_be_granted")
         object.__setattr__(self, "receipt_digest", content_digest(self._body()))
 
     def _body(self) -> dict[str, Any]:

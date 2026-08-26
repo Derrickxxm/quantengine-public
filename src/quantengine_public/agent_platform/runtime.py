@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 SDK_PACKAGE = "openai-agents"
+SDK_REQUIRED_VERSION = "0.22.0"
 try:
     SDK_VERSION: str | None = importlib.metadata.version(SDK_PACKAGE)
 except importlib.metadata.PackageNotFoundError:
@@ -38,8 +39,13 @@ class UnsupportedToolError(ValueError):
 def _require_sdk() -> Any:
     if _agents is None or SDK_VERSION is None:
         raise SdkUnavailableError(
-            "The Native-Agent runtime requires openai-agents==0.22.0; "
+            f"The Native-Agent runtime requires {SDK_PACKAGE}=={SDK_REQUIRED_VERSION}; "
             "install the declared optional dependency before running it."
+        )
+    if SDK_VERSION != SDK_REQUIRED_VERSION:
+        raise SdkUnavailableError(
+            "sdk_version_mismatch:"
+            f"required={SDK_REQUIRED_VERSION}:installed={SDK_VERSION}"
         )
     return _agents
 

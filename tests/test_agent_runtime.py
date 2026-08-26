@@ -16,6 +16,7 @@ from quantengine_public.agent_platform.runtime import (
     RecordingTraceProcessor,
     SDK_PACKAGE,
     SDK_VERSION,
+    SdkUnavailableError,
     UnsupportedToolError,
 )
 
@@ -28,6 +29,12 @@ def test_sdk_import_and_version_are_real() -> None:
     assert SDK_PACKAGE == "openai-agents"
     assert SDK_VERSION == "0.22.0"
     assert agents.Agent.__module__.startswith("agents.")
+
+
+def test_runtime_rejects_sdk_version_drift(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("quantengine_public.agent_platform.runtime.SDK_VERSION", "0.21.0")
+    with pytest.raises(SdkUnavailableError, match="version_mismatch"):
+        _ = AgentsSdkRuntime().sdk_version
 
 
 def test_structured_output_uses_sdk_runner_and_scripted_model() -> None:

@@ -143,6 +143,19 @@ class ControlStateStore:
                 (task_id, idempotency_key),
             ).fetchone()
             if prior is not None:
+                same_operation = (
+                    prior["from_state"] == expected_state
+                    and prior["next_state"] == next_state
+                    and prior["version"] == expected_version + 1
+                    and prior["owner"] == owner
+                    and prior["next_owner"] == next_owner
+                    and prior["reason"] == reason
+                    and prior["source_identity"] == source.identity_digest
+                )
+                if not same_operation:
+                    raise ConcurrentTransitionError(
+                        f"idempotency_key_collision:{task_id}:{idempotency_key}"
+                    )
                 return self._transition_from_row(prior)
             if row["version"] != expected_version or row["state"] != expected_state:
                 raise ConcurrentTransitionError(
