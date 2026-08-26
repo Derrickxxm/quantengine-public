@@ -13,6 +13,7 @@ authors = [
   {name = "Derrick Xu"}
 ]
 dependencies = [
+  "openai-agents==0.22.0",
   "PyYAML>=6.0"
 ]
 
