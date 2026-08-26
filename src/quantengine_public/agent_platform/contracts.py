@@ -332,6 +332,7 @@ class RunResult:
     result_digest: str
     tool_call_refs: tuple[str, ...] = ()
     requested_next_action: str | None = None
+    role: str | None = None
 
     def __post_init__(self) -> None:
         _text(self.run_id, "run_id")
@@ -349,6 +350,7 @@ class RunResult:
             "result_digest": self.result_digest,
             "tool_call_refs": list(self.tool_call_refs),
             "requested_next_action": self.requested_next_action,
+            "role": self.role,
         }
 
 
@@ -364,6 +366,7 @@ class HandoffReceipt:
     accepted_or_rejected: str
     reason: str
     next_owner: str
+    graph_identity: str | None = None
     schema_version: str = SCHEMA_VERSION
     receipt_digest: str = field(init=False)
 
@@ -377,6 +380,8 @@ class HandoffReceipt:
             raise ContractError("handoff_decision_invalid")
         _digest(self.source_identity, "source_identity")
         _digest(self.context_digest, "context_digest")
+        if self.graph_identity is not None:
+            _digest(self.graph_identity, "graph_identity")
         refs = tuple(self.required_artifact_refs)
         if any(not isinstance(ref, ArtifactRef) for ref in refs):
             raise ContractError("handoff_artifact_ref_invalid")
@@ -398,6 +403,7 @@ class HandoffReceipt:
             "accepted_or_rejected": self.accepted_or_rejected,
             "reason": self.reason,
             "next_owner": self.next_owner,
+            "graph_identity": self.graph_identity,
         }
 
     def to_dict(self) -> dict[str, Any]:
@@ -437,6 +443,8 @@ def validate_handoff_receipt(
         raise ContractError("handoff_context_task_mismatch")
     if receipt.context_digest != context.context_digest:
         raise StaleContextError("handoff_context_mismatch")
+    if receipt.graph_identity is not None and receipt.graph_identity != context.graph_identity:
+        raise StaleContextError("handoff_graph_mismatch")
     if receipt.from_owner == receipt.to_role:
         raise ContractError("handoff_owner_binding_invalid")
     if receipt.accepted_or_rejected == "accepted" and receipt.next_owner != receipt.to_role:

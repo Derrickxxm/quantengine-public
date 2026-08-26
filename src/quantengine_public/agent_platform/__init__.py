@@ -21,6 +21,14 @@ from .runtime import (
     SdkUnavailableError,
     UnsupportedToolError,
 )
+from .vertical_slice import (
+    ReleaseTopologyError,
+    SliceArtifact,
+    VerticalSliceError,
+    VerticalSliceResult,
+    VerticalSliceRunner,
+    derive_release,
+)
 
 __all__ = [
     "AgentsSdkRuntime",
@@ -38,6 +46,12 @@ __all__ = [
     "SourceIdentity",
     "TaskSnapshot",
     "UnsupportedToolError",
+    "ReleaseTopologyError",
+    "SliceArtifact",
+    "VerticalSliceError",
+    "VerticalSliceResult",
+    "VerticalSliceRunner",
     "admit_evidence",
+    "derive_release",
     "validate_handoff_receipt",
 ]
