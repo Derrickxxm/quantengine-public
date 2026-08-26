@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quantengine-public"
-version = "0.3.0"
+version = "0.4.0"
 description = "Evidence-controlled AI software delivery with a QuantEngine reference runtime."
 readme = "README.md"
 requires-python = ">=3.11"
