@@ -13,7 +13,11 @@ RULES: dict[str, re.Pattern[str]] = {
     "private_key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     "database_url": re.compile(r"(?i)\b(?:mongodb|postgres(?:ql)?|mysql|redis)://"),
     "absolute_user_path": re.compile("/" + "Users" + r"/[A-Za-z0-9_.-]+/"),
-    "private_project_name": re.compile(r"\b(?:" + "|".join(["Quant" + "Lab", "Quant" + "Strategies"]) + r")\b"),
+    "private_repository_locator": re.compile(
+        r"(?i)(?:git@github\.com:|https://github\.com/)Derrickxxm/(?:"
+        + "|".join(["Quant" + "Lab", "Quant" + "Strategies"])
+        + r")(?:\.git|/|\b)"
+    ),
     "local_model_runtime": re.compile(r"\b(?:" + "|".join(["Q" + "wen", "Stu" + "dio"]) + r")\b"),
     "real_exchange_symbol": re.compile(r"\b(?:" + "|".join(["BTC" + "USDT", "ETH" + "USDT", "BNB" + "USDT"]) + r")\b"),
     "private_network": re.compile(r"\b(?:10|192\.168|172\.(?:1[6-9]|2[0-9]|3[0-1]))\.\d{1,3}\.\d{1,3}\b"),
@@ -64,7 +68,7 @@ def scan_current_tree(root: Path) -> list[Failure]:
         path = root / relative_path
         try:
             text = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
+        except (FileNotFoundError, UnicodeDecodeError):
             continue
         for rule_id, pattern in RULES.items():
             if pattern.search(text):

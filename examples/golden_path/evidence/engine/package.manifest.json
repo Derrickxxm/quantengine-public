@@ -1,0 +1,18 @@
+{
+  "authority": {
+    "paper_allowed": true,
+    "real_allowed": false,
+    "research_allowed": true
+  },
+  "candidate_id": "qep-ma-reference-2026-08-21",
+  "created_at": "2026-08-20T09:39:00+00:00",
+  "files": {
+    "release-package/admission_result.json": "d861e4ea2fa06e5239afe4b1a0bdf16cb0622a98b8d28b23fd33b1cca899ff02",
+    "release-package/portfolio.json": "a87348fca45d1c348fc96e02cb45d16c2e90d78261eb2388644213b8f58fa053",
+    "release-package/release.lock.json": "8efba95e4ae40b29767ed67cbe121344cd93b6c47b534952851aae1c974704a9",
+    "release-package/runtime_dependencies.json": "2b2bb0522e0cab165c48e999756bea3e10da782ffb89602e9eff5f876336bd27",
+    "release-package/strategy.json": "a0e7d816b71b0073d9f8c6c7c5316beb0ea01f490e44d889089ac485e6109de0"
+  },
+  "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+  "schema_version": "quantengine_public.release_package.v1"
+}

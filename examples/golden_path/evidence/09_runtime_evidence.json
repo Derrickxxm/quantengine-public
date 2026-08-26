@@ -1,0 +1,74 @@
+{
+  "artifact_digest": "dd7708160de0fe981db73292bba9d99638b0797cb1ed1b09e7ea7ecafc0e7652",
+  "artifact_type": "public_delivery.runtime_evidence",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "engine_evidence_dir": "engine",
+    "engine_release_verdict": {
+      "artifact_hashes": {
+        "examples/golden_path/evidence/engine/input_manifest.json": "396e16ba3426f6487304831262acfd0acac20340535d1c3be690d14ffbd34679",
+        "examples/golden_path/evidence/engine/package.manifest.json": "f80ca3e76cb9435fe6d51b578555fca91e72988bb0d2eba2439dcde8b80c2d4b",
+        "examples/golden_path/evidence/engine/package_verification.json": "409629990a77a59c66d106cb29726f23a8aa29b388383a8a7df5cea2cdb1c52b",
+        "examples/golden_path/evidence/engine/paper_events.jsonl": "1ef4f623ac2c8e51acc1808011d4494f73d28e3cde956fb4117bc910f8a1e978",
+        "examples/golden_path/evidence/engine/paper_ledger.jsonl": "52b6a0a59dbfef4144314b0182a48daf62f2acc8910034edf7e266c75a3bd55c",
+        "examples/golden_path/evidence/engine/reconciliation.json": "0b37712ac6818562987aeaa314697ae1b61009f64c72f57b5bb456f9c90fa065",
+        "examples/golden_path/evidence/engine/recovery_receipt.json": "f89421d15f7e417d2681a52e04f5b0fa0b3ddf26c43f31a339a192f2adf2f370",
+        "examples/golden_path/evidence/engine/release-package/admission_result.json": "d861e4ea2fa06e5239afe4b1a0bdf16cb0622a98b8d28b23fd33b1cca899ff02",
+        "examples/golden_path/evidence/engine/release-package/portfolio.json": "a87348fca45d1c348fc96e02cb45d16c2e90d78261eb2388644213b8f58fa053",
+        "examples/golden_path/evidence/engine/release-package/release.lock.json": "8efba95e4ae40b29767ed67cbe121344cd93b6c47b534952851aae1c974704a9",
+        "examples/golden_path/evidence/engine/release-package/runtime_dependencies.json": "2b2bb0522e0cab165c48e999756bea3e10da782ffb89602e9eff5f876336bd27",
+        "examples/golden_path/evidence/engine/release-package/strategy.json": "a0e7d816b71b0073d9f8c6c7c5316beb0ea01f490e44d889089ac485e6109de0",
+        "examples/golden_path/evidence/engine/replay_result.json": "9f261667045635cab8d5907c409e33e075e0688cc67f2d1a20a9c026a385abd7",
+        "examples/golden_path/evidence/engine/strategy_admission.json": "d861e4ea2fa06e5239afe4b1a0bdf16cb0622a98b8d28b23fd33b1cca899ff02",
+        "examples/golden_path/evidence/engine/stress_report.json": "e0a1e5a2e5a8831fcd0f1c6b8a1813e5867a2c0c344dfb6adacfeff225f4f6d6"
+      },
+      "authority": {
+        "paper_allowed": true,
+        "real_allowed": false
+      },
+      "checks": {
+        "admission": "pass",
+        "artifacts_exist": "pass",
+        "authority": "pass",
+        "package_identity": "pass",
+        "reconciliation": "pass",
+        "stress": "pass"
+      },
+      "created_at": "2026-08-20T09:39:00+00:00",
+      "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+      "package_verification": {
+        "failures": [],
+        "package_id": "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011",
+        "schema_version": "quantengine_public.package_verification.v1",
+        "status": "PASS",
+        "verified_file_count": 5,
+        "verified_files": {
+          "release-package/admission_result.json": "d861e4ea2fa06e5239afe4b1a0bdf16cb0622a98b8d28b23fd33b1cca899ff02",
+          "release-package/portfolio.json": "a87348fca45d1c348fc96e02cb45d16c2e90d78261eb2388644213b8f58fa053",
+          "release-package/release.lock.json": "8efba95e4ae40b29767ed67cbe121344cd93b6c47b534952851aae1c974704a9",
+          "release-package/runtime_dependencies.json": "2b2bb0522e0cab165c48e999756bea3e10da782ffb89602e9eff5f876336bd27",
+          "release-package/strategy.json": "a0e7d816b71b0073d9f8c6c7c5316beb0ea01f490e44d889089ac485e6109de0"
+        }
+      },
+      "schema_version": "quantengine_public.release_verdict.v1",
+      "verdict": "PASS"
+    }
+  },
+  "producer": "quantengine_public",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "PASS",
+  "upstream": [
+    {
+      "artifact_digest": "2a92d47ee3a0f04e10959dfb21aa2a564e92705f62d5e8c9b58711e5207466f2",
+      "artifact_type": "public_delivery.ops_plan"
+    },
+    {
+      "artifact_digest": "378bbbf2e3c18959ffb9d0607a9a343e1f4460c38743b7191c4df2d93f2fe533",
+      "artifact_type": "public_delivery.test_result"
+    }
+  ]
+}

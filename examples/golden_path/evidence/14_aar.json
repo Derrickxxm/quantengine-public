@@ -1,0 +1,33 @@
+{
+  "artifact_digest": "b04512bba9c0d710b6ef7118f6729edf20c5e3de8582105f206c7cb4c34b904e",
+  "artifact_type": "public_delivery.aar",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "decision": "KEEP",
+    "eval_case": "package-integrity-negative-suite",
+    "historical_regressions_replayed": true,
+    "negative_evidence_retained": true,
+    "next_action": "extend the same identity contract to the next public module",
+    "problem": "A mutable or incomplete package could be mistaken for reviewed input",
+    "promotion_status": "PROMOTED",
+    "reflection": "Package identity must be verified as a closed set before authority is derived",
+    "repair_layer": "CONTRACT"
+  },
+  "producer": "public_learning_flywheel",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "RECORDED",
+  "upstream": [
+    {
+      "artifact_digest": "c239860f99a658a8333e4e230cd1d7689b5ddc2a3bfbe03a7cf1e370ba89dc87",
+      "artifact_type": "public_delivery.release_verdict"
+    },
+    {
+      "artifact_digest": "378bbbf2e3c18959ffb9d0607a9a343e1f4460c38743b7191c4df2d93f2fe533",
+      "artifact_type": "public_delivery.test_result"
+    }
+  ]
+}

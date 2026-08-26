@@ -1,0 +1,15 @@
+{
+  "candidate_id": "qep-ma-reference-2026-08-21",
+  "checks": {
+    "authority_boundary": "pass",
+    "candidate_identity": "pass",
+    "dataset_identity": "pass",
+    "policy_identity": "pass",
+    "time_windows": "pass"
+  },
+  "input_manifest_sha256": "396e16ba3426f6487304831262acfd0acac20340535d1c3be690d14ffbd34679",
+  "paper_allowed": true,
+  "real_allowed": false,
+  "schema_version": "quantengine_public.strategy_admission.v1",
+  "status": "PASS"
+}

@@ -1,0 +1,8 @@
+{
+  "method": "idempotent replay from sealed package and pinned inputs",
+  "recovered_fill_ids": [
+    "fill-buy-b"
+  ],
+  "schema_version": "quantengine_public.recovery_receipt.v1",
+  "status": "PASS"
+}

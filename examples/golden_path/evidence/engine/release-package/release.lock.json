@@ -1,0 +1,10 @@
+{
+  "authority": {
+    "paper_allowed": true,
+    "real_allowed": false,
+    "research_allowed": true
+  },
+  "dataset_id": "synthetic-qep-bars-funding-v1",
+  "policy_id": "paper-risk-public-v1",
+  "schema_version": "quantengine_public.release_lock.v1"
+}

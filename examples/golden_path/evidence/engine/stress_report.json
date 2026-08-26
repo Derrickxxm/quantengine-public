@@ -1,0 +1,12 @@
+{
+  "checks": {
+    "duplicate_fill": "pass",
+    "duplicate_market_event": "pass",
+    "interruption_recovery": "pass",
+    "missing_replay_coverage": "pass",
+    "package_identity_drift": "pass",
+    "paper_replay_economic_mismatch": "pass"
+  },
+  "schema_version": "quantengine_public.stress_report.v1",
+  "status": "PASS"
+}
