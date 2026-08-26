@@ -19,3 +19,8 @@ jobs:
       - run: quantengine-public demo --artifact-dir artifacts/ci-demo
       - run: quantengine-public validate --artifact-dir artifacts/ci-demo
       - run: quantengine-public demo-v2 --artifact-dir artifacts/ci-demo-v2
+      - run: python -m quantengine_public.delivery.golden_path --artifact-dir artifacts/ci-golden-path
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-golden-path-evidence
+          path: artifacts/ci-golden-path

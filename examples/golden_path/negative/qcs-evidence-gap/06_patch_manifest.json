@@ -1,0 +1,32 @@
+{
+  "artifact_digest": "7dd1542fc9e529026639a032cf980d068d19f6b4eab0eff625eef0d849359a45",
+  "artifact_type": "public_delivery.patch_manifest",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "changed_paths": [
+      "src/quantengine_public/demo.py",
+      "tests/test_demo_v2.py"
+    ],
+    "scope_compliant": true,
+    "source_identity": {
+      "branch": "synthetic/golden-path",
+      "commit": "ffffffffffffffffffffffffffffffffffffffff",
+      "identity_mode": "synthetic_fixture",
+      "repository": "Derrickxxm/quantengine-public",
+      "source_tree": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "producer": "public_development_agent",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "READY",
+  "upstream": [
+    {
+      "artifact_digest": "e3501501eca701e2ea4bc77c2a384a0ce379720d39900c472d81f1aa877e1b2d",
+      "artifact_type": "public_delivery.worker_handoff"
+    }
+  ]
+}

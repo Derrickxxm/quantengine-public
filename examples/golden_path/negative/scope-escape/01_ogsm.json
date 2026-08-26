@@ -1,0 +1,25 @@
+{
+  "artifact_digest": "fc27429c25b9c9b365cbc24ba6cc45b95d2d17399f231077f492e427a695e1db",
+  "artifact_type": "public_delivery.ogsm",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "measures": [
+      "tampered package fails closed",
+      "Paper and Replay remain independently reconcilable",
+      "Real and deployment authority remain withheld"
+    ],
+    "non_goals": [
+      "production deployment",
+      "strategy profitability"
+    ],
+    "objective": "Prove one traceable specialist-Agent delivery path"
+  },
+  "producer": "owner_fixture",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "READY",
+  "upstream": []
+}

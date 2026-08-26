@@ -1,0 +1,18 @@
+{
+  "artifact_digest": "3d0e25a8b74fce2a3c3f6d918cc50b715f16609456e0400443abd34c11f10478",
+  "artifact_type": "public_delivery.block_receipt",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "reason": "missing_acceptance_measure",
+    "request_digest": "cc40098a59125bd6a15ff0aad77405f021ba8a72eca1568d58a25a7f763b70af",
+    "stage": "objective_gate"
+  },
+  "producer": "owner_fixture",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "BLOCKED",
+  "upstream": []
+}

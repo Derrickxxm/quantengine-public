@@ -1,0 +1,59 @@
+{
+  "acceptance_measures": [
+    "tampered package fails closed",
+    "Paper and Replay remain independently reconcilable",
+    "Real and deployment authority remain withheld"
+  ],
+  "affected_components": [
+    "package verification",
+    "release evidence"
+  ],
+  "allowed_paths": [
+    "src/quantengine_public/demo.py",
+    "tests/test_demo_v2.py"
+  ],
+  "artifact_digests": [
+    "58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011"
+  ],
+  "changed_paths": [
+    "src/quantengine_public/demo.py",
+    "tests/test_demo_v2.py"
+  ],
+  "non_goals": [
+    "production deployment",
+    "strategy profitability"
+  ],
+  "objective": "Prove one traceable specialist-Agent delivery path",
+  "owner_evidence": [
+    "package_verification",
+    "release_verdict"
+  ],
+  "package_integrity": false,
+  "plane_task_id": "PUBLIC-001",
+  "provenance_matches": true,
+  "source_identity": {
+    "branch": "synthetic/golden-path",
+    "commit": "ffffffffffffffffffffffffffffffffffffffff",
+    "identity_mode": "synthetic_fixture",
+    "repository": "Derrickxxm/quantengine-public",
+    "source_tree": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "validation_cases": [
+    {
+      "id": "clean-package",
+      "kind": "positive"
+    },
+    {
+      "id": "changed-file",
+      "kind": "negative"
+    },
+    {
+      "id": "missing-file",
+      "kind": "negative"
+    },
+    {
+      "id": "extra-file",
+      "kind": "negative"
+    }
+  ]
+}

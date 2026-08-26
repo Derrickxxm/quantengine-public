@@ -1,0 +1,35 @@
+{
+  "schema_version": "quantengine_public.golden_path_inventory.v1",
+  "artifacts": [
+    "public_delivery.ogsm",
+    "public_delivery.plane_task",
+    "public_delivery.architecture_packet",
+    "public_delivery.validation_plan",
+    "public_delivery.worker_handoff",
+    "public_delivery.patch_manifest",
+    "public_delivery.test_result",
+    "public_delivery.ops_plan",
+    "public_delivery.qcs_manifest",
+    "public_delivery.qcs_receipt",
+    "public_delivery.quality_verdict",
+    "public_delivery.release_verdict",
+    "public_delivery.aar"
+  ],
+  "artifact_producers": {
+    "public_delivery.ogsm": ["owner_fixture"],
+    "public_delivery.plane_task": ["public_plane_fixture"],
+    "public_delivery.architecture_packet": ["public_architecture_agent"],
+    "public_delivery.validation_plan": ["public_test_agent"],
+    "public_delivery.worker_handoff": ["public_control_plane"],
+    "public_delivery.patch_manifest": ["public_development_agent"],
+    "public_delivery.test_result": ["public_test_agent"],
+    "public_delivery.ops_plan": ["public_ops_agent"],
+    "public_delivery.qcs_manifest": ["public_qcs"],
+    "public_delivery.qcs_receipt": ["public_qcs"],
+    "public_delivery.quality_verdict": ["public_quality_shield"],
+    "public_delivery.release_verdict": ["quantengine_public"],
+    "public_delivery.aar": ["public_learning_flywheel"]
+  },
+  "closed_statuses": ["READY", "PASS", "BLOCKED", "EVIDENCE_GAP", "FAIL_CLOSED", "RECORDED"],
+  "authority_keys": ["deployment_allowed", "paper_allowed", "real_allowed"]
+}

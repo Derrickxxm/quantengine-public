@@ -1,0 +1,6 @@
+{
+  "engine": "quantengine_public.demo_v2.v1",
+  "external_services": [],
+  "python": ">=3.11",
+  "schema_version": "quantengine_public.runtime_dependencies.v1"
+}

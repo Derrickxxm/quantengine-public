@@ -1,0 +1,28 @@
+{
+  "artifact_digest": "011e224207f5c4d60d98a498d54296697860072694ef8d8763f413dfc526a84a",
+  "artifact_type": "public_delivery.aar",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "decision": "KEEP",
+    "negative_evidence_retained": true,
+    "next_action": "extend the same identity contract to the next public module",
+    "problem": "A mutable or incomplete package could be mistaken for reviewed input"
+  },
+  "producer": "public_learning_flywheel",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "RECORDED",
+  "upstream": [
+    {
+      "artifact_digest": "8636393963702c1a57194d7c65a2d6bcbe94775cc67d0f18f97f70e1a01b6536",
+      "artifact_type": "public_delivery.release_verdict"
+    },
+    {
+      "artifact_digest": "378bbbf2e3c18959ffb9d0607a9a343e1f4460c38743b7191c4df2d93f2fe533",
+      "artifact_type": "public_delivery.test_result"
+    }
+  ]
+}

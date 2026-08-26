@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Derrickxxm/quantengine-public/main/contracts/public_delivery/artifact.v1.schema.json",
+  "title": "QuantEngine Public Delivery Artifact V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "producer",
+    "status",
+    "upstream",
+    "payload",
+    "authority",
+    "artifact_digest"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "quantengine_public.delivery_artifact.v1"
+    },
+    "artifact_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "producer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": ["READY", "PASS", "BLOCKED", "EVIDENCE_GAP", "FAIL_CLOSED", "RECORDED"]
+    },
+    "upstream": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_type", "artifact_digest"],
+        "properties": {
+          "artifact_type": {"type": "string", "minLength": 1},
+          "artifact_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "payload": {"type": "object"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deployment_allowed", "paper_allowed", "real_allowed"],
+      "properties": {
+        "deployment_allowed": {"type": "boolean"},
+        "paper_allowed": {"type": "boolean"},
+        "real_allowed": {"type": "boolean"}
+      }
+    },
+    "artifact_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {
+          "artifact_type": {"not": {"const": "public_delivery.release_verdict"}}
+        }
+      },
+      "then": {
+        "properties": {
+          "authority": {
+            "properties": {
+              "deployment_allowed": {"const": false},
+              "paper_allowed": {"const": false},
+              "real_allowed": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {"status": {"not": {"const": "PASS"}}}
+      },
+      "then": {
+        "properties": {
+          "authority": {
+            "properties": {
+              "deployment_allowed": {"const": false},
+              "paper_allowed": {"const": false},
+              "real_allowed": {"const": false}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "artifact_digest": "1126d4e04d08ff759f09d15b186079653078600a01dc9fc051adf0d2ae9125ea",
+  "artifact_type": "public_delivery.validation_plan",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "cases": [
+      {
+        "id": "clean-package",
+        "kind": "positive"
+      },
+      {
+        "id": "changed-file",
+        "kind": "negative"
+      },
+      {
+        "id": "missing-file",
+        "kind": "negative"
+      },
+      {
+        "id": "extra-file",
+        "kind": "negative"
+      }
+    ],
+    "test_first": true
+  },
+  "producer": "public_test_agent",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "READY",
+  "upstream": [
+    {
+      "artifact_digest": "822169bcd28cfca0ed6a6789464e9a4d040b62f18f1417604cc6e093f8c50f03",
+      "artifact_type": "public_delivery.plane_task"
+    },
+    {
+      "artifact_digest": "222856b7d4ecc4117b4f38c384e157a17398bbcd84605a981cdb4b0bae98d085",
+      "artifact_type": "public_delivery.architecture_packet"
+    }
+  ]
+}

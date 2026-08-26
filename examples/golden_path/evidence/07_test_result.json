@@ -1,0 +1,31 @@
+{
+  "artifact_digest": "378bbbf2e3c18959ffb9d0607a9a343e1f4460c38743b7191c4df2d93f2fe533",
+  "artifact_type": "public_delivery.test_result",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "declared_cases": [
+      "clean-package",
+      "changed-file",
+      "missing-file",
+      "extra-file"
+    ],
+    "negative_cases_passed": true
+  },
+  "producer": "public_test_agent",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "PASS",
+  "upstream": [
+    {
+      "artifact_digest": "1126d4e04d08ff759f09d15b186079653078600a01dc9fc051adf0d2ae9125ea",
+      "artifact_type": "public_delivery.validation_plan"
+    },
+    {
+      "artifact_digest": "7dd1542fc9e529026639a032cf980d068d19f6b4eab0eff625eef0d849359a45",
+      "artifact_type": "public_delivery.patch_manifest"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "coverage": {
+    "contains_bars": true,
+    "contains_execution_facts": true,
+    "contains_funding": true,
+    "end": "2026-08-20T09:38:01Z",
+    "start": "2026-08-20T09:30:00Z"
+  },
+  "dataset_id": "synthetic-qep-bars-funding-v1",
+  "dataset_sha256": "b80d1ce77dd40684d72c1f2a6d330ab023f64d22a32be5078ff582395a83d0eb",
+  "event_count": 8,
+  "event_ids": [
+    "bar-0930",
+    "bar-0931",
+    "bar-0933",
+    "fill-buy-a",
+    "fill-buy-b",
+    "funding-0935",
+    "bar-0938",
+    "fill-sell"
+  ],
+  "schema_version": "quantengine_public.input_manifest.v1",
+  "symbol": "QEP-USD"
+}

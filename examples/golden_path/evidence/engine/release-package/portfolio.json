@@ -1,0 +1,7 @@
+{
+  "base_currency": "USD",
+  "max_position": 10,
+  "portfolio_id": "synthetic-paper-portfolio-v1",
+  "schema_version": "quantengine_public.portfolio.v1",
+  "starting_cash": 10000.0
+}

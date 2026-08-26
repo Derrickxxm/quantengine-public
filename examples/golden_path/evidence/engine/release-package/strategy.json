@@ -1,0 +1,6 @@
+{
+  "candidate_id": "qep-ma-reference-2026-08-21",
+  "rule": "Enter when the validation bar breaks above the prior two-bar average; exit on reversal.",
+  "strategy_name": "transparent_two_bar_momentum",
+  "symbol": "QEP-USD"
+}

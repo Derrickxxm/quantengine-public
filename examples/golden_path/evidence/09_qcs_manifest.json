@@ -1,0 +1,32 @@
+{
+  "artifact_digest": "ebd7ad8675dc329703ee8deb7a9e1a64ed9d0a2695b6c172b6f85016b9672e4d",
+  "artifact_type": "public_delivery.qcs_manifest",
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "payload": {
+    "required_owner_evidence": [
+      "package_verification",
+      "release_verdict"
+    ],
+    "risk_surfaces": [
+      "package_integrity",
+      "release_authority"
+    ]
+  },
+  "producer": "public_qcs",
+  "schema_version": "quantengine_public.delivery_artifact.v1",
+  "status": "READY",
+  "upstream": [
+    {
+      "artifact_digest": "378bbbf2e3c18959ffb9d0607a9a343e1f4460c38743b7191c4df2d93f2fe533",
+      "artifact_type": "public_delivery.test_result"
+    },
+    {
+      "artifact_digest": "2a92d47ee3a0f04e10959dfb21aa2a564e92705f62d5e8c9b58711e5207466f2",
+      "artifact_type": "public_delivery.ops_plan"
+    }
+  ]
+}
