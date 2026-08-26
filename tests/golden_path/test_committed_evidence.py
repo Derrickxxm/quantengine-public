@@ -72,6 +72,31 @@ def test_committed_artifacts_satisfy_public_json_schema():
         jsonschema.validate(invalid, schema)
 
 
+def test_json_schema_rejects_release_and_quality_topology_bypasses():
+    schema = json.loads(
+        (REPOSITORY_ROOT / "contracts" / "public_delivery" / "artifact.v1.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    evidence_dir = REPOSITORY_ROOT / "examples" / "golden_path" / "evidence"
+    release = json.loads((evidence_dir / "13_release_verdict.json").read_text(encoding="utf-8"))
+    quality = json.loads((evidence_dir / "12_quality_verdict.json").read_text(encoding="utf-8"))
+
+    for mutation in (
+        {"producer": "quantengine_public"},
+        {"upstream": []},
+    ):
+        forged = deepcopy(release)
+        forged.update(mutation)
+        with pytest.raises(jsonschema.ValidationError):
+            jsonschema.validate(forged, schema)
+
+    forged_quality = deepcopy(quality)
+    forged_quality["upstream"] = []
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(forged_quality, schema)
+
+
 def test_committed_golden_path_evidence_is_complete_and_connected():
     evidence_dir = REPOSITORY_ROOT / "examples" / "golden_path" / "evidence"
     artifacts = [

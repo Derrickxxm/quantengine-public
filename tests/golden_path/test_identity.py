@@ -6,10 +6,129 @@ import pytest
 
 from quantengine_public.delivery.identity import (
     ArtifactContractError,
+    artifact_ref,
     verify_artifact_chain,
     seal_artifact,
     verify_artifact,
 )
+
+
+def _runtime_artifact():
+    return seal_artifact(
+        artifact_type="public_delivery.runtime_evidence",
+        producer="quantengine_public",
+        status="PASS",
+        upstream=[],
+        payload={"run": "runtime-001"},
+    )
+
+
+def _quality_artifact(runtime, *, consume_runtime=True):
+    return seal_artifact(
+        artifact_type="public_delivery.quality_verdict",
+        producer="public_quality_shield",
+        status="PASS",
+        upstream=[artifact_ref(runtime)] if consume_runtime else [],
+        payload={"independent": True},
+    )
+
+
+def _release_artifact(quality, runtime, *, producer="public_release_controller", upstream=None, authority=None):
+    return seal_artifact(
+        artifact_type="public_delivery.release_verdict",
+        producer=producer,
+        status="PASS",
+        upstream=upstream if upstream is not None else [artifact_ref(quality), artifact_ref(runtime)],
+        payload={"decision_basis": ["public_delivery.quality_verdict", "public_delivery.runtime_evidence"]},
+        authority=authority
+        or {"deployment_allowed": False, "paper_allowed": True, "real_allowed": False},
+    )
+
+
+def test_release_topology_rejects_empty_upstream_in_both_verifiers():
+    runtime = _runtime_artifact()
+    quality = _quality_artifact(runtime)
+    release = _release_artifact(quality, runtime, upstream=[])
+
+    assert verify_artifact(release)
+    assert verify_artifact_chain([runtime, quality, release])
+
+
+def test_release_topology_rejects_missing_runtime_in_both_verifiers():
+    runtime = _runtime_artifact()
+    quality = _quality_artifact(runtime)
+    release = _release_artifact(quality, runtime, upstream=[artifact_ref(quality)])
+
+    assert verify_artifact(release)
+    assert verify_artifact_chain([runtime, quality, release])
+
+
+def test_release_topology_rejects_missing_independent_quality_in_both_verifiers():
+    runtime = _runtime_artifact()
+    release = _release_artifact(
+        _quality_artifact(runtime),
+        runtime,
+        upstream=[artifact_ref(runtime)],
+    )
+
+    assert verify_artifact(release)
+    assert verify_artifact_chain([runtime, release])
+
+
+def test_release_topology_rejects_wrong_release_producer_in_both_verifiers():
+    runtime = _runtime_artifact()
+    quality = _quality_artifact(runtime)
+    release = _release_artifact(quality, runtime, producer="quantengine_public")
+
+    assert verify_artifact(release)
+    assert verify_artifact_chain([runtime, quality, release])
+
+
+def test_quality_topology_rejects_quality_without_runtime_in_both_verifiers():
+    runtime = _runtime_artifact()
+    quality = _quality_artifact(runtime, consume_runtime=False)
+    release = _release_artifact(
+        quality,
+        runtime,
+        upstream=[
+            {"artifact_type": quality["artifact_type"], "artifact_digest": quality["artifact_digest"]},
+            artifact_ref(runtime),
+        ],
+    )
+
+    assert verify_artifact(quality)
+    assert verify_artifact_chain([runtime, quality, release])
+
+
+def test_release_chain_rejects_right_digest_with_wrong_upstream_type():
+    runtime = _runtime_artifact()
+    quality = _quality_artifact(runtime)
+    release = _release_artifact(
+        quality,
+        runtime,
+        upstream=[
+            {"artifact_type": "public_delivery.quality_verdict", "artifact_digest": runtime["artifact_digest"]},
+            artifact_ref(runtime),
+        ],
+    )
+
+    assert verify_artifact(release) == []
+    assert verify_artifact_chain([runtime, quality, release])
+
+
+def test_nonzero_authority_requires_complete_release_topology():
+    runtime = _runtime_artifact()
+    quality = _quality_artifact(runtime, consume_runtime=False)
+    release = _release_artifact(
+        quality,
+        runtime,
+        upstream=[
+            {"artifact_type": quality["artifact_type"], "artifact_digest": quality["artifact_digest"]},
+            artifact_ref(runtime),
+        ],
+    )
+
+    assert verify_artifact_chain([runtime, quality, release])
 
 
 def test_sealed_artifact_digest_is_recomputable_and_tamper_evident():
@@ -131,7 +250,7 @@ def test_only_passing_release_verdict_can_carry_authority(artifact_type, status)
             "real_allowed": False,
         },
     )
-    assert verify_artifact(release) == []
+    assert verify_artifact(release)
 
     with pytest.raises(ArtifactContractError, match="invalid_upstream"):
         seal_artifact(
