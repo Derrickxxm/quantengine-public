@@ -479,17 +479,18 @@ class QwenLocalSimulationExecutor:
         from agents import RunConfig
 
         started = self._monotonic()
+        run_config = RunConfig(
+            tracing_disabled=True,
+            trace_include_sensitive_data=False,
+            workflow_name="quantengine-public-qwen-local-simulation",
+        )
         try:
             result = await asyncio.wait_for(
                 self._runner(
                     agent,
                     prompt,
                     max_turns=self._config.max_turns,
-                    run_config=RunConfig(
-                        tracing_disabled=True,
-                        trace_include_sensitive_data=False,
-                        workflow_name="quantengine-public-qwen-local-simulation",
-                    ),
+                    run_config=run_config,
                 ),
                 timeout=self._config.timeout_seconds,
             )
@@ -497,20 +498,51 @@ class QwenLocalSimulationExecutor:
             raise QwenSimulationError("simulation_timeout") from exc
         if not isinstance(result.final_output, str):
             raise QwenSimulationError(f"simulation_{label}_output_invalid")
+        results = [result]
         try:
             output = schema.model_validate_json(result.final_output).model_dump(mode="json")
         except ValidationError as exc:
-            raise QwenSimulationError(f"simulation_{label}_output_invalid") from exc
-        usage = result.context_wrapper.usage
-        metrics = (usage.requests, usage.input_tokens, usage.output_tokens)
+            if not label.startswith("development_"):
+                raise QwenSimulationError(f"simulation_{label}_output_invalid") from exc
+            repair_prompt = (
+                prompt
+                + "\nThe previous candidate failed the exact JSON schema. Return one corrected "
+                "JSON object only, preserving only public facts from this candidate:\n"
+                + result.final_output[:4_000]
+            )
+            try:
+                repaired = await asyncio.wait_for(
+                    self._runner(
+                        agent,
+                        repair_prompt,
+                        max_turns=self._config.max_turns,
+                        run_config=run_config,
+                    ),
+                    timeout=self._config.timeout_seconds,
+                )
+            except TimeoutError as retry_exc:
+                raise QwenSimulationError("simulation_timeout") from retry_exc
+            if not isinstance(repaired.final_output, str):
+                raise QwenSimulationError(f"simulation_{label}_output_invalid") from exc
+            try:
+                output = schema.model_validate_json(repaired.final_output).model_dump(mode="json")
+            except ValidationError as retry_exc:
+                raise QwenSimulationError(f"simulation_{label}_output_invalid") from retry_exc
+            result = repaired
+            results.append(repaired)
+        usages = [item.context_wrapper.usage for item in results]
+        requests = sum(item.requests for item in usages)
+        input_tokens = sum(item.input_tokens for item in usages)
+        output_tokens = sum(item.output_tokens for item in usages)
+        metrics = (requests, input_tokens, output_tokens)
         if any(isinstance(value, bool) or not isinstance(value, int) or value <= 0 for value in metrics):
             raise QwenSimulationError("simulation_usage_invalid")
         elapsed_ms = max(0, int((self._monotonic() - started) * 1_000))
         return _RunData(
             output=output,
-            requests=usage.requests,
-            input_tokens=usage.input_tokens,
-            output_tokens=usage.output_tokens,
+            requests=requests,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
             latency_ms=elapsed_ms,
             last_agent=str(getattr(result.last_agent, "name", "")),
         )
