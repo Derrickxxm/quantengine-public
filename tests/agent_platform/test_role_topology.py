@@ -316,3 +316,41 @@ def test_each_stage_is_bound_to_its_expected_execution_head() -> None:
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
+
+
+def test_studio_qwen_model_is_pinned_by_the_public_contract() -> None:
+    receipts = list(_topology())
+    receipts[2] = replace(receipts[2], model="attacker-selected-local-model")
+
+    with pytest.raises(RoleTopologyError, match="expected Qwen model mismatch"):
+        validate_native_role_topology(
+            receipts,
+            expected_task_id="TASKSYS-1327",
+            expected_source_identity="a" * 64,
+            initial_input_digest="0" * 64,
+            expected_qwen_model="attacker-selected-local-model",
+            expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
+        )
+
+
+def test_development_must_stay_inside_the_accepted_path_allowlist() -> None:
+    receipts = list(_topology())
+    receipts[2] = replace(receipts[2], changed_paths=("docs/authority.md",))
+
+    with pytest.raises(
+        RoleTopologyError,
+        match="Development changed paths outside accepted allowlist",
+    ):
+        validate_native_role_topology(
+            receipts,
+            expected_task_id="TASKSYS-1327",
+            expected_source_identity="a" * 64,
+            initial_input_digest="0" * 64,
+            expected_qwen_model="qwen2.7-coder-local",
+            expected_development_paths=(
+                "src/quantengine_public/agent_platform/runtime.py",
+            ),
+            expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
+        )
