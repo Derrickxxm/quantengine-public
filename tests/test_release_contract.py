@@ -76,3 +76,11 @@ def test_ci_top_level_toolchain_is_explicitly_constrained() -> None:
         if line.strip() and not line.startswith("#")
     }
     assert observed == CI_CONSTRAINTS
+
+
+def test_historical_m8_review_is_not_labeled_as_current_release() -> None:
+    review = (ROOT / "docs/interviewer_review_backlog_20260826.md").read_text()
+
+    assert "Current release re-reviewed: `v0.5.0`" not in review
+    assert "M8 release re-reviewed: `v0.5.0`" in review
+    assert "M9 subsequently published `v0.5.1`" in review
