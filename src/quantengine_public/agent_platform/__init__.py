@@ -83,6 +83,12 @@ from .hosted_phase2_executor import (
     HostedAgentsExecutor,
     ReadonlyToolOutput,
 )
+from .role_topology import (
+    NativeRoleReceipt,
+    RoleTopologyError,
+    RoleTopologyVerdict,
+    validate_native_role_topology,
+)
 
 __all__ = [
     "AgentsSdkRuntime",
@@ -114,6 +120,9 @@ __all__ = [
     "OWNER_DECISION",
     "Phase2HandoffReceipt",
     "RoleReceipt",
+    "NativeRoleReceipt",
+    "RoleTopologyError",
+    "RoleTopologyVerdict",
     "ReadonlyToolOutput",
     "StageAuthorization",
     "RecordingTraceProcessor",
@@ -150,6 +159,7 @@ __all__ = [
     "evaluate_stage",
     "replay_historical_release_attacks",
     "validate_handoff_receipt",
+    "validate_native_role_topology",
     "verify_learning_closure",
     "verify_public_proof",
 ]
