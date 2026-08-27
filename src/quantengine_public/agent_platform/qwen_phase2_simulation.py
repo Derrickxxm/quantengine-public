@@ -497,13 +497,14 @@ class QwenLocalSimulationExecutor:
         except TimeoutError as exc:
             raise QwenSimulationError("simulation_timeout") from exc
         if not isinstance(result.final_output, str):
-            raise QwenSimulationError(f"simulation_{label}_output_invalid")
+            raise QwenSimulationError(f"simulation_{label}_output_not_text")
         results = [result]
         try:
             output = schema.model_validate_json(result.final_output).model_dump(mode="json")
         except ValidationError as exc:
             if not label.startswith("development_"):
-                raise QwenSimulationError(f"simulation_{label}_output_invalid") from exc
+                error_type = str(exc.errors(include_input=False)[0].get("type", "invalid"))
+                raise QwenSimulationError(f"simulation_{label}_output_{error_type}") from exc
             repair_prompt = (
                 prompt
                 + "\nThe previous candidate failed the exact JSON schema. Return one corrected "
@@ -523,11 +524,16 @@ class QwenLocalSimulationExecutor:
             except TimeoutError as retry_exc:
                 raise QwenSimulationError("simulation_timeout") from retry_exc
             if not isinstance(repaired.final_output, str):
-                raise QwenSimulationError(f"simulation_{label}_output_invalid") from exc
+                raise QwenSimulationError(f"simulation_{label}_output_not_text") from exc
             try:
                 output = schema.model_validate_json(repaired.final_output).model_dump(mode="json")
             except ValidationError as retry_exc:
-                raise QwenSimulationError(f"simulation_{label}_output_invalid") from retry_exc
+                error_type = str(
+                    retry_exc.errors(include_input=False)[0].get("type", "invalid")
+                )
+                raise QwenSimulationError(
+                    f"simulation_{label}_output_{error_type}"
+                ) from retry_exc
             result = repaired
             results.append(repaired)
         usages = [item.context_wrapper.usage for item in results]
