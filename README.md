@@ -27,6 +27,30 @@ authoritative state and content-addressed evidence.
 
 ## Current Implementation Decision
 
+TASKSYS-1329 / DEC-0031 is the current native execution topology:
+
+```text
+Architecture: gpt-5.6-terra (Codex CLI, ChatGPT subscription, read-only)
+  -> Test author: gpt-5.6-sol (tests only)
+  -> Development: qwen3.8:27b-mxfp8 (official Qwen Code, Studio-local)
+  -> Test verify: gpt-5.6-sol (read-only verification)
+  -> Ops: deterministic local system
+  -> Quality: existing quality_shield.observe_delivery system, advisory-only
+  -> Release: deterministic controller, zero deployment/Paper/Real authority
+```
+
+Every receipt is bound to the accepted task, source identity, context digest,
+execution HEAD, runtime/model, changed-path ownership, and the preceding
+handoff digest. `derive_native_role_release()` revalidates the exact six-stage
+chain before producing a content-addressed, zero-authority Release verdict.
+Local Codex roles use ChatGPT subscription login and do not require an OpenAI
+API key. The local Qwen lane uses a temporary loopback path to the Studio model.
+See [the DEC-0031 topology contract](docs/native_role_topology_dec0031.md).
+
+The older `VerticalSliceRunner`, `ScriptedModel`, and all-Qwen Phase 2 material
+below remains a network-free regression oracle and historical evidence. It is
+not the accepted live provider topology and must not be presented as one.
+
 The runnable repository now contains the deterministic 14-artifact Golden Path,
 the synthetic QuantEngine reference runtime, one bounded scripted Native-Agent
 vertical slice, and a separate loopback-only local-Qwen Phase 2 proof backed by
