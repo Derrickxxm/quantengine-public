@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
   pull_request:
@@ -21,7 +24,12 @@ jobs:
       - run: quantengine-public validate --artifact-dir artifacts/ci-demo
       - run: quantengine-public demo-v2 --artifact-dir artifacts/ci-demo-v2
       - run: python -m quantengine_public.delivery.golden_path --artifact-dir artifacts/ci-golden-path
+      - run: python scripts/native_agent_public_proof.py --artifact-dir artifacts/native-agent-public-proof
       - uses: actions/upload-artifact@v4
         with:
           name: public-golden-path-evidence
           path: artifacts/ci-golden-path
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-agent-public-proof
+          path: artifacts/native-agent-public-proof

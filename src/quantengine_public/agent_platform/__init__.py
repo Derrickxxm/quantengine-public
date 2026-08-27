@@ -40,6 +40,13 @@ from .vertical_slice import (
     VerticalSliceRunner,
     derive_release,
 )
+from .public_proof import (
+    PROOF_FILES,
+    PROOF_SCHEMA,
+    PublicProofError,
+    generate_public_proof,
+    verify_public_proof,
+)
 
 __all__ = [
     "AgentsSdkRuntime",
@@ -63,6 +70,9 @@ __all__ = [
     "LearningClosureError",
     "LearningClosureResult",
     "PROMOTION_DECISION",
+    "PROOF_FILES",
+    "PROOF_SCHEMA",
+    "PublicProofError",
     "ReleaseTopologyError",
     "SliceArtifact",
     "VerticalSliceError",
@@ -71,7 +81,9 @@ __all__ = [
     "admit_evidence",
     "derive_release",
     "execute_learning_closure",
+    "generate_public_proof",
     "replay_historical_release_attacks",
     "validate_handoff_receipt",
     "verify_learning_closure",
+    "verify_public_proof",
 ]

@@ -41,8 +41,12 @@ handoff receipts, evidence admission, independent Quality, and Release
 authority. Owner-authorized implementation steps 1-6 were merged by PR #5;
 TASKSYS-1264 adds the deterministic learning closure: seven retained Release
 attacks, repair-layer and red-test receipts, an independent promotion review,
-and a content-addressed zero-authority AAR. Public proof/re-review, graph
-refresh, deployment, QuantEngine Replay, Paper, and Real remain outside scope.
+and a content-addressed zero-authority AAR. TASKSYS-1266 adds the bounded M8 CI
+proof: six real SDK role runs, six identity-bound handoffs, exact-topology
+Release, M7 replay, and a public-safe receipt trace that can be reverified from
+bytes. The model remains a local ScriptedModel, so no prompt, API key, hosted
+trace, or network model call enters the proof. Deployment, QuantEngine Replay,
+Paper, and Real remain outside scope.
 
 ## The Delivery Control Loop
 

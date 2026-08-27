@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -10,14 +11,41 @@ from pathlib import Path
 
 
 def _run(*args: str) -> str:
-    result = subprocess.run(args, check=True, capture_output=True, text=True)
+    clean_env = os.environ.copy()
+    clean_env.pop("PYTHONHOME", None)
+    clean_env.pop("PYTHONPATH", None)
+    result = subprocess.run(
+        args,
+        check=True,
+        capture_output=True,
+        text=True,
+        env=clean_env,
+    )
     return result.stdout.strip()
+
+
+def verify_tag_identity(
+    source_version: str,
+    *,
+    ref_type: str | None = None,
+    ref_name: str | None = None,
+) -> None:
+    """Reject a tag workflow whose tag and package version disagree."""
+
+    ref_type = os.environ.get("GITHUB_REF_TYPE") if ref_type is None else ref_type
+    ref_name = os.environ.get("GITHUB_REF_NAME") if ref_name is None else ref_name
+    if ref_type == "tag" and ref_name != f"v{source_version}":
+        raise RuntimeError(
+            f"tag version mismatch: tag={ref_name!r} expected='v{source_version}'"
+        )
 
 
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     sys.path.insert(0, str(root / "src"))
     from quantengine_public import __version__ as source_version
+
+    verify_tag_identity(source_version)
 
     with tempfile.TemporaryDirectory(prefix="quantengine-public-release-") as directory:
         work = Path(directory)
