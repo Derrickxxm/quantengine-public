@@ -1,15 +1,14 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
 import re
 import subprocess
-import sys
 from pathlib import Path
 
-
 RULES: dict[str, re.Pattern[str]] = {
-    "credential_like": re.compile(r"(?i)(api[_-]?key|secret|password|token)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{12,}"),
+    "credential_like": re.compile(
+        r"(?i)(api[_-]?key|secret|password|token)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{12,}"
+    ),
     "private_key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     "database_url": re.compile(r"(?i)\b(?:mongodb|postgres(?:ql)?|mysql|redis)://"),
     "absolute_user_path": re.compile("/" + "Users" + r"/[A-Za-z0-9_.-]+/"),
@@ -18,9 +17,13 @@ RULES: dict[str, re.Pattern[str]] = {
         + "|".join(["Quant" + "Lab", "Quant" + "Strategies"])
         + r")(?:\.git|/|\b)"
     ),
-    "local_model_runtime": re.compile(r"\b(?:" + "|".join(["Q" + "wen", "Stu" + "dio"]) + r")\b"),
-    "real_exchange_symbol": re.compile(r"\b(?:" + "|".join(["BTC" + "USDT", "ETH" + "USDT", "BNB" + "USDT"]) + r")\b"),
-    "private_network": re.compile(r"\b(?:10|192\.168|172\.(?:1[6-9]|2[0-9]|3[0-1]))\.\d{1,3}\.\d{1,3}\b"),
+    "local_model_runtime": re.compile(r"\b" + "Stu" + r"dio\b"),
+    "real_exchange_symbol": re.compile(
+        r"\b(?:" + "|".join(["BTC" + "USDT", "ETH" + "USDT", "BNB" + "USDT"]) + r")\b"
+    ),
+    "private_network": re.compile(
+        r"\b(?:10|192\.168|172\.(?:1[6-9]|2[0-9]|3[0-1]))\.\d{1,3}\.\d{1,3}\b"
+    ),
 }
 
 SKIP_PATH_PARTS = {
@@ -37,8 +40,14 @@ SKIP_PATH_PARTS = {
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Scan tracked public files for disallowed content classes.")
-    parser.add_argument("--history", action="store_true", help="Scan all reachable git commits as well as current files.")
+    parser = argparse.ArgumentParser(
+        description="Scan tracked public files for disallowed content classes."
+    )
+    parser.add_argument(
+        "--history",
+        action="store_true",
+        help="Scan all reachable git commits as well as current files.",
+    )
     args = parser.parse_args(argv)
 
     failures = scan_current_tree(Path.cwd())
@@ -89,7 +98,9 @@ def scan_history() -> list[Failure]:
                 continue
             for rule_id, pattern in RULES.items():
                 if pattern.search(blob):
-                    failures.append(Failure("history", f"{commit[:12]}:{relative_path}", rule_id))
+                    failures.append(
+                        Failure("history", f"{commit[:12]}:{relative_path}", rule_id)
+                    )
     return failures
 
 
@@ -99,8 +110,7 @@ def tracked_files(root: Path) -> list[str]:
         cwd=root,
         check=True,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
     return output.stdout.splitlines()
 

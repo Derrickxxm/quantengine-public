@@ -17,7 +17,19 @@ def test_public_architecture_names_are_allowed_but_private_locators_are_not():
     assert rule.search(private_strategy_locator) is not None
 
 
-def test_current_tree_scan_skips_tracked_files_deleted_from_worktree(tmp_path, monkeypatch):
-    monkeypatch.setattr(public_safety_scan, "tracked_files", lambda root: ["deleted.json"])
+def test_public_model_name_is_allowed_but_private_machine_name_is_not():
+    rule = RULES["local_model_runtime"]
+
+    assert rule.search("Local Qwen acceptance evidence") is None
+    private_machine_name = "Stu" + "dio"
+    assert rule.search(f"Executed on {private_machine_name}") is not None
+
+
+def test_current_tree_scan_skips_tracked_files_deleted_from_worktree(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        public_safety_scan, "tracked_files", lambda root: ["deleted.json"]
+    )
 
     assert public_safety_scan.scan_current_tree(tmp_path) == []

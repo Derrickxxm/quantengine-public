@@ -45,7 +45,7 @@
   },
   "verdict": "PASS",
   "limitations": [
-    "This acceptance used a Studio-local Qwen model through ephemeral loopback connectivity.",
+    "This acceptance used a private-workstation Qwen model through ephemeral loopback connectivity.",
     "It does not measure gpt-5.6-luna behavior, OpenAI API authentication, limits, pricing, or hosted execution.",
     "It grants no write, Release, deployment, QuantEngine Replay, Paper, or Real authority."
   ]
