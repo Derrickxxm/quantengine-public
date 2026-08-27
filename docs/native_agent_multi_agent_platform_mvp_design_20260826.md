@@ -2,8 +2,8 @@
 
 Date: 2026-08-26
 
-Status: Owner-approved reuse-first implementation baseline; Milestones 0-4
-implemented and merged by PR #5; Milestones 5-6 remain unexecuted
+Status: Owner-approved reuse-first implementation baseline; Milestones 0-5
+implemented; Milestone 6 remains unexecuted
 
 Audience: platform, Agent, quality, and delivery engineers
 
@@ -173,8 +173,9 @@ As of the post-merge readback on 2026-08-26, Owner-authorized plan steps 1-6 are
 complete and PR #5 is merged. Milestones 0-4 now provide the SDK 0.22.0 runtime
 adapter, evidence-gated Thin Control, and one six-role, scripted, network-free
 vertical slice in addition to the deterministic Golden Path and synthetic
-QuantEngine reference runtime. Milestones 5-6, graph refresh, deployment,
-Paper, Replay, and Real remain unexecuted and unauthorized by that scope.
+QuantEngine reference runtime. TASKSYS-1264 subsequently implements Milestone 5
+as a deterministic learning evidence chain. Milestone 6, graph refresh,
+deployment, QuantEngine Replay, Paper, and Real remain unexecuted.
 
 ## 4. MVP Boundaries
 
@@ -790,8 +791,6 @@ task transitions, runs, handoffs, artifacts, tool calls, and approvals; resumes
 from SQLite; and derives a zero-authority Release verdict only from the exact
 admitted Test, Ops, runtime, and independent Quality topology. The clean-install
 acceptance run passes 95 tests plus the release smoke and public safety scan.
-Milestones 5–6, graph refresh, deployment, Paper, Replay, and Real remain outside
-the approved execution scope.
 
 ### Milestone 5: Learning closure
 
@@ -801,6 +800,15 @@ the approved execution scope.
 - emit an evidence-bound AAR.
 
 Exit: the flywheel is executed, not asserted.
+
+Implementation checkpoint (TASKSYS-1264, 2026-08-26): the original Release
+authority-topology failure is linked to seven retained attack replays, the
+exact repair layer, the red-test receipt, regression plan/result, a local
+historical-defect replay receipt, an independent Quality promotion review, and
+a content-addressed zero-authority AAR. Missing, forged, stale, cross-task, or
+self-reviewed evidence fails closed. The full suite passes 100 tests plus the
+release smoke and public safety scan. This local defect replay is not a
+QuantEngine Replay authorization or execution.
 
 ### Milestone 6: Public proof and re-review
 

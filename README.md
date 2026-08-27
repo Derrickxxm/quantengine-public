@@ -39,8 +39,10 @@ approvals, and tracing. Repository-owned implementation will remain limited to
 task/source/context identity, deterministic role transitions, cross-run
 handoff receipts, evidence admission, independent Quality, and Release
 authority. Owner-authorized implementation steps 1-6 were merged by PR #5;
-learning closure, public proof/re-review, graph refresh, deployment, Paper,
-Replay, and Real remain outside that completed scope.
+TASKSYS-1264 adds the deterministic learning closure: seven retained Release
+attacks, repair-layer and red-test receipts, an independent promotion review,
+and a content-addressed zero-authority AAR. Public proof/re-review, graph
+refresh, deployment, QuantEngine Replay, Paper, and Real remain outside scope.
 
 ## The Delivery Control Loop
 
