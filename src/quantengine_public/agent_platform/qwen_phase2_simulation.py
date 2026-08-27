@@ -354,6 +354,40 @@ class SimulationStageReceipt:
             ):
                 raise LocalSimulationError("simulation_stage_identity_lineage_invalid")
             predecessor = row.receipt_digest
+        if self.stage in {"architecture", "readonly_tool"}:
+            role = self.role_receipts[0]
+            if (
+                role.agent_graph_identity != self.agent_graph_identity
+                or role.output_digest != self.output_digest
+            ):
+                raise LocalSimulationError("simulation_stage_role_binding_invalid")
+        elif self.stage == "handoff":
+            handoff = self.handoff_receipts[0]
+            consumer = self.role_receipts[0]
+            if (
+                handoff.producer_agent_identity != self.agent_graph_identity
+                or handoff.consumer_agent_identity != consumer.agent_graph_identity
+                or handoff.packet_digest != consumer.input_digest
+                or consumer.output_digest != self.output_digest
+            ):
+                raise LocalSimulationError("simulation_stage_handoff_binding_invalid")
+        else:
+            if content_digest(
+                [row.agent_graph_identity for row in self.role_receipts]
+            ) != self.agent_graph_identity:
+                raise LocalSimulationError("simulation_stage_role_binding_invalid")
+            for producer, handoff, consumer in zip(
+                self.role_receipts[:-1],
+                self.handoff_receipts,
+                self.role_receipts[1:],
+                strict=True,
+            ):
+                if (
+                    handoff.producer_agent_identity != producer.agent_graph_identity
+                    or handoff.consumer_agent_identity != consumer.agent_graph_identity
+                    or handoff.packet_digest != consumer.input_digest
+                ):
+                    raise LocalSimulationError("simulation_stage_handoff_binding_invalid")
 
     @property
     def receipt_digest(self) -> str:

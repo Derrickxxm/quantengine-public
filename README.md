@@ -58,10 +58,13 @@ real model, reading a key, spending tokens, and making the first hosted request
 remain separate Owner approval boundaries.
 
 DEC-0018 adds a separate private-workstation local-model simulation without
-weakening that boundary. The isolated `qwen3.8:27b-mxfp8` track uses the Agents SDK through an
-ephemeral loopback Ollama connection and proves one Architecture run, exact
-read-only source lookup, Architecture-to-Test handoff, and a four-role
-Architecture/Test/Development/Quality loop. Its digest-only
+weakening that boundary. DEC-0019 hardens the isolated `qwen3.8:27b-mxfp8`
+track with a canonical endpoint digest, bounded discovery and whole-run
+deadlines, one repair budget for the entire development stage, usage ceilings,
+and independently rederivable role and handoff identity receipts. The retained
+run uses the Agents SDK through an ephemeral loopback connection for one
+Architecture run, exact read-only source lookup, Architecture-to-Test handoff,
+and a four-role Architecture/Test/Development/Quality loop. Its digest-only
 [receipt](docs/evidence/qwen_phase2_local_simulation_receipt_20260827.json)
 explicitly states `hosted_luna_proof=false`, zero hosted cost, no hosted claim,
 and no write, Release, deployment, or QuantEngine runtime authority. It is not

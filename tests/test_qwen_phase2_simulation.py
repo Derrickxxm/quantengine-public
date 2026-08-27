@@ -79,7 +79,7 @@ def _identity_rows(
             sequence=sequence,
             agent_graph_identity=agent_identity,
             predecessor_identity_receipt_digest=identity_predecessor,
-            input_digest="4" * 64,
+            input_digest=(handoffs[-1].packet_digest if handoffs else "4" * 64),
             output_digest="5" * 64,
             verdict="PASS",
         )
@@ -103,13 +103,24 @@ def stage(
         run_identity,
         endpoint_identity,
     )
+    if name in {"architecture", "readonly_tool"}:
+        graph_identity = role_receipts[0].agent_graph_identity
+        output_digest = role_receipts[0].output_digest
+    elif name == "handoff":
+        graph_identity = handoff_receipts[0].producer_agent_identity
+        output_digest = role_receipts[0].output_digest
+    else:
+        graph_identity = content_digest(
+            [row.agent_graph_identity for row in role_receipts]
+        )
+        output_digest = "a" * 64
     return SimulationStageReceipt(
         stage=name,
         status="PASS",
         plan_digest="c" * 64,
         predecessor_receipt_digest=predecessor,
-        agent_graph_identity="d" * 64,
-        output_digest="a" * 64,
+        agent_graph_identity=graph_identity,
+        output_digest=output_digest,
         run_identity=run_identity,
         endpoint_identity_digest=endpoint_identity,
         role_receipts=role_receipts,
