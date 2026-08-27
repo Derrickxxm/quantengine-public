@@ -3,7 +3,8 @@
 Date: 2026-08-26
 
 Status: Owner-approved reuse-first implementation baseline; Milestones 0-6
-implemented through the bounded public proof
+implemented through the bounded public proof; Phase 2 P2-1 fail-closed preflight
+implemented on an isolated branch with no hosted execution authority
 
 Audience: platform, Agent, quality, and delivery engineers
 
@@ -831,6 +832,35 @@ QuantEngine Replay, Paper, or Real authority. Three-perspective re-review
 supports the claim "running bounded multi-Agent MVP" and rejects any production
 platform or deployment claim.
 
+### Phase 2 entry: P2-1 Hosted-Model Canary preflight
+
+TASKSYS-1317 closes the first demonstrated post-MVP gap before any real model
+call is allowed. The current MVP proves the OpenAI Agents SDK adapter with a
+network-free `ScriptedModel`, while Test Strategy item 6 still requires one
+bounded hosted-provider integration test. P2-1 does not perform that test. It
+creates the deterministic authority boundary that a later, separately approved
+test must pass.
+
+The preflight binds these inputs into a content digest:
+
+- task id and task revision;
+- source identity, context digest, and Agent-graph identity;
+- exact allowed model;
+- maximum turns, output tokens, and timeout;
+- disabled hosted trace, digest-only evidence, zero tools, and zero handoffs.
+
+Every request outside those exact bounds fails closed. A valid P2-1 request
+still returns `BLOCKED / NETWORK_EXECUTION_NOT_AUTHORIZED` with
+`execution_allowed=false` and `network_attempted=false`. The receipt contains
+only identities, limits, verdict, reason, and digests; it contains no prompt,
+model output, API key, or hosted trace id.
+
+P2-1 code has no environment, credential, network, or Agents SDK access. A
+later real canary requires an additional Owner decision naming the model, cost
+ceiling, trace policy, evidence/redaction policy, and one exact request. Tools,
+handoffs, merge, release publication, deployment, QuantEngine Replay, Paper,
+and Real remain unauthorized.
+
 ## 18. Test Strategy
 
 1. **Unit tests:** canonical identities, contracts, transition guards, tool
@@ -843,8 +873,9 @@ platform or deployment claim.
    resume behavior.
 5. **Adversarial tests:** stale source, wrong producer, missing upstream,
    authority injection, scope escape, duplicate run, and malformed output.
-6. **One real integration test:** run the selected Native-Agent provider on the
-   bounded public defect and retain public-safe trace and evidence.
+6. **One real integration test (not yet authorized):** after the P2-1 preflight
+   and a separate Owner approval, run the selected Native-Agent provider on one
+   bounded Architecture task and retain the approved public-safe evidence.
 
 Real model execution should not be required for every unit-test run. The
 deterministic harness remains the fast CI oracle.

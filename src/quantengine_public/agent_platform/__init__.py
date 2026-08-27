@@ -47,6 +47,13 @@ from .public_proof import (
     generate_public_proof,
     verify_public_proof,
 )
+from .hosted_canary import (
+    HostedCanaryPolicy,
+    HostedCanaryPreflightError,
+    HostedCanaryPreflightReceipt,
+    HostedCanaryRequest,
+    preflight_hosted_canary,
+)
 
 __all__ = [
     "AgentsSdkRuntime",
@@ -56,6 +63,10 @@ __all__ = [
     "GraphIdentity",
     "HISTORICAL_REGRESSION_CASES",
     "HandoffReceipt",
+    "HostedCanaryPolicy",
+    "HostedCanaryPreflightError",
+    "HostedCanaryPreflightReceipt",
+    "HostedCanaryRequest",
     "RecordingTraceProcessor",
     "RegressionReplay",
     "RunRequest",
@@ -82,6 +93,7 @@ __all__ = [
     "derive_release",
     "execute_learning_closure",
     "generate_public_proof",
+    "preflight_hosted_canary",
     "replay_historical_release_attacks",
     "validate_handoff_receipt",
     "verify_learning_closure",

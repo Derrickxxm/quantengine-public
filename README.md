@@ -48,6 +48,15 @@ bytes. The model remains a local ScriptedModel, so no prompt, API key, hosted
 trace, or network model call enters the proof. Deployment, QuantEngine Replay,
 Paper, and Real remain outside scope.
 
+Phase 2 begins with TASKSYS-1317's fail-closed hosted-model canary preflight.
+It binds the task revision, source, context, Agent graph, model, turn limit,
+output-token limit, timeout, trace mode, evidence mode, tool count, and handoff
+count into a content digest, then emits a public-safe `BLOCKED` receipt. The
+preflight deliberately has no environment or network access and cannot enable
+hosted tracing, tools, handoffs, raw evidence, or model execution. Selecting a
+real model, reading a key, spending tokens, and making the first hosted request
+remain separate Owner approval boundaries.
+
 ## The Delivery Control Loop
 
 ```mermaid
@@ -235,6 +244,7 @@ Implemented and runnable here:
 - a thin, evidence-gated control state with identity-bound handoffs and restart recovery;
 - an OpenAI Agents SDK 0.22.0 adapter with bounded tools, durable RunState envelopes, and local traces;
 - one network-free Architecture → Test → Development → Test → Ops → independent Quality → deterministic Release slice;
+- a zero-network, digest-only hosted-model canary preflight that keeps execution blocked;
 - request-bound negative evidence;
 - QuantEngine admission, package verification, synthetic Paper, independent
   Replay, reconciliation, stress, recovery, and release evidence;
