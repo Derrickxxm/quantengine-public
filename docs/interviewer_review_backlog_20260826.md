@@ -7,9 +7,13 @@ and GitHub presentation
 
 Review mode: read-only findings captured before remediation
 
-Alignment status: Owner approved OpenAI Agents SDK Python as the single MVP
-Agent runtime dependency. Development is paused by Owner and resumes only on
-later explicit direction. No M0-M6 implementation is complete.
+Alignment status: Owner resumed development through plan steps 1–6. TASKSYS-1259
+now contains the Release-topology/version fix, OpenAI Agents SDK 0.22.0 adapter,
+evidence-gated Thin Control, and one Architecture → Test → Development → Test →
+Ops → independent Quality → deterministic Release slice. Clean-install
+acceptance is 95 tests plus release smoke and public safety scan. Learning
+closure, public re-review, graph refresh, deployment, Paper, Replay, and Real
+remain explicitly out of scope.
 
 Current release reviewed: `v0.4.0` at
 `f5e64e5c96d7aad7da1a9203c73eebec37dcd916`

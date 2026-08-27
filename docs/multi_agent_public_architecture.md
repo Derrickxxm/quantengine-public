@@ -1,7 +1,7 @@
 # Evidence-Controlled AI Software Delivery Architecture
 
-Status: target architecture with a runnable public Golden Path; OpenAI Agents
-SDK runtime path approved; runtime implementation not started
+Status: target architecture with a runnable public Golden Path and one
+identity-bound OpenAI Agents SDK 0.22.0 vertical slice on the development branch
 
 Reference implementation: QuantEngine public-safe synthetic runtime
 
@@ -360,14 +360,14 @@ final authority that relies on its own result.
 
 | Current system capability | Public equivalent | Status | Required proof |
 | --- | --- | --- | --- |
-| LDA Control Plane | thin `public-control-plane` | approved design; implementation not started | deterministic task/source/context state, transitions, cross-run receipts |
-| Agent runtime | OpenAI Agents SDK Python adapter | external SDK selected; adapter not started | versioned requests/results, resume, approvals, trace conversion |
-| Architecture Agent | `public-architecture-agent` | Skill implemented; runtime planned | revision-bound graph and impact packet |
-| Test / Quality Lab Agent | `public-test-agent` | Skill implemented; runtime planned | red tests, negative cases, eval plan |
-| Development Agent | `public-development-agent` | Skill implemented; runtime planned | bounded patch and scope receipt |
-| Ops Agent | `public-ops-agent` | Skill implemented; runtime planned | CI, package, readback, rollback receipt |
-| Quality Shield | `public-quality-shield` | deterministic Golden Path slice | runtime-bound verdict and negative tests |
-| Release Controller | `public-release-controller` | deterministic Golden Path slice | authority derivation and fail-closed tests |
+| LDA Control Plane | thin `public-control-plane` | MVP slice implemented | SQLite task/source/context state, evidence-gated transitions, idempotency, restart and cross-run receipts |
+| Agent runtime | OpenAI Agents SDK Python adapter | MVP slice implemented; pinned to 0.22.0 | bounded Agent graph, durable identity envelope, resume, approvals and local trace proof |
+| Architecture Agent | `public-architecture-agent` | Skill plus SDK Agent-as-tool slice implemented | revision-bound graph and impact packet |
+| Test / Quality Lab Agent | `public-test-agent` | two identity-bound Test runs implemented in the slice | authored red oracle, negative cases and independent verification |
+| Development Agent | `public-development-agent` | bounded runtime slice implemented | approved-path patch manifest and scope receipt |
+| Ops Agent | `public-ops-agent` | bounded runtime slice implemented | CI/package/readback evidence with zero deployment authority |
+| Quality Shield | `public-quality-shield` | independent SDK run plus deterministic gate implemented | exact runtime-bound verdict and attack tests |
+| Release Controller | `public-release-controller` | deterministic evidence controller implemented | exact type/digest/producer topology and zero-authority slice verdict |
 | QCS | `public-qcs` | deterministic Golden Path slice | advisory risk manifest and evidence-gap receipt |
 | S3 / WORM evidence | `public-evidence-store` | planned | digest, retention, immutability receipt |
 | Understand Anything | `public-code-graph` | planned | source-bound graph and freshness receipt |

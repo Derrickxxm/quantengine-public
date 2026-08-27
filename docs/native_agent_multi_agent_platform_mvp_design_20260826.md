@@ -782,6 +782,16 @@ architecture packet.
 Exit: the authority-topology defect travels through the full real workflow and
 cannot receive PASS before every required stage succeeds.
 
+Implementation checkpoint (TASKSYS-1259, 2026-08-26): Milestones 0–4 are now
+implemented on `codex/TASKSYS-1259/native-agent-mvp-steps-1-6`. The slice uses
+OpenAI Agents SDK 0.22.0 with scripted, network-free model responses; persists
+task transitions, runs, handoffs, artifacts, tool calls, and approvals; resumes
+from SQLite; and derives a zero-authority Release verdict only from the exact
+admitted Test, Ops, runtime, and independent Quality topology. The clean-install
+acceptance run passes 95 tests plus the release smoke and public safety scan.
+Milestones 5–6, graph refresh, deployment, Paper, Replay, and Real remain outside
+the approved execution scope.
+
 ### Milestone 5: Learning closure
 
 - convert the original failure into retained regression evidence;

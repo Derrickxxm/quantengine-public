@@ -223,15 +223,18 @@ Implemented and runnable here:
 - the 14-artifact software-delivery Golden Path;
 - versioned artifact and producer contracts;
 - four public Skills;
+- a thin, evidence-gated control state with identity-bound handoffs and restart recovery;
+- an OpenAI Agents SDK 0.22.0 adapter with bounded tools, durable RunState envelopes, and local traces;
+- one network-free Architecture → Test → Development → Test → Ops → independent Quality → deterministic Release slice;
 - request-bound negative evidence;
 - QuantEngine admission, package verification, synthetic Paper, independent
   Replay, reconciliation, stress, recovery, and release evidence;
 - CI verification and public-content safety scanning.
 
-Planned public-safe equivalents include the LDA Control Plane, Agent SDK,
-revision-bound code graph, Quality Lab, QCS depth, Quality Shield runtime,
-evidence store, QuantLab, QuantStrategies, tick data, market causality, and
-Komodo runbook. A planned component is not presented as implemented until it
+Planned public-safe equivalents include a revision-bound code-graph adapter,
+deeper Quality Lab and QCS integration, an evidence store, QuantLab,
+QuantStrategies, tick data, market causality, and Komodo runbook. A planned
+component is not presented as implemented until it
 has code, tests, example evidence, and an explicit authority boundary.
 
 For the MVP, "Agent SDK" means a thin adapter around
