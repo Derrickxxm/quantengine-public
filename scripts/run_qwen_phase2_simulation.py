@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Run the DEC-0019 hardened local OpenAI-compatible Phase 2 simulation."""
 
 from __future__ import annotations
@@ -9,8 +8,8 @@ import hashlib
 import json
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 if __package__ in {None, ""}:  # pragma: no cover
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -22,7 +21,6 @@ from quantengine_public.agent_platform.qwen_phase2_simulation import (
     LocalModelSimulationExecutor,
     LocalSimulationConfig,
 )
-
 
 SOURCE_PATH = "src/quantengine_public/agent_platform/hosted_canary.py"
 
@@ -64,8 +62,7 @@ async def _run(base_url: str) -> dict[str, object]:
         "PUBLIC SOURCE PACKET\n"
         f"relative_path={SOURCE_PATH}\n"
         "This is a read-only local simulation with no hosted, write, Release, "
-        "deployment, or QuantEngine runtime authority.\nSOURCE:\n"
-        + source[:12_000]
+        "deployment, or QuantEngine runtime authority.\nSOURCE:\n" + source[:12_000]
     )
     lookup = LocalSourceLookup(root, allowed_paths=(SOURCE_PATH,), max_chars=16_000)
     executor = LocalModelSimulationExecutor(LocalSimulationConfig(base_url=base_url))
@@ -79,7 +76,8 @@ async def _run(base_url: str) -> dict[str, object]:
             ),
             handoff_prompt=(
                 "Architecture must hand this public validation request to Test. Test must "
-                "return a PASS verdict only with concrete negative cases.\n" + packet[:6_000]
+                "return a PASS verdict only with concrete negative cases.\n"
+                + packet[:6_000]
             ),
             development_prompt=(
                 "Process this bounded read-only public hardening task as the assigned role. "
@@ -118,7 +116,9 @@ def _blocked(exc: Exception) -> dict[str, object]:
         },
     }
     failure_code = str(exc)
-    if type(exc).__name__ == "LocalSimulationError" and failure_code.startswith("simulation_"):
+    if type(exc).__name__ == "LocalSimulationError" and failure_code.startswith(
+        "simulation_"
+    ):
         body["failure_code"] = failure_code
     body["receipt_digest"] = content_digest(body)
     return body
@@ -130,10 +130,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         receipt = asyncio.run(_run(args.base_url))
-    except Exception as exc:  # public boundary keeps the raw error local
+    except Exception as exc:  # noqa: BLE001 - public boundary keeps the raw error local
         print(canonical_json(_blocked(exc)))
         return 2
-    print(json.dumps(receipt, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+    print(
+        json.dumps(receipt, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    )
     return 0
 
 

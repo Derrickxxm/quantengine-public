@@ -9,7 +9,6 @@ import pytest
 
 import scripts.run_hosted_phase2 as runner_module
 from quantengine_public.agent_platform.hosted_phase2 import (
-    MODEL_ID,
     HostedPhase2Error,
     HostedPhase2Policy,
     HostedRunAuthority,
@@ -21,8 +20,8 @@ from quantengine_public.agent_platform.hosted_phase2 import (
 from scripts.run_hosted_phase2 import (
     MAX_TOTAL_BUDGET_MICROUSD,
     PHASE2_STAGES,
-    build_public_receipt,
     _run_phase2_for_test,
+    build_public_receipt,
     run_phase2,
 )
 
@@ -116,20 +115,26 @@ class FakeExecutor:
     def bind_test_authority(self, authority: HostedRunAuthority) -> None:
         self.authority = authority
 
-    def _consume(self, plan: HostedStagePlan, kwargs: dict[str, Any], prompt: str) -> None:
+    def _consume(
+        self, plan: HostedStagePlan, kwargs: dict[str, Any], prompt: str
+    ) -> None:
         assert self.authority is not None
         self.authority.consume(plan, kwargs["authorization"], prompt=prompt)
 
     def preview_agent_graph_identity(self, plan: HostedStagePlan, **_: Any) -> str:
         return "a" * 64
 
-    async def execute_architecture(self, plan: HostedStagePlan, **kwargs: Any) -> HostedStageObservation:
+    async def execute_architecture(
+        self, plan: HostedStagePlan, **kwargs: Any
+    ) -> HostedStageObservation:
         self.calls.append("architecture")
         self.prompts["architecture"] = kwargs["prompt"]
         self._consume(plan, kwargs, kwargs["prompt"])
         return _observation(plan)
 
-    async def execute_readonly_tool(self, plan: HostedStagePlan, **kwargs: Any) -> HostedStageObservation:
+    async def execute_readonly_tool(
+        self, plan: HostedStagePlan, **kwargs: Any
+    ) -> HostedStageObservation:
         self.calls.append("readonly_tool")
         self.prompts["readonly_tool"] = kwargs["prompt"]
         self._consume(plan, kwargs, kwargs["prompt"])
@@ -139,7 +144,9 @@ class FakeExecutor:
         self.calls.append("handoff")
         self.prompts["handoff"] = kwargs["prompt"]
         self._consume(plan, kwargs, kwargs["prompt"])
-        from quantengine_public.agent_platform.hosted_phase2_executor import HandoffExecution
+        from quantengine_public.agent_platform.hosted_phase2_executor import (
+            HandoffExecution,
+        )
 
         authorization_digest = kwargs["authorization"].authorization_digest
         architecture = RoleReceipt(
@@ -172,10 +179,14 @@ class FakeExecutor:
             derive_handoff_receipt(architecture, test),
         )
 
-    async def execute_development_loop(self, plan: HostedStagePlan, **kwargs: Any) -> Any:
+    async def execute_development_loop(
+        self, plan: HostedStagePlan, **kwargs: Any
+    ) -> Any:
         self.calls.append("development_loop")
-        from quantengine_public.agent_platform.hosted_phase2_executor import DevelopmentExecution
         from quantengine_public.agent_platform.contracts import canonical_json
+        from quantengine_public.agent_platform.hosted_phase2_executor import (
+            DevelopmentExecution,
+        )
 
         self.prompts["development_loop"] = canonical_json(dict(kwargs["prompts"]))
         self._consume(
@@ -199,12 +210,16 @@ class FakeExecutor:
                 output_digest=output_digest,
                 verdict="PASS",
             )
-            for role, input_digest, output_digest in zip(plan.handoff_route, input_digests, digests)
+            for role, input_digest, output_digest in zip(
+                plan.handoff_route, input_digests, digests
+            )
         )
         return DevelopmentExecution(_observation(plan), receipts)
 
 
-def test_default_run_is_dry_run_and_never_reads_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_default_run_is_dry_run_and_never_reads_api_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def forbidden_key_read(*_: Any, **__: Any) -> str:
         raise AssertionError("OPENAI_API_KEY must not be read by dry-run")
 
@@ -214,12 +229,32 @@ def test_default_run_is_dry_run_and_never_reads_api_key(monkeypatch: pytest.Monk
     assert receipt["execution_mode"] == "dry_run"
     assert receipt["verdict"] == "PLANNED"
     assert [row["stage"] for row in receipt["stages"]] == list(PHASE2_STAGES)
-    assert all(row["usage"] == {"requests": 0, "input_tokens": 0, "output_tokens": 0} for row in receipt["stages"])
+    assert all(
+        row["usage"] == {"requests": 0, "input_tokens": 0, "output_tokens": 0}
+        for row in receipt["stages"]
+    )
+    assert all(
+        row["authority_flags"]
+        == {
+            "authorized": False,
+            "execution_allowed": False,
+            "tool_authority_granted": False,
+            "handoff_authority_granted": False,
+            "write_authority_granted": False,
+            "release_authority_granted": False,
+            "hosted_trace_enabled": False,
+        }
+        for row in receipt["stages"]
+    )
 
 
-def test_execute_runs_all_gated_stages_and_emits_only_public_safe_fields(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_execute_runs_all_gated_stages_and_emits_only_public_safe_fields(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     executor = FakeExecutor()
-    monkeypatch.setattr(runner_module, "_git_snapshot", lambda _root: ("head-clean", False))
+    monkeypatch.setattr(
+        runner_module, "_git_snapshot", lambda _root: ("head-clean", False)
+    )
     receipt = _run_phase2_for_test(execute=True, executor=executor)
     encoded = json.dumps(receipt, sort_keys=True).lower()
 
@@ -238,34 +273,51 @@ def test_execute_runs_all_gated_stages_and_emits_only_public_safe_fields(monkeyp
 
 
 def test_source_path_is_small_real_public_source() -> None:
-    source = runner_module.Path(runner_module.__file__).resolve().parents[1] / runner_module.SOURCE_PATH
+    source = (
+        runner_module.Path(runner_module.__file__).resolve().parents[1]
+        / runner_module.SOURCE_PATH
+    )
 
     assert runner_module.SOURCE_PATH.endswith("agent_platform/hosted_canary.py")
     assert source.is_file()
     assert source.stat().st_size < 24_000
 
 
-def test_dry_run_source_identity_binds_head_file_digest_and_dirty_flag(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(runner_module, "_git_snapshot", lambda _root: ("head-clean", False))
+def test_dry_run_source_identity_binds_head_file_digest_and_dirty_flag(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        runner_module, "_git_snapshot", lambda _root: ("head-clean", False)
+    )
     clean = _run_phase2_for_test(execute=False, executor=FakeExecutor())
-    monkeypatch.setattr(runner_module, "_git_snapshot", lambda _root: ("head-dirty", True))
+    monkeypatch.setattr(
+        runner_module, "_git_snapshot", lambda _root: ("head-dirty", True)
+    )
     dirty = _run_phase2_for_test(execute=False, executor=FakeExecutor())
 
     assert clean["stages"][0]["plan_digest"] != dirty["stages"][0]["plan_digest"]
     assert "/users/" not in json.dumps(dirty).lower()
 
 
-def test_execute_rejects_dirty_worktree_before_any_stage(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_execute_rejects_dirty_worktree_before_any_stage(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     executor = FakeExecutor()
-    monkeypatch.setattr(runner_module, "_git_snapshot", lambda _root: ("head-dirty", True))
+    monkeypatch.setattr(
+        runner_module, "_git_snapshot", lambda _root: ("head-dirty", True)
+    )
 
     with pytest.raises(HostedPhase2Error, match="clean_worktree"):
         _run_phase2_for_test(execute=True, executor=executor)
     assert executor.calls == []
 
 
-def test_architecture_prompt_contains_bounded_real_public_source_packet(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(runner_module, "_git_snapshot", lambda _root: ("head-clean", False))
+def test_architecture_prompt_contains_bounded_real_public_source_packet(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        runner_module, "_git_snapshot", lambda _root: ("head-clean", False)
+    )
     executor = FakeExecutor()
     _run_phase2_for_test(execute=True, executor=executor)
     prompt = executor.prompts["architecture"]
@@ -279,20 +331,29 @@ def test_architecture_prompt_contains_bounded_real_public_source_packet(monkeypa
     assert runner_module.SOURCE_PATH in executor.prompts["development_loop"]
 
 
-def test_execute_fake_loop_has_identity_bound_four_role_receipts(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_execute_fake_loop_has_identity_bound_four_role_receipts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     executor = FakeExecutor()
-    monkeypatch.setattr(runner_module, "_git_snapshot", lambda _root: ("head-clean", False))
+    monkeypatch.setattr(
+        runner_module, "_git_snapshot", lambda _root: ("head-clean", False)
+    )
     receipt = _run_phase2_for_test(execute=True, executor=executor)
 
     assert receipt["stages"][-1]["authority_flags"]["handoff_authority_granted"] is True
 
 
-def test_development_loop_empty_role_receipts_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_development_loop_empty_role_receipts_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     class EmptyLoopExecutor(FakeExecutor):
-        async def execute_development_loop(self, plan: HostedStagePlan, **kwargs: Any) -> Any:
+        async def execute_development_loop(
+            self, plan: HostedStagePlan, **kwargs: Any
+        ) -> Any:
             self.calls.append("development_loop")
-            from quantengine_public.agent_platform.hosted_phase2_executor import DevelopmentExecution
-            from quantengine_public.agent_platform.contracts import canonical_json
+            from quantengine_public.agent_platform.hosted_phase2_executor import (
+                DevelopmentExecution,
+            )
 
             self._consume(
                 plan,
@@ -301,7 +362,9 @@ def test_development_loop_empty_role_receipts_fail_closed(monkeypatch: pytest.Mo
             )
             return DevelopmentExecution(_observation(plan), ())
 
-    monkeypatch.setattr(runner_module, "_git_snapshot", lambda _root: ("head-clean", False))
+    monkeypatch.setattr(
+        runner_module, "_git_snapshot", lambda _root: ("head-clean", False)
+    )
     receipt = _run_phase2_for_test(execute=True, executor=EmptyLoopExecutor())
     assert receipt["verdict"] == "BLOCKED"
     assert receipt["stages"][-1]["status"] == "BLOCKED"

@@ -28,10 +28,10 @@ authoritative state and content-addressed evidence.
 ## Current Implementation Decision
 
 The runnable repository now contains the deterministic 14-artifact Golden Path,
-the synthetic QuantEngine reference runtime, and one bounded Native-Agent
-vertical slice backed by OpenAI Agents SDK 0.22.0. The slice uses scripted,
-network-free model responses and proves local control contracts; it does not
-claim a production platform, deployment, Paper, Replay, or Real authority.
+the synthetic QuantEngine reference runtime, one bounded scripted Native-Agent
+vertical slice, and a separate loopback-only local-Qwen Phase 2 proof backed by
+OpenAI Agents SDK 0.22.0. These slices prove local control contracts; they do
+not claim a production platform, deployment, Paper, Replay, or Real authority.
 
 The approved MVP route reuses the MIT OpenAI Agents SDK for Python for Agent
 execution, Agent-as-tool, handoffs, SQLite sessions, interruption/resume,
@@ -69,6 +69,13 @@ and a four-role Architecture/Test/Development/Quality loop. Its digest-only
 explicitly states `hosted_luna_proof=false`, zero hosted cost, no hosted claim,
 and no write, Release, deployment, or QuantEngine runtime authority. It is not
 evidence that `gpt-5.6-luna` or OpenAI API authentication was exercised.
+
+Release `v0.5.2` also publishes the public-safe
+[overnight acceptance summary](docs/evidence/qwen_phase2_overnight_acceptance_20260827.json)
+for the reviewed source revision: 24 of 24 bounded full-chain runs and all
+three adversarial suites passed. That repeatability evidence remains local
+Qwen evidence and grants no Hosted Luna, hosted-cost, write, Release,
+deployment, Replay, Paper, or Real claim.
 
 ## The Delivery Control Loop
 

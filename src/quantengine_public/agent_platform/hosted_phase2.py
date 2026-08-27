@@ -10,13 +10,14 @@ from __future__ import annotations
 import os
 import re
 import threading
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from itertools import pairwise
 from pathlib import Path, PurePosixPath
 from types import MappingProxyType
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from .contracts import canonical_json, content_digest
-
 
 SCHEMA_VERSION = "quantengine_public.agent_platform.hosted_phase2.v1"
 MODEL_ID = "gpt-5.6-luna"
@@ -243,7 +244,9 @@ class HostedStagePlan:
         _text(self.trace_mode, "trace_mode")
         _text(self.evidence_mode, "evidence_mode")
         object.__setattr__(self, "tool_names", _strings(self.tool_names, "tool_names"))
-        object.__setattr__(self, "handoff_route", _strings(self.handoff_route, "handoff_route"))
+        object.__setattr__(
+            self, "handoff_route", _strings(self.handoff_route, "handoff_route")
+        )
 
     def _body(self) -> dict[str, Any]:
         return {
@@ -475,18 +478,19 @@ class HostedRunAuthority:
                 raise HostedPhase2Error("run_authority_blocked")
             if self._active is not None:
                 raise HostedPhase2Error("authorization_already_active")
-            if self._sequence >= len(self._ORDER) or plan.stage != self._ORDER[self._sequence]:
+            if (
+                self._sequence >= len(self._ORDER)
+                or plan.stage != self._ORDER[self._sequence]
+            ):
                 raise HostedPhase2Error("stage_sequence_invalid")
             if plan.predecessor_receipt_digest != self._predecessor:
                 raise HostedPhase2Error("predecessor_receipt_mismatch")
             prompt_value = _text(prompt, "prompt")
             if len(prompt_value) > plan.max_input_chars:
                 raise HostedPhase2Error("prompt_exceeds_plan")
-            if (
-                self._prompt_manifest is not None
-                and self._prompt_manifest[plan.stage]
-                != content_digest({"prompt": prompt_value})
-            ):
+            if self._prompt_manifest is not None and self._prompt_manifest[
+                plan.stage
+            ] != content_digest({"prompt": prompt_value}):
                 raise HostedPhase2Error("prompt_manifest_mismatch")
             authorization = authorize_stage(
                 plan,
@@ -544,7 +548,7 @@ class HostedRunAuthority:
         self,
         authorization: StageAuthorization,
         *,
-        receipt: "HostedStageReceipt",
+        receipt: HostedStageReceipt,
     ) -> None:
         with self._lock:
             if self._active != authorization or not self._consumed:
@@ -788,12 +792,18 @@ def evaluate_stage(
         raise HostedPhase2Error("timeout_exceeded")
     expected_tools, expected_route = _STAGE_POLICY[plan.stage]
     if observation.tool_calls != expected_tools:
-        reason = "unexpected_tool_call" if not expected_tools else "required_tool_call_mismatch"
+        reason = (
+            "unexpected_tool_call"
+            if not expected_tools
+            else "required_tool_call_mismatch"
+        )
         raise HostedPhase2Error(reason)
     expected_last_agent = expected_route[-1] if expected_route else "architecture"
     expected_handoffs = max(0, len(expected_route) - 1)
     if observation.handoff_count != expected_handoffs:
-        reason = "unexpected_handoff" if expected_handoffs == 0 else "handoff_count_mismatch"
+        reason = (
+            "unexpected_handoff" if expected_handoffs == 0 else "handoff_count_mismatch"
+        )
         raise HostedPhase2Error(reason)
     if observation.last_agent != expected_last_agent:
         raise HostedPhase2Error("last_agent_mismatch")
@@ -1076,7 +1086,9 @@ class DevelopmentLoopReceipt:
         object.__setattr__(self, "roles", _strings(self.roles, "roles"))
         if self.roles != _ROLE_ORDER:
             raise HostedPhase2Error("development_loop_topology_invalid")
-        digests = tuple(_digest(value, "role_receipt_digest") for value in self.role_receipt_digests)
+        digests = tuple(
+            _digest(value, "role_receipt_digest") for value in self.role_receipt_digests
+        )
         object.__setattr__(self, "role_receipt_digests", digests)
         if len(digests) != len(_ROLE_ORDER):
             raise HostedPhase2Error("development_loop_receipts_invalid")
@@ -1124,7 +1136,10 @@ def derive_development_loop_receipt(
         for receipt in rows[1:]
     ):
         raise HostedPhase2Error("development_loop_identity_invalid")
-    if any(current.input_digest != previous.output_digest for previous, current in zip(rows, rows[1:])):
+    if any(
+        current.input_digest != previous.output_digest
+        for previous, current in pairwise(rows)
+    ):
         raise HostedPhase2Error("development_loop_lineage_invalid")
     return DevelopmentLoopReceipt(
         task_id=first.task_id,

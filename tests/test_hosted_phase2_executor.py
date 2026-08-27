@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import replace
 import json
 import os
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
 import pytest
 
+from quantengine_public.agent_platform.contracts import canonical_json, content_digest
 from quantengine_public.agent_platform.hosted_phase2 import (
     MODEL_ID,
     DurableRunClaim,
@@ -21,12 +22,10 @@ from quantengine_public.agent_platform.hosted_phase2 import (
     HostedStageObservation,
     HostedStagePlan,
     LocalSourceLookup,
-    RoleReceipt,
     derive_development_loop_receipt,
     derive_handoff_receipt,
     evaluate_stage,
 )
-from quantengine_public.agent_platform.contracts import canonical_json, content_digest
 from quantengine_public.agent_platform.hosted_phase2_executor import (
     ArchitectureOutput,
     DevelopmentRoleOutput,
@@ -84,7 +83,9 @@ class FakeRunner:
         return SimpleNamespace(
             final_output=ArchitectureOutput(
                 summary="Bound the hosted run.",
-                affected_paths=["src/quantengine_public/agent_platform/hosted_phase2.py"],
+                affected_paths=[
+                    "src/quantengine_public/agent_platform/hosted_phase2.py"
+                ],
                 risks=["budget drift"],
                 validation=["deterministic receipt"],
             ),
@@ -106,7 +107,9 @@ def test_executor_does_not_read_key_before_authorization(
 
     monkeypatch.setattr("os.getenv", guarded_getenv)
     run_authority = authority()
-    executor = HostedAgentsExecutor.for_test(authority=run_authority, runner=FakeRunner())
+    executor = HostedAgentsExecutor.for_test(
+        authority=run_authority, runner=FakeRunner()
+    )
     candidate = bound_plan(executor)
     approved = run_authority.authorize(candidate, prompt="review")
 
@@ -128,7 +131,9 @@ def test_executor_requires_key_only_at_authorized_execution(
 ) -> None:
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     run_authority = authority()
-    executor = HostedAgentsExecutor.for_test(authority=run_authority, runner=FakeRunner())
+    executor = HostedAgentsExecutor.for_test(
+        authority=run_authority, runner=FakeRunner()
+    )
     candidate = bound_plan(executor)
     approved = run_authority.authorize(candidate, prompt="review")
 
@@ -194,7 +199,9 @@ def test_executor_rejects_prompt_and_wrong_stage_before_network(
             )
         )
     second_authority = authority()
-    second_executor = HostedAgentsExecutor.for_test(authority=second_authority, runner=runner)
+    second_executor = HostedAgentsExecutor.for_test(
+        authority=second_authority, runner=runner
+    )
     second_candidate = bound_plan(second_executor)
     second_approved = second_authority.authorize(second_candidate, prompt="review")
     with pytest.raises(HostedPhase2Error, match="architecture_stage_required"):
@@ -289,6 +296,33 @@ def test_production_network_boundary_claims_once_after_key_is_present(
         other._authorize_network()
 
 
+def test_production_executor_rejects_durable_claim_for_another_run(
+    tmp_path: Path,
+) -> None:
+    run_authority = HostedRunAuthority(
+        policy=HostedPhase2Policy(),
+        run_identity="a" * 64,
+        initial_predecessor_receipt_digest="4" * 64,
+        prompt_manifest={
+            "architecture": "architecture",
+            "readonly_tool": "readonly",
+            "handoff": "handoff",
+            "development_loop": "development",
+        },
+    )
+    forged_claim = DurableRunClaim(
+        tmp_path,
+        approval_scope_digest="c" * 64,
+        run_identity="b" * 64,
+    )
+
+    with pytest.raises(HostedPhase2Error, match="durable_run_claim_identity_mismatch"):
+        HostedAgentsExecutor._for_production(
+            authority=run_authority,
+            run_claim=forged_claim,
+        )
+
+
 def _stage_plan(
     executor: HostedAgentsExecutor,
     stage: str,
@@ -328,7 +362,9 @@ def _stage_plan(
         )
     return replace(
         candidate,
-        agent_graph_identity=executor.preview_agent_graph_identity(candidate, lookup=lookup),
+        agent_graph_identity=executor.preview_agent_graph_identity(
+            candidate, lookup=lookup
+        ),
     )
 
 
@@ -350,7 +386,10 @@ def _target_authorization(
         "readonly_tool": "readonly preflight",
         "handoff": "handoff preflight",
         "development_loop": canonical_json(
-            {role: f"{role} preflight" for role in ("architecture", "test", "development", "quality")}
+            {
+                role: f"{role} preflight"
+                for role in ("architecture", "test", "development", "quality")
+            }
         ),
     }
     if target_prompt is not None:
@@ -408,7 +447,11 @@ def _target_authorization(
 class SdkGraphRunner:
     """Offline Runner seam that exercises real SDK Agent/FunctionTool graphs."""
 
-    def __init__(self, *, source_path: str = "src/quantengine_public/agent_platform/hosted_canary.py") -> None:
+    def __init__(
+        self,
+        *,
+        source_path: str = "src/quantengine_public/agent_platform/hosted_canary.py",
+    ) -> None:
         self.source_path = source_path
         self.calls: list[dict[str, Any]] = []
         self.tool_calls: list[str] = []
@@ -439,7 +482,9 @@ class SdkGraphRunner:
                 tool_call_id="offline-tool-call",
                 tool_arguments=json.dumps({"path": self.source_path}),
             )
-            await tool.on_invoke_tool(tool_context, json.dumps({"path": self.source_path}))
+            await tool.on_invoke_tool(
+                tool_context, json.dumps({"path": self.source_path})
+            )
             self.tool_calls.append(tool.name)
             output: Any = ReadonlyToolOutput(
                 summary="source-grounded result",
@@ -488,7 +533,9 @@ def test_readonly_tool_uses_real_sdk_function_tool_once_and_preserves_boundary(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "offline-test-only")
-    source = tmp_path / "src" / "quantengine_public" / "agent_platform" / "hosted_canary.py"
+    source = (
+        tmp_path / "src" / "quantengine_public" / "agent_platform" / "hosted_canary.py"
+    )
     source.parent.mkdir(parents=True)
     source.write_text("PUBLIC = True\n", encoding="utf-8")
     lookup = LocalSourceLookup(
@@ -498,12 +545,18 @@ def test_readonly_tool_uses_real_sdk_function_tool_once_and_preserves_boundary(
     )
     runner = SdkGraphRunner()
     executor = HostedAgentsExecutor.for_test(authority=authority(), runner=runner)
-    ledger, target, approved, prompt = _target_authorization(executor, "readonly_tool", lookup=lookup)
+    _ledger, target, approved, prompt = _target_authorization(
+        executor, "readonly_tool", lookup=lookup
+    )
     observed = asyncio.run(
-        executor.execute_readonly_tool(target, authorization=approved, prompt=prompt, lookup=lookup)
+        executor.execute_readonly_tool(
+            target, authorization=approved, prompt=prompt, lookup=lookup
+        )
     )
 
-    assert target.agent_graph_identity == executor.preview_agent_graph_identity(target, lookup=lookup)
+    assert target.agent_graph_identity == executor.preview_agent_graph_identity(
+        target, lookup=lookup
+    )
     assert lookup.calls == ("src/quantengine_public/agent_platform/hosted_canary.py",)
     assert runner.tool_calls == ["lookup_public_source"]
     assert observed.tool_calls == ("lookup_public_source",)
@@ -518,8 +571,10 @@ def test_handoff_uses_real_sdk_handoff_graph_and_identity_bound_receipt(
     monkeypatch.setenv("OPENAI_API_KEY", "offline-test-only")
     runner = SdkGraphRunner()
     executor = HostedAgentsExecutor.for_test(authority=authority(), runner=runner)
-    ledger, target, approved, prompt = _target_authorization(executor, "handoff")
-    result = asyncio.run(executor.execute_handoff(target, authorization=approved, prompt=prompt))
+    _ledger, target, approved, prompt = _target_authorization(executor, "handoff")
+    result = asyncio.run(
+        executor.execute_handoff(target, authorization=approved, prompt=prompt)
+    )
 
     assert isinstance(result, HandoffExecution)
     assert result.observation.last_agent == "test"
@@ -528,7 +583,10 @@ def test_handoff_uses_real_sdk_handoff_graph_and_identity_bound_receipt(
     assert result.role_receipts[0].role == "architecture"
     assert result.role_receipts[1].role == "test"
     assert result.role_receipts[1].input_digest == result.role_receipts[0].output_digest
-    assert result.handoff_receipt.receipt_digest == derive_handoff_receipt(*result.role_receipts).receipt_digest
+    assert (
+        result.handoff_receipt.receipt_digest
+        == derive_handoff_receipt(*result.role_receipts).receipt_digest
+    )
     assert target.agent_graph_identity == executor.preview_agent_graph_identity(target)
     assert runner.calls[0]["agent"].handoffs[0].name == "test"
 
@@ -544,17 +602,25 @@ def test_development_loop_uses_four_real_sdk_agents_and_lineage(
     }
     prompt_packet = content_digest({"prompts": prompts})
     executor = HostedAgentsExecutor.for_test(authority=authority(), runner=runner)
-    ledger, target, approved, _ = _target_authorization(
+    _ledger, target, approved, _ = _target_authorization(
         executor, "development_loop", target_prompt=prompt_packet
     )
-    result = asyncio.run(executor.execute_development_loop(target, authorization=approved, prompts=prompts))
+    result = asyncio.run(
+        executor.execute_development_loop(
+            target, authorization=approved, prompts=prompts
+        )
+    )
 
     assert target.agent_graph_identity == executor.preview_agent_graph_identity(target)
     assert [call["agent"].name for call in runner.calls] == list(target.handoff_route)
     assert len(result.role_receipts) == 4
-    assert tuple(receipt.role for receipt in result.role_receipts) == target.handoff_route
+    assert (
+        tuple(receipt.role for receipt in result.role_receipts) == target.handoff_route
+    )
     assert all(call["run_config"].tracing_disabled for call in runner.calls)
-    assert all(not call["agent"].tools and not call["agent"].handoffs for call in runner.calls)
+    assert all(
+        not call["agent"].tools and not call["agent"].handoffs for call in runner.calls
+    )
     assert all(
         current.input_digest == previous.output_digest
         for previous, current in zip(result.role_receipts, result.role_receipts[1:])

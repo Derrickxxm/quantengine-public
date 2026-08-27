@@ -17,18 +17,20 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 if __package__ in {None, ""}:  # pragma: no cover - exercised by direct CLI use
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from quantengine_public.agent_platform.contracts import content_digest
 from quantengine_public.agent_platform.hosted_phase2 import (
     MODEL_ID,
+    DurableRunClaim,
     HostedPhase2Error,
     HostedPhase2Policy,
-    DurableRunClaim,
     HostedRunAuthority,
     HostedStagePlan,
     LocalSourceLookup,
@@ -40,8 +42,6 @@ from quantengine_public.agent_platform.hosted_phase2_executor import (
     HandoffExecution,
     HostedAgentsExecutor,
 )
-from quantengine_public.agent_platform.contracts import canonical_json, content_digest
-
 
 PHASE2_STAGES = ("architecture", "readonly_tool", "handoff", "development_loop")
 MAX_TOTAL_BUDGET_MICROUSD = 100_000
@@ -49,7 +49,9 @@ TASK_ID = "TASKSYS-1318"
 TASK_REVISION = "p2-v1"
 SOURCE_PATH = "src/quantengine_public/agent_platform/hosted_canary.py"
 _ZERO_DIGEST = "0" * 64
-_SEED_DIGEST = content_digest({"task_id": TASK_ID, "task_revision": TASK_REVISION, "phase": "hosted-phase2"})
+_SEED_DIGEST = content_digest(
+    {"task_id": TASK_ID, "task_revision": TASK_REVISION, "phase": "hosted-phase2"}
+)
 _APPROVAL_SCOPE_DIGEST = content_digest(
     {
         "owner_decision": "DEC-0017",
@@ -94,7 +96,11 @@ def _git_snapshot(root: Path) -> tuple[str, bool]:
 
 def _durable_claim_state_dir() -> Path:
     configured = os.getenv("XDG_STATE_HOME")
-    base = Path(configured).expanduser() if configured else Path.home() / ".local" / "state"
+    base = (
+        Path(configured).expanduser()
+        if configured
+        else Path.home() / ".local" / "state"
+    )
     return base / "quantengine-public" / "hosted-phase2"
 
 
@@ -160,7 +166,12 @@ def _authorization_prompt_packets(prompts: Mapping[str, str]) -> dict[str, str]:
     return {
         stage: (
             content_digest(
-                {"prompts": {role: prompts[stage] for role in ("architecture", "test", "development", "quality")}}
+                {
+                    "prompts": {
+                        role: prompts[stage]
+                        for role in ("architecture", "test", "development", "quality")
+                    }
+                }
             )
             if stage == "development_loop"
             else prompts[stage]
@@ -185,7 +196,9 @@ def _base_plan(
         task_id=TASK_ID,
         task_revision=TASK_REVISION,
         source_identity=source_identity,
-        context_digest=content_digest({"task_id": TASK_ID, "stage": stage, "revision": TASK_REVISION}),
+        context_digest=content_digest(
+            {"task_id": TASK_ID, "stage": stage, "revision": TASK_REVISION}
+        ),
         agent_graph_identity=_ZERO_DIGEST,
         predecessor_receipt_digest=predecessor,
         model=MODEL_ID,
@@ -226,8 +239,9 @@ def _authority_flags(stage: str, *, execute: bool) -> dict[str, bool]:
     return {
         "authorized": execute,
         "execution_allowed": execute,
-        "tool_authority_granted": stage == "readonly_tool",
-        "handoff_authority_granted": stage in {"handoff", "development_loop"},
+        "tool_authority_granted": execute and stage == "readonly_tool",
+        "handoff_authority_granted": execute
+        and stage in {"handoff", "development_loop"},
         "write_authority_granted": False,
         "release_authority_granted": False,
         "hosted_trace_enabled": False,
@@ -235,7 +249,9 @@ def _authority_flags(stage: str, *, execute: bool) -> dict[str, bool]:
 
 
 def _planned_row(plan: HostedStagePlan) -> dict[str, Any]:
-    planned_receipt = content_digest({"stage": plan.stage, "plan_digest": plan.plan_digest, "status": "PLANNED"})
+    planned_receipt = content_digest(
+        {"stage": plan.stage, "plan_digest": plan.plan_digest, "status": "PLANNED"}
+    )
     return {
         "stage": plan.stage,
         "status": "PLANNED",
@@ -267,7 +283,9 @@ def _receipt_row(receipt: Any, *, execute: bool) -> dict[str, Any]:
     }
 
 
-def _blocked_row(plan: HostedStagePlan, *, reserved_cost_microusd: int) -> dict[str, Any]:
+def _blocked_row(
+    plan: HostedStagePlan, *, reserved_cost_microusd: int
+) -> dict[str, Any]:
     return {
         "stage": plan.stage,
         "status": "BLOCKED",
@@ -324,7 +342,7 @@ def _strict_public_row(source: Mapping[str, Any]) -> dict[str, Any]:
     for key in sorted(expected_flags):
         value = flags_source[key]
         if not isinstance(value, bool):
-            raise ValueError("public_receipt_authority_flags_invalid")
+            raise TypeError("public_receipt_authority_flags_invalid")
         flags[key] = value
     row = {
         "stage": str(source["stage"]),
@@ -337,11 +355,17 @@ def _strict_public_row(source: Mapping[str, Any]) -> dict[str, Any]:
         "latency_ms": source["latency_ms"],
         "authority_flags": flags,
     }
-    if row["stage"] not in PHASE2_STAGES or row["status"] not in {"PLANNED", "PASS", "BLOCKED"}:
+    if row["stage"] not in PHASE2_STAGES or row["status"] not in {
+        "PLANNED",
+        "PASS",
+        "BLOCKED",
+    }:
         raise ValueError("public_receipt_stage_invalid")
     for name in ("plan_digest", "receipt_digest", "output_digest"):
         value = row[name]
-        if len(value) != 64 or any(character not in "0123456789abcdef" for character in value):
+        if len(value) != 64 or any(
+            character not in "0123456789abcdef" for character in value
+        ):
             raise ValueError("public_receipt_digest_invalid")
     for name in ("accounted_cost_microusd", "latency_ms"):
         value = row[name]
@@ -374,7 +398,9 @@ def build_public_receipt(
     statuses = tuple(row["status"] for row in rows)
     if execution_mode == "dry_run":
         if failure_digest is None:
-            if len(rows) != len(PHASE2_STAGES) or any(status != "PLANNED" for status in statuses):
+            if len(rows) != len(PHASE2_STAGES) or any(
+                status != "PLANNED" for status in statuses
+            ):
                 raise ValueError("dry_run_receipt_topology_invalid")
             verdict = "PLANNED"
         elif rows:
@@ -382,11 +408,16 @@ def build_public_receipt(
         else:
             verdict = "BLOCKED"
     elif failure_digest is None:
-        if len(rows) != len(PHASE2_STAGES) or any(status != "PASS" for status in statuses):
+        if len(rows) != len(PHASE2_STAGES) or any(
+            status != "PASS" for status in statuses
+        ):
             raise ValueError("execute_receipt_topology_invalid")
         verdict = "PASS"
     else:
-        if rows and (statuses[-1] != "BLOCKED" or any(status != "PASS" for status in statuses[:-1])):
+        if rows and (
+            statuses[-1] != "BLOCKED"
+            or any(status != "PASS" for status in statuses[:-1])
+        ):
             raise ValueError("blocked_receipt_topology_invalid")
         verdict = "BLOCKED"
     for row in rows:
@@ -397,7 +428,12 @@ def build_public_receipt(
         if row["authority_flags"] != expected_flags:
             raise ValueError("public_receipt_authority_flags_mismatch")
     cost = sum(int(row["accounted_cost_microusd"]) for row in rows)
-    if not isinstance(cost, int) or isinstance(cost, bool) or cost < 0 or cost > MAX_TOTAL_BUDGET_MICROUSD:
+    if (
+        not isinstance(cost, int)
+        or isinstance(cost, bool)
+        or cost < 0
+        or cost > MAX_TOTAL_BUDGET_MICROUSD
+    ):
         raise ValueError("hosted budget exceeded")
     usage = _sum_usage(rows)
     latency_ms = sum(int(row["latency_ms"]) for row in rows)
@@ -456,7 +492,10 @@ async def _execute(
                 )
             elif stage == "readonly_tool":
                 observation = await executor.execute_readonly_tool(
-                    plan, authorization=authorization, prompt=prompts[stage], lookup=lookup
+                    plan,
+                    authorization=authorization,
+                    prompt=prompts[stage],
+                    lookup=lookup,
                 )
             elif stage == "handoff":
                 handoff: HandoffExecution = await executor.execute_handoff(
@@ -466,10 +505,12 @@ async def _execute(
                     raise HostedPhase2Error("handoff_role_receipts_required")
                 observation = handoff.observation
             else:
-                development: DevelopmentExecution = await executor.execute_development_loop(
-                    plan,
-                    authorization=authorization,
-                    prompts={role: prompts[stage] for role in plan.handoff_route},
+                development: DevelopmentExecution = (
+                    await executor.execute_development_loop(
+                        plan,
+                        authorization=authorization,
+                        prompts={role: prompts[stage] for role in plan.handoff_route},
+                    )
                 )
                 observation = development.observation
                 if len(development.role_receipts) != len(plan.handoff_route):
@@ -485,7 +526,7 @@ async def _execute(
                 authorization,
                 receipt=receipt,
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - fail-closed stage boundary
             authority.block(authorization)
             rows.append(
                 _blocked_row(
@@ -493,7 +534,9 @@ async def _execute(
                     reserved_cost_microusd=authorization.reserved_cost_microusd,
                 )
             )
-            return rows, content_digest({"error_type": type(exc).__name__, "stage": stage})
+            return rows, content_digest(
+                {"error_type": type(exc).__name__, "stage": stage}
+            )
         rows.append(_receipt_row(receipt, execute=True))
         predecessor = receipt.receipt_digest
     return rows, None
@@ -508,10 +551,14 @@ def _run_phase2(
 ) -> dict[str, Any]:
     """Plan all four gates, or execute them when explicitly requested."""
 
-    policy = policy or HostedPhase2Policy(total_budget_microusd=MAX_TOTAL_BUDGET_MICROUSD)
+    policy = policy or HostedPhase2Policy(
+        total_budget_microusd=MAX_TOTAL_BUDGET_MICROUSD
+    )
     if policy.total_budget_microusd > MAX_TOTAL_BUDGET_MICROUSD:
         raise HostedPhase2Error("runner_budget_cap_exceeded")
-    source_root = Path(root) if root is not None else Path(__file__).resolve().parents[1]
+    source_root = (
+        Path(root) if root is not None else Path(__file__).resolve().parents[1]
+    )
     source_identity, file_digest, dirty, source_snapshot = _source_metadata(source_root)
     if execute and dirty:
         raise HostedPhase2Error("execute_requires_clean_worktree")
@@ -579,7 +626,9 @@ def _run_phase2(
             max_input_chars=policy.max_input_chars,
         )
         plans.append(plan)
-        predecessor = content_digest({"stage": stage, "plan_digest": plan.plan_digest, "status": "PLANNED"})
+        predecessor = content_digest(
+            {"stage": stage, "plan_digest": plan.plan_digest, "status": "PLANNED"}
+        )
     if not execute:
         rows = [_planned_row(plan) for plan in plans]
         return build_public_receipt(execution_mode="dry_run", stages=rows)
@@ -633,12 +682,18 @@ def _run_phase2_for_test(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run the bounded hosted Phase 2 canary")
-    parser.add_argument("--execute", action="store_true", help="consume the process API key and run hosted stages")
+    parser = argparse.ArgumentParser(
+        description="Run the bounded hosted Phase 2 canary"
+    )
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help="consume the process API key and run hosted stages",
+    )
     args = parser.parse_args(argv)
     try:
         receipt = run_phase2(execute=args.execute)
-    except Exception as exc:  # public CLI emits no exception text or private payload
+    except Exception as exc:  # noqa: BLE001 - public CLI redacts the exception
         receipt = build_public_receipt(
             execution_mode="execute" if args.execute else "dry_run",
             stages=(),

@@ -20,9 +20,8 @@ from pydantic import BaseModel, Field
 from .contracts import canonical_json, content_digest
 from .hosted_phase2 import (
     MODEL_ID,
-    HostedPhase2Error,
-    HostedPhase2Policy,
     DurableRunClaim,
+    HostedPhase2Error,
     HostedRunAuthority,
     HostedStageObservation,
     HostedStagePlan,
@@ -132,7 +131,7 @@ class HostedAgentsExecutor:
         authority: HostedRunAuthority,
         runner: RunnerCallable,
         monotonic: Callable[[], float] = time.monotonic,
-    ) -> "HostedAgentsExecutor":
+    ) -> HostedAgentsExecutor:
         """Construct the isolated unit-test seam; production never calls it."""
 
         if type(authority) is not HostedRunAuthority:
@@ -149,13 +148,15 @@ class HostedAgentsExecutor:
         *,
         authority: HostedRunAuthority,
         run_claim: DurableRunClaim,
-    ) -> "HostedAgentsExecutor":
+    ) -> HostedAgentsExecutor:
         if type(authority) is not HostedRunAuthority:
             raise HostedPhase2Error("run_authority_invalid")
         if not authority.prompt_manifest_bound:
             raise HostedPhase2Error("prompt_manifest_required")
         if type(run_claim) is not DurableRunClaim:
             raise HostedPhase2Error("durable_run_claim_invalid")
+        if run_claim.run_identity != authority.run_identity:
+            raise HostedPhase2Error("durable_run_claim_identity_mismatch")
         instance = cls()
         instance._authority = authority
         instance._run_claim = run_claim
@@ -235,7 +236,10 @@ class HostedAgentsExecutor:
             raise HostedPhase2Error("readonly_lookup_capability_invalid")
 
         agent = self._readonly_agent(plan, lookup)
-        if self.preview_agent_graph_identity(plan, lookup=lookup) != plan.agent_graph_identity:
+        if (
+            self.preview_agent_graph_identity(plan, lookup=lookup)
+            != plan.agent_graph_identity
+        ):
             raise HostedPhase2Error("agent_graph_identity_mismatch")
         self._consume_before_key(plan, authorization, prompt)
         self._authorize_network()
@@ -338,7 +342,9 @@ class HostedAgentsExecutor:
                 for role in plan.handoff_route:
                     suffix = ""
                     if prior_output is not None:
-                        suffix = "\nUpstream public packet:\n" + canonical_json(prior_output)
+                        suffix = "\nUpstream public packet:\n" + canonical_json(
+                            prior_output
+                        )
                     role_prompt = prompts[role] + suffix
                     if len(role_prompt) > plan.max_input_chars:
                         raise HostedPhase2Error("prompt_exceeds_plan")

@@ -3,21 +3,24 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import replace
 import inspect
 import json
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
+from quantengine_public.agent_platform import qwen_phase2_simulation as local_simulation
 from quantengine_public.agent_platform.contracts import content_digest
-from quantengine_public.agent_platform.hosted_phase2 import DurableRunClaim, LocalSourceLookup
+from quantengine_public.agent_platform.hosted_phase2 import (
+    DurableRunClaim,
+    LocalSourceLookup,
+)
 from quantengine_public.agent_platform.hosted_phase2_executor import (
     ArchitectureOutput,
     DevelopmentRoleOutput,
 )
-from quantengine_public.agent_platform import qwen_phase2_simulation as local_simulation
 from quantengine_public.agent_platform.qwen_phase2_simulation import (
     LOCAL_SIMULATION_DECISION,
     LocalModelSimulationExecutor,
@@ -64,11 +67,14 @@ def test_decision_and_endpoint_identity_are_exact_and_public_safe() -> None:
     assert LOCAL_SIMULATION_DECISION == "DEC-0019"
     assert first.endpoint_identity_digest == same.endpoint_identity_digest
     assert first.endpoint_identity_digest != other.endpoint_identity_digest
-    assert LocalSimulationConfig(
-        base_url="http://[0:0:0:0:0:0:0:1]:21434/v1"
-    ).endpoint_identity_digest == LocalSimulationConfig(
-        base_url="http://[::1]:21434/v1"
-    ).endpoint_identity_digest
+    assert (
+        LocalSimulationConfig(
+            base_url="http://[0:0:0:0:0:0:0:1]:21434/v1"
+        ).endpoint_identity_digest
+        == LocalSimulationConfig(
+            base_url="http://[::1]:21434/v1"
+        ).endpoint_identity_digest
+    )
     assert len(first.endpoint_identity_digest) == 64
     assert "127.0.0.1" not in first.endpoint_identity_digest
     for invalid in (
@@ -159,7 +165,9 @@ def test_stage_rejects_rechained_handoff_identity_and_packet_tampering() -> None
             candidate = replace(candidate, producer_agent_identity="9" * 64)
         forged_rows.append(candidate)
         predecessor = candidate.receipt_digest
-    forged_roles = tuple(row for row in forged_rows if isinstance(row, SimulationRoleReceipt))
+    forged_roles = tuple(
+        row for row in forged_rows if isinstance(row, SimulationRoleReceipt)
+    )
     forged_handoffs = tuple(
         row for row in forged_rows if isinstance(row, SimulationHandoffReceipt)
     )
@@ -218,7 +226,9 @@ def test_development_repair_budget_is_one_for_the_entire_stage() -> None:
         )
     )
     assert first.repair_count == 1
-    with pytest.raises(LocalSimulationError, match="simulation_development_test_output_"):
+    with pytest.raises(
+        LocalSimulationError, match="simulation_development_test_output_"
+    ):
         asyncio.run(
             executor._run(
                 agent,
@@ -351,7 +361,9 @@ def test_model_discovery_and_whole_run_share_bounded_deadlines() -> None:
             return SimpleNamespace(data=[])
 
     executor._client = SimpleNamespace(models=SlowModels(), close=lambda: None)
-    with pytest.raises(LocalSimulationError, match="simulation_model_discovery_timeout"):
+    with pytest.raises(
+        LocalSimulationError, match="simulation_model_discovery_timeout"
+    ):
         asyncio.run(executor._discover_model())
 
     async def quick_discovery() -> None:
@@ -501,7 +513,10 @@ def test_local_executor_has_no_hosted_claim_surface(
 
     monkeypatch.setattr(DurableRunClaim, "claim", forbidden_claim)
     executor = _executor()
-    assert "run_claim" not in inspect.signature(LocalModelSimulationExecutor.__init__).parameters
+    assert (
+        "run_claim"
+        not in inspect.signature(LocalModelSimulationExecutor.__init__).parameters
+    )
     assert not hasattr(local_simulation, "DurableRunClaim")
     assert ".claim(" not in inspect.getsource(LocalModelSimulationExecutor)
     assert called is False
@@ -544,7 +559,9 @@ def test_committed_receipt_retains_new_identity_contract() -> None:
             (*stage["role_receipts"], *stage["handoff_receipts"]),
             key=lambda row: row["sequence"],
         )
-        assert stage["identity_receipts"] == [row["receipt_digest"] for row in identities]
+        assert stage["identity_receipts"] == [
+            row["receipt_digest"] for row in identities
+        ]
         identity_predecessor = content_digest(
             {
                 "run_identity": expected_run,
@@ -554,7 +571,9 @@ def test_committed_receipt_retains_new_identity_contract() -> None:
             }
         )
         for identity in identities:
-            assert identity["predecessor_identity_receipt_digest"] == identity_predecessor
+            assert (
+                identity["predecessor_identity_receipt_digest"] == identity_predecessor
+            )
             identity_body = dict(identity)
             identity_digest = identity_body.pop("receipt_digest")
             assert content_digest(identity_body) == identity_digest

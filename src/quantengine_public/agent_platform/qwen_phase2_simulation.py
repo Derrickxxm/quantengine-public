@@ -9,11 +9,11 @@ evidence.
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
 import ipaddress
 import time
-from collections.abc import Callable, Mapping
-from typing import Any, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+from typing import Any
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, ValidationError
@@ -27,7 +27,6 @@ from .hosted_phase2_executor import (
     ReadonlyToolOutput,
 )
 from .runtime import AgentsSdkRuntime
-
 
 LOCAL_SIMULATION_MODEL = "qwen3.8:27b-mxfp8"
 LOCAL_SIMULATION_PROVIDER = "ollama-openai-compatible"
@@ -310,16 +309,28 @@ class SimulationStageReceipt:
             or not _is_digest(self.output_digest)
             or not _is_digest(self.run_identity)
             or not _is_digest(self.endpoint_identity_digest)
-            or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in metrics)
+            or any(
+                isinstance(value, bool) or not isinstance(value, int) or value < 0
+                for value in metrics
+            )
             or self.requests <= 0
             or self.input_tokens <= 0
             or self.output_tokens <= 0
-            or self.requests > {"architecture": 1, "readonly_tool": 2, "handoff": 2, "development_loop": 5}.get(self.stage, 0)
+            or self.requests
+            > {
+                "architecture": 1,
+                "readonly_tool": 2,
+                "handoff": 2,
+                "development_loop": 5,
+            }.get(self.stage, 0)
             or self.input_tokens > MAX_SIMULATION_INPUT_TOKENS
-            or self.output_tokens > min(MAX_SIMULATION_OUTPUT_TOKENS, 1_600 * self.requests)
+            or self.output_tokens
+            > min(MAX_SIMULATION_OUTPUT_TOKENS, 1_600 * self.requests)
         ):
             raise LocalSimulationError("simulation_stage_receipt_invalid")
-        tool_calls, handoffs, roles, expected_roles, expected_handoffs = expected[self.stage]
+        tool_calls, handoffs, roles, expected_roles, expected_handoffs = expected[
+            self.stage
+        ]
         if (
             (self.tool_call_count, self.handoff_count, self.role_count)
             != (tool_calls, handoffs, roles)
@@ -335,7 +346,9 @@ class SimulationStageReceipt:
             (*self.role_receipts, *self.handoff_receipts),
             key=lambda row: row.sequence,
         )
-        if tuple(row.sequence for row in identity_rows) != tuple(range(len(identity_rows))):
+        if tuple(row.sequence for row in identity_rows) != tuple(
+            range(len(identity_rows))
+        ):
             raise LocalSimulationError("simulation_stage_identity_sequence_invalid")
         predecessor = content_digest(
             {
@@ -372,9 +385,10 @@ class SimulationStageReceipt:
             ):
                 raise LocalSimulationError("simulation_stage_handoff_binding_invalid")
         else:
-            if content_digest(
-                [row.agent_graph_identity for row in self.role_receipts]
-            ) != self.agent_graph_identity:
+            if (
+                content_digest([row.agent_graph_identity for row in self.role_receipts])
+                != self.agent_graph_identity
+            ):
                 raise LocalSimulationError("simulation_stage_role_binding_invalid")
             for producer, handoff, consumer in zip(
                 self.role_receipts[:-1],
@@ -387,7 +401,9 @@ class SimulationStageReceipt:
                     or handoff.consumer_agent_identity != consumer.agent_graph_identity
                     or handoff.packet_digest != consumer.input_digest
                 ):
-                    raise LocalSimulationError("simulation_stage_handoff_binding_invalid")
+                    raise LocalSimulationError(
+                        "simulation_stage_handoff_binding_invalid"
+                    )
 
     @property
     def receipt_digest(self) -> str:
@@ -618,8 +634,16 @@ class LocalModelSimulationExecutor:
         if type(lookup) is not LocalSourceLookup:
             raise LocalSimulationError("simulation_lookup_invalid")
         await self._discover_model()
-        prompts = (architecture_prompt, readonly_prompt, handoff_prompt, development_prompt)
-        if any(not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 24_000 for prompt in prompts):
+        prompts = (
+            architecture_prompt,
+            readonly_prompt,
+            handoff_prompt,
+            development_prompt,
+        )
+        if any(
+            not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 24_000
+            for prompt in prompts
+        ):
             raise LocalSimulationError("simulation_prompt_invalid")
 
         run_identity = content_digest(
@@ -647,7 +671,9 @@ class LocalModelSimulationExecutor:
             "Use only the supplied public packet. Return bounded architecture findings.",
             ArchitectureOutput,
         )
-        data = await self._run(architecture, architecture_prompt, ArchitectureOutput, "architecture")
+        data = await self._run(
+            architecture, architecture_prompt, ArchitectureOutput, "architecture"
+        )
         architecture_identity = self._runtime.agent_graph_identity(architecture)
         architecture_role = self._role_receipt(
             run_identity=run_identity,
@@ -660,8 +686,14 @@ class LocalModelSimulationExecutor:
             output=data.output,
         )
         receipt = self._stage_receipt(
-            "architecture", source_identity, predecessor, architecture, data,
-            tool_call_count=0, handoff_count=0, role_count=1,
+            "architecture",
+            source_identity,
+            predecessor,
+            architecture,
+            data,
+            tool_call_count=0,
+            handoff_count=0,
+            role_count=1,
             run_identity=run_identity,
             role_receipts=(architecture_role,),
             handoff_receipts=(),
@@ -686,7 +718,9 @@ class LocalModelSimulationExecutor:
             ReadonlyToolOutput,
             tools=(tool,),
         )
-        data = await self._run(readonly, readonly_prompt, ReadonlyToolOutput, "readonly_tool")
+        data = await self._run(
+            readonly, readonly_prompt, ReadonlyToolOutput, "readonly_tool"
+        )
         call_count = len(lookup.calls) - before_calls
         if call_count != 1:
             raise LocalSimulationError("simulation_readonly_tool_count_invalid")
@@ -702,8 +736,14 @@ class LocalModelSimulationExecutor:
             output=data.output,
         )
         receipt = self._stage_receipt(
-            "readonly_tool", source_identity, predecessor, readonly, data,
-            tool_call_count=call_count, handoff_count=0, role_count=1,
+            "readonly_tool",
+            source_identity,
+            predecessor,
+            readonly,
+            data,
+            tool_call_count=call_count,
+            handoff_count=0,
+            role_count=1,
             capability_digest=lookup.capability_digest,
             run_identity=run_identity,
             role_receipts=(readonly_role,),
@@ -751,8 +791,14 @@ class LocalModelSimulationExecutor:
             output=data.output,
         )
         receipt = self._stage_receipt(
-            "handoff", source_identity, predecessor, handoff, data,
-            tool_call_count=0, handoff_count=1, role_count=2,
+            "handoff",
+            source_identity,
+            predecessor,
+            handoff,
+            data,
+            tool_call_count=0,
+            handoff_count=1,
+            role_count=2,
             run_identity=run_identity,
             role_receipts=(handoff_test_role,),
             handoff_receipts=(sdk_handoff,),
@@ -813,7 +859,10 @@ class LocalModelSimulationExecutor:
                 repair_allowed=repair_remaining > 0,
             )
             repair_remaining -= role_data.repair_count
-            if role_data.last_agent != role or role_data.output.get("verdict") != "PASS":
+            if (
+                role_data.last_agent != role
+                or role_data.output.get("verdict") != "PASS"
+            ):
                 raise LocalSimulationError("simulation_development_role_invalid")
             role_receipt = self._role_receipt(
                 run_identity=run_identity,
@@ -850,8 +899,14 @@ class LocalModelSimulationExecutor:
         )
         receipts.append(
             self._stage_receipt(
-                "development_loop", source_identity, predecessor, None, development_data,
-                tool_call_count=0, handoff_count=3, role_count=4,
+                "development_loop",
+                source_identity,
+                predecessor,
+                None,
+                development_data,
+                tool_call_count=0,
+                handoff_count=3,
+                role_count=4,
                 graph_identity=graph_identity,
                 run_identity=run_identity,
                 role_receipts=tuple(role_receipts),
@@ -943,11 +998,17 @@ class LocalModelSimulationExecutor:
             raise LocalSimulationError(f"simulation_{label}_output_not_text")
         results = [result]
         try:
-            output = schema.model_validate_json(result.final_output).model_dump(mode="json")
+            output = schema.model_validate_json(result.final_output).model_dump(
+                mode="json"
+            )
         except ValidationError as exc:
             if not label.startswith("development_") or not repair_allowed:
-                error_type = str(exc.errors(include_input=False)[0].get("type", "invalid"))
-                raise LocalSimulationError(f"simulation_{label}_output_{error_type}") from exc
+                error_type = str(
+                    exc.errors(include_input=False)[0].get("type", "invalid")
+                )
+                raise LocalSimulationError(
+                    f"simulation_{label}_output_{error_type}"
+                ) from exc
             repair_prompt = (
                 prompt
                 + "\nThe previous candidate failed the exact JSON schema. Return one corrected "
@@ -967,9 +1028,13 @@ class LocalModelSimulationExecutor:
             except TimeoutError as retry_exc:
                 raise LocalSimulationError("simulation_timeout") from retry_exc
             if not isinstance(repaired.final_output, str):
-                raise LocalSimulationError(f"simulation_{label}_output_not_text") from exc
+                raise LocalSimulationError(
+                    f"simulation_{label}_output_not_text"
+                ) from exc
             try:
-                output = schema.model_validate_json(repaired.final_output).model_dump(mode="json")
+                output = schema.model_validate_json(repaired.final_output).model_dump(
+                    mode="json"
+                )
             except ValidationError as retry_exc:
                 error_type = str(
                     retry_exc.errors(include_input=False)[0].get("type", "invalid")
@@ -984,9 +1049,7 @@ class LocalModelSimulationExecutor:
             values = (usage.requests, usage.input_tokens, usage.output_tokens)
             if (
                 any(
-                    isinstance(value, bool)
-                    or not isinstance(value, int)
-                    or value <= 0
+                    isinstance(value, bool) or not isinstance(value, int) or value <= 0
                     for value in values
                 )
                 or usage.requests > 2
@@ -998,7 +1061,10 @@ class LocalModelSimulationExecutor:
         input_tokens = sum(item.input_tokens for item in usages)
         output_tokens = sum(item.output_tokens for item in usages)
         metrics = (requests, input_tokens, output_tokens)
-        if any(isinstance(value, bool) or not isinstance(value, int) or value <= 0 for value in metrics):
+        if any(
+            isinstance(value, bool) or not isinstance(value, int) or value <= 0
+            for value in metrics
+        ):
             raise LocalSimulationError("simulation_usage_invalid")
         if (
             requests > 2

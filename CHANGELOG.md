@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.2
+
+- Added the fail-closed Phase 2 hosted-model preflight and a zero-network CI
+  dry-run that grants no tool, handoff, write, Release, or deployment authority.
+- Added a bounded loopback-only Qwen simulation of Architecture, exact
+  read-only source lookup, Architecture-to-Test handoff, and the four-role
+  Architecture/Test/Development/Quality loop through OpenAI Agents SDK 0.22.0.
+- Cross-bound endpoint, run, role, handoff, predecessor, budget, timeout, and
+  durable-claim identities, including release-review regressions for forged
+  claims and dry-run capability leakage.
+- Published public-safe single-run and 24-run overnight acceptance summaries;
+  all 24 full-chain runs and three adversarial suites passed on the reviewed
+  local source revision.
+- Kept the claim boundary explicit: this is local Qwen evidence, not Hosted
+  Luna, OpenAI authentication/cost, deployment, QuantEngine Replay, Paper,
+  Real, or Release-authority proof.
+
 ## 0.5.1
 
 - Unified the CLI and package presentation under the current

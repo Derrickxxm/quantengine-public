@@ -19,11 +19,13 @@ from quantengine_public.agent_platform.hosted_phase2 import (
     HostedStagePlan,
     LocalSourceLookup,
     RoleReceipt,
-    authorize_stage as build_stage_authorization,
     derive_development_loop_receipt,
     derive_handoff_receipt,
     estimate_cost_microusd,
     evaluate_stage,
+)
+from quantengine_public.agent_platform.hosted_phase2 import (
+    authorize_stage as build_stage_authorization,
 )
 
 
@@ -85,7 +87,9 @@ def observation(**changes: object) -> HostedStageObservation:
         "plan_digest": plan().plan_digest,
         "output": {
             "summary": "Add an explicit hosted execution boundary.",
-            "affected_paths": ["src/quantengine_public/agent_platform/hosted_phase2.py"],
+            "affected_paths": [
+                "src/quantengine_public/agent_platform/hosted_phase2.py"
+            ],
             "risks": ["budget drift"],
             "validation": ["run deterministic gates"],
         },
@@ -145,7 +149,10 @@ def test_exact_owner_decision_and_predecessor_are_required() -> None:
         ({"trace_mode": "hosted"}, "hosted_trace_not_authorized"),
         ({"evidence_mode": "raw"}, "raw_evidence_not_authorized"),
         ({"tool_names": ("shell",)}, "stage_tool_policy_mismatch"),
-        ({"handoff_route": ("architecture", "development")}, "stage_handoff_policy_mismatch"),
+        (
+            {"handoff_route": ("architecture", "development")},
+            "stage_handoff_policy_mismatch",
+        ),
     ],
 )
 def test_stage_authorization_fails_closed_outside_exact_bounds(
@@ -207,9 +214,39 @@ def test_observation_becomes_digest_only_public_receipt() -> None:
     ("changes", "reason"),
     [
         ({"output": {"summary": "missing fields"}}, "output_schema_invalid"),
-        ({"output": {"summary": "bad path", "affected_paths": ["../private.py"], "risks": ["scope"], "validation": ["tests"]}}, "affected_paths_outside_public_scope"),
-        ({"output": {"summary": "no risk", "affected_paths": ["src/public.py"], "risks": [], "validation": ["tests"]}}, "risks_required"),
-        ({"output": {"summary": "sk-secret", "affected_paths": ["src/public.py"], "risks": ["scope"], "validation": ["tests"]}}, "sensitive_output_detected"),
+        (
+            {
+                "output": {
+                    "summary": "bad path",
+                    "affected_paths": ["../private.py"],
+                    "risks": ["scope"],
+                    "validation": ["tests"],
+                }
+            },
+            "affected_paths_outside_public_scope",
+        ),
+        (
+            {
+                "output": {
+                    "summary": "no risk",
+                    "affected_paths": ["src/public.py"],
+                    "risks": [],
+                    "validation": ["tests"],
+                }
+            },
+            "risks_required",
+        ),
+        (
+            {
+                "output": {
+                    "summary": "sk-secret",
+                    "affected_paths": ["src/public.py"],
+                    "risks": ["scope"],
+                    "validation": ["tests"],
+                }
+            },
+            "sensitive_output_detected",
+        ),
         ({"tool_calls": ("lookup_public_source",)}, "unexpected_tool_call"),
         ({"handoff_count": 1}, "unexpected_handoff"),
         ({"last_agent": "test"}, "last_agent_mismatch"),
@@ -230,7 +267,9 @@ def test_local_source_lookup_is_exact_allowlist_read_only(tmp_path: Path) -> Non
     allowed.parent.mkdir(parents=True)
     allowed.write_text("SAFE = True\n", encoding="utf-8")
     denied.write_text("SECRET = True\n", encoding="utf-8")
-    lookup = LocalSourceLookup(tmp_path, allowed_paths=("src/allowed.py",), max_chars=100)
+    lookup = LocalSourceLookup(
+        tmp_path, allowed_paths=("src/allowed.py",), max_chars=100
+    )
 
     assert lookup.lookup("src/allowed.py") == "SAFE = True\n"
     assert lookup.calls == ("src/allowed.py",)
@@ -239,7 +278,9 @@ def test_local_source_lookup_is_exact_allowlist_read_only(tmp_path: Path) -> Non
             lookup.lookup(path)
 
 
-def test_local_source_lookup_is_immutable_content_bound_snapshot(tmp_path: Path) -> None:
+def test_local_source_lookup_is_immutable_content_bound_snapshot(
+    tmp_path: Path,
+) -> None:
     source = tmp_path / "src" / "allowed.py"
     source.parent.mkdir(parents=True)
     source.write_text("PUBLIC = 1\n", encoding="utf-8")
@@ -312,7 +353,9 @@ def test_development_loop_requires_exact_four_role_topology() -> None:
         )
 
 
-def test_run_authority_is_single_use_sequential_and_accounts_failed_reservation() -> None:
+def test_run_authority_is_single_use_sequential_and_accounts_failed_reservation() -> (
+    None
+):
     authority = HostedRunAuthority(
         policy=policy(),
         run_identity="a" * 64,
@@ -359,7 +402,9 @@ def test_run_authority_settlement_requires_exact_evaluated_receipt() -> None:
     assert authority.accounted_cost_microusd == receipt.actual_cost_microusd
 
 
-def test_durable_run_claim_rejects_cross_process_style_duplicate(tmp_path: Path) -> None:
+def test_durable_run_claim_rejects_cross_process_style_duplicate(
+    tmp_path: Path,
+) -> None:
     first = DurableRunClaim(
         tmp_path,
         approval_scope_digest="c" * 64,

@@ -2,22 +2,21 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
 import asyncio
 import json
 import os
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from quantengine_public.agent_platform.contracts import content_digest
-
 from quantengine_public.agent_platform.qwen_phase2_simulation import (
     LOCAL_SIMULATION_MODEL,
     SIMULATION_STAGES,
+    LocalModelSimulationExecutor,
     LocalSimulationConfig,
     LocalSimulationError,
-    LocalModelSimulationExecutor,
     SimulationHandoffReceipt,
     SimulationRoleReceipt,
     SimulationStageReceipt,
@@ -131,7 +130,9 @@ def stage(
         output_tokens=20,
         latency_ms=25,
         tool_call_count=1 if name == "readonly_tool" else 0,
-        handoff_count=1 if name == "handoff" else (3 if name == "development_loop" else 0),
+        handoff_count=1
+        if name == "handoff"
+        else (3 if name == "development_loop" else 0),
         role_count=4 if name == "development_loop" else (2 if name == "handoff" else 1),
     )
 
@@ -251,19 +252,32 @@ def test_receipt_requires_exact_topology_and_stage_metrics() -> None:
             endpoint_identity_digest="6" * 64,
             stages=(rows[1], rows[0], rows[2], rows[3]),
         )
-    with pytest.raises(LocalSimulationError, match="simulation_stage_identity_lineage_invalid"):
+    with pytest.raises(
+        LocalSimulationError, match="simulation_stage_identity_lineage_invalid"
+    ):
         build_simulation_receipt(
             source_identity="b" * 64,
             endpoint_identity_digest="6" * 64,
-            stages=(rows[0], replace(rows[1], predecessor_receipt_digest="e" * 64), rows[2], rows[3]),
+            stages=(
+                rows[0],
+                replace(rows[1], predecessor_receipt_digest="e" * 64),
+                rows[2],
+                rows[3],
+            ),
         )
     with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
         replace(rows[0], requests=0)
-    with pytest.raises(LocalSimulationError, match="simulation_stage_identity_topology_invalid"):
+    with pytest.raises(
+        LocalSimulationError, match="simulation_stage_identity_topology_invalid"
+    ):
         replace(rows[1], tool_call_count=0)
-    with pytest.raises(LocalSimulationError, match="simulation_stage_identity_topology_invalid"):
+    with pytest.raises(
+        LocalSimulationError, match="simulation_stage_identity_topology_invalid"
+    ):
         replace(rows[2], handoff_count=0)
-    with pytest.raises(LocalSimulationError, match="simulation_stage_identity_topology_invalid"):
+    with pytest.raises(
+        LocalSimulationError, match="simulation_stage_identity_topology_invalid"
+    ):
         replace(rows[3], role_count=3)
 
 
