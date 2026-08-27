@@ -464,7 +464,8 @@ class QwenLocalSimulationExecutor:
             name,
             instructions
             + f" Return ONLY one valid JSON object with exactly these fields: {fields}. "
-            "No markdown, prefix, or reasoning text. Every declared list must be non-empty.",
+            "No markdown, prefix, or reasoning text. Keep summary under 240 characters; "
+            "every declared list must contain 1 to 3 concise strings only.",
             tools=tools,
         )
 
