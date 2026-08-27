@@ -18,7 +18,7 @@ The accepted execution topology supersedes the earlier all-Qwen role loop:
 ```text
 Terra Architecture (read-only)
   -> Sol Test author (tests only)
-  -> Studio-local Qwen Code Development (implementation allowlist only)
+  -> operator-local Qwen Code Development (implementation allowlist only)
   -> Sol Test verification (read-only)
   -> deterministic Ops
   -> existing advisory-only Quality Shield system
@@ -26,7 +26,7 @@ Terra Architecture (read-only)
 ```
 
 Architecture is pinned to `gpt-5.6-terra`; both Test turns are pinned to
-`gpt-5.6-sol`; Development is pinned to the exact Studio model
+`gpt-5.6-sol`; Development is pinned to the exact operator-local model
 `qwen3.8:27b-mxfp8`. Quality Shield and Release are systems, not Agents. Each
 stage must preserve task/source/context identity, exact execution HEAD,
 filesystem ownership, handoff digest continuity, and zero deployment, Paper,

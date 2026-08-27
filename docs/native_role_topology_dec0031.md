@@ -10,7 +10,7 @@ Status: implemented on isolated local branches; review-ready; not pushed
 | --- | --- | --- | --- |
 | Architecture | Codex CLI with ChatGPT subscription | `gpt-5.6-terra` | read-only |
 | Test author | Codex CLI with ChatGPT subscription | `gpt-5.6-sol` | tests only |
-| Development | official Qwen Code against Studio-local endpoint | `qwen3.8:27b-mxfp8` | declared implementation paths only; no tests |
+| Development | official Qwen Code against an operator-local endpoint | `qwen3.8:27b-mxfp8` | declared implementation paths only; no tests |
 | Test verify | Codex CLI with ChatGPT subscription | `gpt-5.6-sol` | read-only |
 | Ops | deterministic local system | none | no repository changes |
 | Quality | `quality_shield.observe_delivery` | none | advisory-only; no mutations |
@@ -21,7 +21,7 @@ Every native receipt uses
 identity, accepted per-stage context digest, exact execution HEAD before and
 after, handoff input/output digests, runtime/model, changed paths, PASS status,
 and an explicit zero-authority object. A role may not create a commit during
-its turn. Public admission independently pins the Studio model to
+its turn. Public admission independently pins the operator-local model to
 `qwen3.8:27b-mxfp8`, requires the accepted Development path allowlist, rejects
 every changed path outside it, and includes both the model and allowlist in the
 topology digest.
@@ -39,7 +39,7 @@ or Real authority.
   repaired, and the Terra recheck returned PASS without file changes.
 - Sol authored adversarial context tests under `tests/` only. After the Qwen
   change, a separate Sol verification passed the focused suite without edits.
-- Qwen Code 0.22.0 used the exact Studio model `qwen3.8:27b-mxfp8`, changed only
+- Qwen Code 0.22.0 used the exact operator-local model `qwen3.8:27b-mxfp8`, changed only
   its declared implementation file, and passed its required check. The
   temporary loopback tunnel was stopped after the canary; no OpenAI API credit
   was used.

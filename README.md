@@ -32,7 +32,7 @@ TASKSYS-1329 / DEC-0031 is the current native execution topology:
 ```text
 Architecture: gpt-5.6-terra (Codex CLI, ChatGPT subscription, read-only)
   -> Test author: gpt-5.6-sol (tests only)
-  -> Development: qwen3.8:27b-mxfp8 (official Qwen Code, Studio-local)
+  -> Development: qwen3.8:27b-mxfp8 (official Qwen Code, operator-local)
   -> Test verify: gpt-5.6-sol (read-only verification)
   -> Ops: deterministic local system
   -> Quality: existing quality_shield.observe_delivery system, advisory-only
@@ -47,7 +47,7 @@ The public contract itself pins `qwen3.8:27b-mxfp8` and includes the accepted
 Development path allowlist in the topology digest; a caller cannot substitute
 another local model or broaden the receipt's file scope.
 Local Codex roles use ChatGPT subscription login and do not require an OpenAI
-API key. The local Qwen lane uses a temporary loopback path to the Studio model.
+API key. The local Qwen lane uses a temporary loopback path to the operator-local model.
 See [the DEC-0031 topology contract](docs/native_role_topology_dec0031.md).
 
 The older `VerticalSliceRunner`, `ScriptedModel`, and all-Qwen Phase 2 material
