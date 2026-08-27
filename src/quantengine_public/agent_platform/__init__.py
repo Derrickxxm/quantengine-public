@@ -21,6 +21,17 @@ from .runtime import (
     SdkUnavailableError,
     UnsupportedToolError,
 )
+from .learning import (
+    DEFECT_ID,
+    HISTORICAL_REGRESSION_CASES,
+    LearningClosureError,
+    LearningClosureResult,
+    PROMOTION_DECISION,
+    RegressionReplay,
+    execute_learning_closure,
+    replay_historical_release_attacks,
+    verify_learning_closure,
+)
 from .vertical_slice import (
     ReleaseTopologyError,
     SliceArtifact,
@@ -36,8 +47,10 @@ __all__ = [
     "ContextSnapshot",
     "EvidenceAdmission",
     "GraphIdentity",
+    "HISTORICAL_REGRESSION_CASES",
     "HandoffReceipt",
     "RecordingTraceProcessor",
+    "RegressionReplay",
     "RunRequest",
     "RunResult",
     "SDK_PACKAGE",
@@ -46,6 +59,10 @@ __all__ = [
     "SourceIdentity",
     "TaskSnapshot",
     "UnsupportedToolError",
+    "DEFECT_ID",
+    "LearningClosureError",
+    "LearningClosureResult",
+    "PROMOTION_DECISION",
     "ReleaseTopologyError",
     "SliceArtifact",
     "VerticalSliceError",
@@ -53,5 +70,8 @@ __all__ = [
     "VerticalSliceRunner",
     "admit_evidence",
     "derive_release",
+    "execute_learning_closure",
+    "replay_historical_release_attacks",
     "validate_handoff_receipt",
+    "verify_learning_closure",
 ]
