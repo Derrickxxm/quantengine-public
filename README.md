@@ -27,17 +27,20 @@ authoritative state and content-addressed evidence.
 
 ## Current Implementation Decision
 
-The runnable repository today is still the deterministic 14-artifact Golden
-Path plus the synthetic QuantEngine reference runtime. A real multi-Agent
-runtime has not been implemented yet.
+The runnable repository now contains the deterministic 14-artifact Golden Path,
+the synthetic QuantEngine reference runtime, and one bounded Native-Agent
+vertical slice backed by OpenAI Agents SDK 0.22.0. The slice uses scripted,
+network-free model responses and proves local control contracts; it does not
+claim a production platform, deployment, Paper, Replay, or Real authority.
 
 The approved MVP route reuses the MIT OpenAI Agents SDK for Python for Agent
 execution, Agent-as-tool, handoffs, SQLite sessions, interruption/resume,
 approvals, and tracing. Repository-owned implementation will remain limited to
 task/source/context identity, deterministic role transitions, cross-run
 handoff receipts, evidence admission, independent Quality, and Release
-authority. Development is paused by Owner and resumes only on later explicit
-direction after Plane and the design documents are aligned.
+authority. Owner-authorized implementation steps 1-6 were merged by PR #5;
+learning closure, public proof/re-review, graph refresh, deployment, Paper,
+Replay, and Real remain outside that completed scope.
 
 ## The Delivery Control Loop
 

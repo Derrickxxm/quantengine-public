@@ -2,8 +2,8 @@
 
 Date: 2026-08-26
 
-Status: Owner-approved reuse-first implementation baseline; development paused
-by Owner and resumable only on later explicit direction
+Status: Owner-approved reuse-first implementation baseline; Milestones 0-4
+implemented and merged by PR #5; Milestones 5-6 remain unexecuted
 
 Audience: platform, Agent, quality, and delivery engineers
 
@@ -169,11 +169,12 @@ Paper, or Real authority.
 
 ### 3.2 Current execution status
 
-As of the 2026-08-26 source-alignment pass, development is intentionally
-paused by Owner and does not resume automatically when alignment finishes. No
-Milestone 0-6 Agent-platform implementation has started. The current runnable
-truth remains the deterministic Golden Path and synthetic QuantEngine reference
-runtime described above.
+As of the post-merge readback on 2026-08-26, Owner-authorized plan steps 1-6 are
+complete and PR #5 is merged. Milestones 0-4 now provide the SDK 0.22.0 runtime
+adapter, evidence-gated Thin Control, and one six-role, scripted, network-free
+vertical slice in addition to the deterministic Golden Path and synthetic
+QuantEngine reference runtime. Milestones 5-6, graph refresh, deployment,
+Paper, Replay, and Real remain unexecuted and unauthorized by that scope.
 
 ## 4. MVP Boundaries
 
@@ -782,8 +783,8 @@ architecture packet.
 Exit: the authority-topology defect travels through the full real workflow and
 cannot receive PASS before every required stage succeeds.
 
-Implementation checkpoint (TASKSYS-1259, 2026-08-26): Milestones 0–4 are now
-implemented on `codex/TASKSYS-1259/native-agent-mvp-steps-1-6`. The slice uses
+Implementation checkpoint (TASKSYS-1259, 2026-08-26): Milestones 0–4 were
+merged into `main` by PR #5 (`cf7ee6b`). The slice uses
 OpenAI Agents SDK 0.22.0 with scripted, network-free model responses; persists
 task transitions, runs, handoffs, artifacts, tool calls, and approvals; resumes
 from SQLite; and derives a zero-authority Release verdict only from the exact
