@@ -85,7 +85,7 @@ async def _run(base_url: str) -> dict[str, object]:
                 "Process this bounded read-only public hardening task as the assigned role. "
                 "Architecture scopes it, Test defines checks, Development proposes only "
                 "repository-relative paths, and Quality returns PASS only with evidence.\n"
-                + packet[:6_000]
+                + packet[:2_000]
             ),
             lookup=lookup,
         )

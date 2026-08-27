@@ -61,7 +61,7 @@ class QwenSimulationConfig:
     owner_decision: str = QWEN_SIMULATION_DECISION
     timeout_seconds: int = 300
     max_turns: int = 4
-    max_output_tokens: int = 800
+    max_output_tokens: int = 1_600
 
     def __post_init__(self) -> None:
         parsed = urlparse(self.base_url)
@@ -91,7 +91,7 @@ class QwenSimulationConfig:
             or not 1 <= self.max_turns <= 4
             or isinstance(self.max_output_tokens, bool)
             or not isinstance(self.max_output_tokens, int)
-            or not 1 <= self.max_output_tokens <= 800
+            or not 1 <= self.max_output_tokens <= 1_600
         ):
             raise QwenSimulationError("simulation_limits_invalid")
 
