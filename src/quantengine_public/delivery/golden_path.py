@@ -92,7 +92,7 @@ def build_reference_request() -> dict[str, Any]:
             {"id": "missing-file", "kind": "negative"},
             {"id": "extra-file", "kind": "negative"},
         ],
-        "artifact_digests": ["58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011"],
+        "artifact_digests": ["ac12c2eff5f32aaafe49bd31b2e3ffe0fbf674fea8bce920a182e3f8e9691104"],
         "owner_evidence": ["package_verification", "release_verdict"],
         "provenance_matches": True,
         "package_integrity": True,

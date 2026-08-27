@@ -19,8 +19,10 @@ Action commits, Python 3.11/3.14 lanes, top-level toolchain constraints, and an
 local ScriptedModel and explicitly excludes network model calls, deployment,
 QuantEngine Replay, Paper, and Real.
 
-Current release re-reviewed: `v0.5.0`; the uploaded proof binds its exact source
-commit, tree digest, source-set graph digest, SDK version, Release, and AAR.
+M8 release re-reviewed: `v0.5.0`; that release's uploaded proof binds its exact
+source commit, tree digest, source-set graph digest, SDK version, Release, and
+AAR. M9 subsequently published `v0.5.1` with the same proof contract plus the
+release hardening described above.
 
 ## M8 Three-Perspective Re-review
 

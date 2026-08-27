@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 
 from quantengine_public import __version__
+from quantengine_public.demo import _scenario
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,6 +37,12 @@ def test_package_identity_and_python_support_are_bounded() -> None:
     assert project["description"] == CANONICAL_DESCRIPTION
     assert project["requires-python"] == ">=3.11,<3.15"
     assert __version__ == "0.5.1"
+
+
+def test_runtime_dependency_evidence_matches_python_support_bound() -> None:
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
+
+    assert _scenario()["runtime_dependencies"]["python"] == project["requires-python"]
 
 
 def test_ci_uses_reviewed_immutable_action_identities() -> None:
@@ -76,3 +83,11 @@ def test_ci_top_level_toolchain_is_explicitly_constrained() -> None:
         if line.strip() and not line.startswith("#")
     }
     assert observed == CI_CONSTRAINTS
+
+
+def test_historical_m8_review_is_not_labeled_as_current_release() -> None:
+    review = (ROOT / "docs/interviewer_review_backlog_20260826.md").read_text()
+
+    assert "Current release re-reviewed: `v0.5.0`" not in review
+    assert "M8 release re-reviewed: `v0.5.0`" in review
+    assert "M9 subsequently published `v0.5.1`" in review
