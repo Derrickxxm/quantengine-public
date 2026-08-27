@@ -877,8 +877,9 @@ The real local run completed four ordered stages:
 - one Architecture, Test, Development, and Quality role loop.
 
 The public receipt binds source, plan, predecessor, Agent graph, output, usage,
-and stage digests. It reports 9 model requests, 12,685 input tokens, 1,714 output
-tokens, 50,911 ms aggregate stage latency, and zero hosted cost. Its authority
+and stage digests. The retained clean-commit run reports 9 model requests,
+12,685 input tokens, 1,720 output tokens, 88,697 ms aggregate stage latency, and
+zero hosted cost. Its authority
 flags explicitly deny hosted Luna proof, hosted claim consumption, tracing,
 write, Release, deployment, and QuantEngine runtime authority.
 
