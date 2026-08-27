@@ -11,6 +11,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import PurePosixPath
+from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
 
@@ -83,6 +84,11 @@ class NativeRoleReceipt:
             not isinstance(value, bool) for value in self.authority.values()
         ):
             raise RoleTopologyError("authority shape invalid")
+        object.__setattr__(
+            self,
+            "authority",
+            MappingProxyType(dict(self.authority)),
+        )
         if self.schema_version != "public_delivery.native_role_receipt.v1":
             raise RoleTopologyError("schema version mismatch")
 
@@ -131,6 +137,22 @@ class RoleTopologyVerdict:
     topology_digest: str
     authority: Mapping[str, bool]
 
+    def __post_init__(self) -> None:
+        if (
+            self.status != "PASS"
+            or self.stages != _STAGES
+            or not _SHA256.fullmatch(self.topology_digest)
+            or len(self.receipt_digests) != len(_STAGES)
+            or any(not _SHA256.fullmatch(value) for value in self.receipt_digests)
+            or dict(self.authority) != _ZERO_AUTHORITY
+        ):
+            raise RoleTopologyError("native topology verdict invalid")
+        object.__setattr__(
+            self,
+            "authority",
+            MappingProxyType(dict(self.authority)),
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class NativeRoleReleaseVerdict:
@@ -162,6 +184,11 @@ class NativeRoleReleaseVerdict:
             raise RoleTopologyError("native release receipts invalid")
         if dict(self.authority) != _ZERO_AUTHORITY:
             raise RoleTopologyError("native release authority injection")
+        object.__setattr__(
+            self,
+            "authority",
+            MappingProxyType(dict(self.authority)),
+        )
 
     def _body(self) -> dict[str, Any]:
         return {
