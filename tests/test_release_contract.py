@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 
 from quantengine_public import __version__
+from quantengine_public.demo import _scenario
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,6 +37,12 @@ def test_package_identity_and_python_support_are_bounded() -> None:
     assert project["description"] == CANONICAL_DESCRIPTION
     assert project["requires-python"] == ">=3.11,<3.15"
     assert __version__ == "0.5.1"
+
+
+def test_runtime_dependency_evidence_matches_python_support_bound() -> None:
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
+
+    assert _scenario()["runtime_dependencies"]["python"] == project["requires-python"]
 
 
 def test_ci_uses_reviewed_immutable_action_identities() -> None:

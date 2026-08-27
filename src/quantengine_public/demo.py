@@ -164,7 +164,7 @@ def _scenario() -> dict[str, Any]:
         },
         "runtime_dependencies": {
             "schema_version": "quantengine_public.runtime_dependencies.v1",
-            "python": ">=3.11",
+            "python": ">=3.11,<3.15",
             "engine": SCHEMA_VERSION,
             "external_services": [],
         },
