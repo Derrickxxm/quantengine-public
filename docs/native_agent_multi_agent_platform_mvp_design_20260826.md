@@ -881,7 +881,7 @@ The real local run completed four ordered stages:
 The v2 public receipt binds source, run, canonical endpoint, plan, predecessor,
 Agent graph, structured-output, usage, role, handoff, and stage digests without
 publishing the raw endpoint, prompts, or outputs. The retained clean-commit run
-reports 9 model requests, 12,685 input tokens, 1,711 output tokens, 85,032 ms
+reports 9 model requests, 12,685 input tokens, 1,720 output tokens, 85,284 ms
 aggregate stage latency, and zero hosted cost. Its authority flags explicitly
 deny hosted Luna proof, hosted claim consumption, tracing, write, Release,
 deployment, and QuantEngine runtime authority.
@@ -893,6 +893,12 @@ hosted-claim isolation, and selected failure gates. The receipt exposes only
 digest-bound role and handoff identities. It does not prove the endpoint's model
 weights, `gpt-5.6-luna` behavior, OpenAI authentication, limits, pricing, or a
 hosted-provider integration. Therefore it does not unlock P2-7 release.
+
+The usage totals count model calls reported by the SDK; the discovery request
+is deadline-bounded but is not reported as model token usage. Because prompts
+and raw structured outputs are intentionally excluded, an independent reader
+can rederive every published digest and lineage but cannot semantically
+reconstruct the aggregate stage output or the private inputs of a plan digest.
 
 ## 18. Test Strategy
 

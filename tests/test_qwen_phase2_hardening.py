@@ -340,9 +340,9 @@ def test_repair_usage_is_accumulated_and_request_timeout_is_bounded() -> None:
 
 def test_model_discovery_and_whole_run_share_bounded_deadlines() -> None:
     executor = _executor(
-        request_timeout_seconds=0.01,
-        model_discovery_timeout_seconds=0.01,
-        total_timeout_seconds=0.02,
+        request_timeout_seconds=0.02,
+        model_discovery_timeout_seconds=0.025,
+        total_timeout_seconds=0.03,
     )
 
     class SlowModels:
@@ -354,8 +354,12 @@ def test_model_discovery_and_whole_run_share_bounded_deadlines() -> None:
     with pytest.raises(LocalSimulationError, match="simulation_model_discovery_timeout"):
         asyncio.run(executor._discover_model())
 
+    async def quick_discovery() -> None:
+        await asyncio.sleep(0.02)
+
     async def slow_stages(**kwargs: object) -> dict[str, object]:
-        await asyncio.sleep(0.05)
+        await quick_discovery()
+        await asyncio.sleep(0.02)
         return {}
 
     executor._execute_stages = slow_stages
@@ -369,6 +373,21 @@ def test_model_discovery_and_whole_run_share_bounded_deadlines() -> None:
                 development_prompt="d",
                 lookup=object(),
             )
+        )
+
+
+def test_global_usage_ceiling_rejects_individually_valid_stages() -> None:
+    from test_qwen_phase2_simulation import stages
+
+    rows = stages(input_tokens=(30_000, 30_000, 30_000, 30_000))
+    with pytest.raises(
+        LocalSimulationError,
+        match="simulation_total_usage_limit_exceeded",
+    ):
+        local_simulation.build_simulation_receipt(
+            source_identity="b" * 64,
+            endpoint_identity_digest="6" * 64,
+            stages=rows,
         )
 
 

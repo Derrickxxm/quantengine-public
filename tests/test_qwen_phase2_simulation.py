@@ -96,6 +96,7 @@ def stage(
     predecessor: str,
     run_identity: str,
     endpoint_identity: str,
+    input_tokens: int = 100,
 ) -> SimulationStageReceipt:
     role_receipts, handoff_receipts = _identity_rows(
         name,
@@ -126,7 +127,7 @@ def stage(
         role_receipts=role_receipts,
         handoff_receipts=handoff_receipts,
         requests=1,
-        input_tokens=100,
+        input_tokens=input_tokens,
         output_tokens=20,
         latency_ms=25,
         tool_call_count=1 if name == "readonly_tool" else 0,
@@ -138,6 +139,7 @@ def stage(
 def stages(
     source_identity: str = "b" * 64,
     endpoint_identity: str = "6" * 64,
+    input_tokens: tuple[int, int, int, int] = (100, 100, 100, 100),
 ) -> tuple[SimulationStageReceipt, ...]:
     run_identity = content_digest(
         {
@@ -158,8 +160,14 @@ def stages(
         }
     )
     rows = []
-    for name in SIMULATION_STAGES:
-        row = stage(name, predecessor, run_identity, endpoint_identity)
+    for name, stage_input_tokens in zip(SIMULATION_STAGES, input_tokens, strict=True):
+        row = stage(
+            name,
+            predecessor,
+            run_identity,
+            endpoint_identity,
+            input_tokens=stage_input_tokens,
+        )
         rows.append(row)
         predecessor = row.receipt_digest
     return tuple(rows)
