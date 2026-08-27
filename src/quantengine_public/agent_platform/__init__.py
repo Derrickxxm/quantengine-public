@@ -84,9 +84,11 @@ from .hosted_phase2_executor import (
     ReadonlyToolOutput,
 )
 from .role_topology import (
+    NativeRoleReleaseVerdict,
     NativeRoleReceipt,
     RoleTopologyError,
     RoleTopologyVerdict,
+    derive_native_role_release,
     validate_native_role_topology,
 )
 
@@ -121,6 +123,7 @@ __all__ = [
     "Phase2HandoffReceipt",
     "RoleReceipt",
     "NativeRoleReceipt",
+    "NativeRoleReleaseVerdict",
     "RoleTopologyError",
     "RoleTopologyVerdict",
     "ReadonlyToolOutput",
@@ -149,6 +152,7 @@ __all__ = [
     "VerticalSliceRunner",
     "admit_evidence",
     "derive_release",
+    "derive_native_role_release",
     "execute_learning_closure",
     "generate_public_proof",
     "preflight_hosted_canary",

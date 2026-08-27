@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 from typing import Any, Mapping, Sequence
 
@@ -131,6 +131,57 @@ class RoleTopologyVerdict:
     authority: Mapping[str, bool]
 
 
+@dataclass(frozen=True, slots=True)
+class NativeRoleReleaseVerdict:
+    """Deterministic, zero-authority decision over one exact native topology."""
+
+    task_id: str
+    source_identity: str
+    topology_digest: str
+    receipt_digests: tuple[str, ...]
+    status: str = "PASS"
+    controller: str = "deterministic-local"
+    schema_version: str = "public_delivery.native_role_release.v1"
+    authority: Mapping[str, bool] = field(
+        default_factory=lambda: dict(_ZERO_AUTHORITY)
+    )
+
+    def __post_init__(self) -> None:
+        if self.status != "PASS" or self.controller != "deterministic-local":
+            raise RoleTopologyError("native release controller mismatch")
+        if self.schema_version != "public_delivery.native_role_release.v1":
+            raise RoleTopologyError("native release schema mismatch")
+        if not _SHA256.fullmatch(self.source_identity) or not _SHA256.fullmatch(
+            self.topology_digest
+        ):
+            raise RoleTopologyError("native release identity invalid")
+        if len(self.receipt_digests) != len(_STAGES) or any(
+            not _SHA256.fullmatch(value) for value in self.receipt_digests
+        ):
+            raise RoleTopologyError("native release receipts invalid")
+        if dict(self.authority) != _ZERO_AUTHORITY:
+            raise RoleTopologyError("native release authority injection")
+
+    def _body(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "task_id": self.task_id,
+            "source_identity": self.source_identity,
+            "topology_digest": self.topology_digest,
+            "receipt_digests": list(self.receipt_digests),
+            "status": self.status,
+            "controller": self.controller,
+            "authority": dict(self.authority),
+        }
+
+    @property
+    def release_digest(self) -> str:
+        return _digest(self._body())
+
+    def to_dict(self) -> dict[str, Any]:
+        return {**self._body(), "release_digest": self.release_digest}
+
+
 def validate_native_role_topology(
     receipts: Sequence[NativeRoleReceipt | Mapping[str, Any]],
     *,
@@ -205,6 +256,34 @@ def validate_native_role_topology(
     )
 
 
+def derive_native_role_release(
+    receipts: Sequence[NativeRoleReceipt | Mapping[str, Any]],
+    *,
+    expected_task_id: str,
+    expected_source_identity: str,
+    initial_input_digest: str,
+    expected_qwen_model: str,
+    expected_context_digests: Mapping[str, str],
+    expected_execution_heads: Mapping[str, str],
+) -> NativeRoleReleaseVerdict:
+    """Derive Release only after the exact six-stage native chain is admitted."""
+    verdict = validate_native_role_topology(
+        receipts,
+        expected_task_id=expected_task_id,
+        expected_source_identity=expected_source_identity,
+        initial_input_digest=initial_input_digest,
+        expected_qwen_model=expected_qwen_model,
+        expected_context_digests=expected_context_digests,
+        expected_execution_heads=expected_execution_heads,
+    )
+    return NativeRoleReleaseVerdict(
+        task_id=expected_task_id,
+        source_identity=expected_source_identity,
+        topology_digest=verdict.topology_digest,
+        receipt_digests=verdict.receipt_digests,
+    )
+
+
 def _validate_policy(receipt: NativeRoleReceipt, *, expected_qwen_model: str) -> None:
     expected = {
         "architecture": ("Architecture", "codex-cli-chatgpt-subscription", "gpt-5.6-terra"),
@@ -237,8 +316,10 @@ def _digest(value: Any) -> str:
 
 
 __all__ = [
+    "NativeRoleReleaseVerdict",
     "NativeRoleReceipt",
     "RoleTopologyError",
     "RoleTopologyVerdict",
+    "derive_native_role_release",
     "validate_native_role_topology",
 ]
