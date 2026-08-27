@@ -185,6 +185,24 @@ def test_deterministic_release_consumes_the_exact_six_stage_topology() -> None:
     assert len(release.release_digest) == 64
 
 
+def test_release_authority_is_immutable_after_derivation() -> None:
+    release = derive_native_role_release(
+        _topology(),
+        expected_task_id="TASKSYS-1327",
+        expected_source_identity="a" * 64,
+        initial_input_digest="0" * 64,
+        expected_qwen_model="qwen3.8:27b-mxfp8",
+        expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
+        expected_context_digests=EXPECTED_CONTEXTS,
+        expected_execution_heads=EXPECTED_HEADS,
+    )
+
+    with pytest.raises(TypeError):
+        release.authority["deployment_allowed"] = True  # type: ignore[index]
+
+    assert release.to_dict()["authority"] == ZERO_AUTHORITY
+
+
 def test_deterministic_release_rejects_a_forged_native_stage() -> None:
     receipts = list(_topology())
     receipts[5] = replace(receipts[5], runtime="quality-agent")
