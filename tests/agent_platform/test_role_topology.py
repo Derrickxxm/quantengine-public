@@ -7,6 +7,7 @@ import pytest
 from quantengine_public.agent_platform.role_topology import (
     NativeRoleReceipt,
     RoleTopologyError,
+    derive_native_role_release,
     validate_native_role_topology,
 )
 
@@ -147,6 +148,51 @@ def test_corrected_native_role_topology_is_admitted() -> None:
     )
     assert len(verdict.topology_digest) == 64
     assert verdict.authority == ZERO_AUTHORITY
+
+
+def test_deterministic_release_consumes_the_exact_six_stage_topology() -> None:
+    receipts = _topology()
+
+    release = derive_native_role_release(
+        receipts,
+        expected_task_id="TASKSYS-1327",
+        expected_source_identity="a" * 64,
+        initial_input_digest="0" * 64,
+        expected_qwen_model="qwen2.7-coder-local",
+        expected_context_digests=EXPECTED_CONTEXTS,
+        expected_execution_heads=EXPECTED_HEADS,
+    )
+
+    assert release.status == "PASS"
+    assert release.controller == "deterministic-local"
+    assert release.topology_digest == validate_native_role_topology(
+        receipts,
+        expected_task_id="TASKSYS-1327",
+        expected_source_identity="a" * 64,
+        initial_input_digest="0" * 64,
+        expected_qwen_model="qwen2.7-coder-local",
+        expected_context_digests=EXPECTED_CONTEXTS,
+        expected_execution_heads=EXPECTED_HEADS,
+    ).topology_digest
+    assert release.receipt_digests == tuple(item.receipt_digest for item in receipts)
+    assert release.authority == ZERO_AUTHORITY
+    assert len(release.release_digest) == 64
+
+
+def test_deterministic_release_rejects_a_forged_native_stage() -> None:
+    receipts = list(_topology())
+    receipts[5] = replace(receipts[5], runtime="quality-agent")
+
+    with pytest.raises(RoleTopologyError, match="role policy mismatch: quality"):
+        derive_native_role_release(
+            receipts,
+            expected_task_id="TASKSYS-1327",
+            expected_source_identity="a" * 64,
+            initial_input_digest="0" * 64,
+            expected_qwen_model="qwen2.7-coder-local",
+            expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
+        )
 
 
 @pytest.mark.parametrize(
