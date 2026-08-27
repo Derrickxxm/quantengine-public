@@ -28,10 +28,10 @@ authoritative state and content-addressed evidence.
 ## Current Implementation Decision
 
 The runnable repository now contains the deterministic 14-artifact Golden Path,
-the synthetic QuantEngine reference runtime, and one bounded Native-Agent
-vertical slice backed by OpenAI Agents SDK 0.22.0. The slice uses scripted,
-network-free model responses and proves local control contracts; it does not
-claim a production platform, deployment, Paper, Replay, or Real authority.
+the synthetic QuantEngine reference runtime, one bounded scripted Native-Agent
+vertical slice, and a separate loopback-only local-Qwen Phase 2 proof backed by
+OpenAI Agents SDK 0.22.0. These slices prove local control contracts; they do
+not claim a production platform, deployment, Paper, Replay, or Real authority.
 
 The approved MVP route reuses the MIT OpenAI Agents SDK for Python for Agent
 execution, Agent-as-tool, handoffs, SQLite sessions, interruption/resume,
@@ -47,6 +47,35 @@ Release, M7 replay, and a public-safe receipt trace that can be reverified from
 bytes. The model remains a local ScriptedModel, so no prompt, API key, hosted
 trace, or network model call enters the proof. Deployment, QuantEngine Replay,
 Paper, and Real remain outside scope.
+
+Phase 2 begins with TASKSYS-1317's fail-closed hosted-model canary preflight.
+It binds the task revision, source, context, Agent graph, model, turn limit,
+output-token limit, timeout, trace mode, evidence mode, tool count, and handoff
+count into a content digest, then emits a public-safe `BLOCKED` receipt. The
+preflight deliberately has no environment or network access and cannot enable
+hosted tracing, tools, handoffs, raw evidence, or model execution. Selecting a
+real model, reading a key, spending tokens, and making the first hosted request
+remain separate Owner approval boundaries.
+
+DEC-0018 adds a separate private-workstation local-model simulation without
+weakening that boundary. DEC-0019 hardens the isolated `qwen3.8:27b-mxfp8`
+track with a canonical endpoint digest, bounded discovery and whole-run
+deadlines, one repair budget for the entire development stage, usage ceilings,
+and independently rederivable role and handoff identity receipts. The retained
+run uses the Agents SDK through an ephemeral loopback connection for one
+Architecture run, exact read-only source lookup, Architecture-to-Test handoff,
+and a four-role Architecture/Test/Development/Quality loop. Its digest-only
+[receipt](docs/evidence/qwen_phase2_local_simulation_receipt_20260827.json)
+explicitly states `hosted_luna_proof=false`, zero hosted cost, no hosted claim,
+and no write, Release, deployment, or QuantEngine runtime authority. It is not
+evidence that `gpt-5.6-luna` or OpenAI API authentication was exercised.
+
+Release `v0.5.2` also publishes the public-safe
+[overnight acceptance summary](docs/evidence/qwen_phase2_overnight_acceptance_20260827.json)
+for the reviewed source revision: 24 of 24 bounded full-chain runs and all
+three adversarial suites passed. That repeatability evidence remains local
+Qwen evidence and grants no Hosted Luna, hosted-cost, write, Release,
+deployment, Replay, Paper, or Real claim.
 
 ## The Delivery Control Loop
 
@@ -235,6 +264,9 @@ Implemented and runnable here:
 - a thin, evidence-gated control state with identity-bound handoffs and restart recovery;
 - an OpenAI Agents SDK 0.22.0 adapter with bounded tools, durable RunState envelopes, and local traces;
 - one network-free Architecture → Test → Development → Test → Ops → independent Quality → deterministic Release slice;
+- a zero-network, digest-only hosted-model canary preflight that keeps execution blocked;
+- a local OpenAI-compatible Agents SDK simulation with an exact read-only tool,
+  one handoff, four identity-ordered roles, and an explicit non-hosted receipt;
 - request-bound negative evidence;
 - QuantEngine admission, package verification, synthetic Paper, independent
   Replay, reconciliation, stress, recovery, and release evidence;

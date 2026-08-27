@@ -1,0 +1,52 @@
+{
+  "schema_version": "quantengine_public.qwen_phase2_overnight_acceptance.v1",
+  "owner_decision": "DEC-0021",
+  "reviewed_source_head": "c1de01dd37a1c2e26ebfc38da3c1329af24168d9",
+  "execution_mode": "local_simulation_overnight_acceptance",
+  "provider": {
+    "kind": "ollama-openai-compatible",
+    "model": "qwen3.8:27b-mxfp8",
+    "transport_scope": "loopback"
+  },
+  "happy_path_runs": {
+    "attempted": 24,
+    "passed": 24
+  },
+  "adversarial_suites": {
+    "attempted": 3,
+    "passed": 3
+  },
+  "aggregate_usage": {
+    "requests": 216,
+    "input_tokens": 304440,
+    "output_tokens": 41006,
+    "model_latency_ms": 2080381
+  },
+  "wall_latency_ms": {
+    "minimum": 85344,
+    "maximum": 94006,
+    "average": 87906
+  },
+  "aggregate_receipt_digest": "f415c9a40c0b32405d91ee0c36fd6f6956dda2785c1f144219d45d77f0088a65",
+  "independent_chain_digest": "f242d5489b1f2e34124079f1793eb90be2dfd42d1a357699305b6acaf7bf42a7",
+  "claims": {
+    "hosted_luna_proof": false,
+    "actual_hosted_cost": false,
+    "openai_authentication_exercised": false,
+    "durable_hosted_claim_consumed": false,
+    "hosted_trace_enabled": false,
+    "write_authority_granted": false,
+    "release_authority_granted": false,
+    "deployment_authority_granted": false,
+    "quantengine_replay_authority_granted": false,
+    "quantengine_paper_authority_granted": false,
+    "quantengine_real_authority_granted": false,
+    "persistent_service_created": false
+  },
+  "verdict": "PASS",
+  "limitations": [
+    "This acceptance used a private-workstation Qwen model through ephemeral loopback connectivity.",
+    "It does not measure gpt-5.6-luna behavior, OpenAI API authentication, limits, pricing, or hosted execution.",
+    "It grants no write, Release, deployment, QuantEngine Replay, Paper, or Real authority."
+  ]
+}
