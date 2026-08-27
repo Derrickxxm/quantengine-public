@@ -1,5 +1,11 @@
 # QuantEngine Reference Runtime: 60-Second Walkthrough
 
+> Status: implemented reference-domain walkthrough. The repository's current
+> identity and primary entry point are
+> [Evidence-Controlled AI Software Delivery](../README.md); this page explains
+> the retained synthetic QuantEngine runtime rather than a separate current
+> product identity.
+
 This repository shows a small, public-safe part of a larger trading-system architecture: how a system can prove that a Paper run and an independent Replay agree on the same economic result.
 
 If you arrived here from a resume or portfolio, start with the idea that this

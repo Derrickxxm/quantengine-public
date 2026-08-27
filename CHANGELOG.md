@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.1
+
+- Unified the CLI and package presentation under the current
+  Evidence-Controlled AI Software Delivery identity.
+- Bounded supported Python to 3.11 through 3.14 and made CI prove both the
+  minimum and current stable feature release.
+- Pinned release-critical GitHub Actions to reviewed commit identities and
+  constrained the top-level CI/build toolchain.
+- Added an 82% source branch-coverage gate from an observed 83% baseline while
+  preserving release smoke, public safety scanning, and the M8 Native-Agent
+  proof on every supported CI lane.
+- Kept repository governance fail-closed without expanding the Agent runtime,
+  using a hosted model, or granting deployment authority.
+
 ## 0.5.0
 
 - Added a bounded CI proof that executes the real OpenAI Agents SDK vertical
