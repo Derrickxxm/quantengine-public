@@ -11,6 +11,34 @@ Audience: platform, Agent, quality, and delivery engineers
 
 Scope: one real, resumable, evidence-controlled software-delivery path
 
+## Current topology addendum: DEC-0031 / TASKSYS-1329
+
+The accepted execution topology supersedes the earlier all-Qwen role loop:
+
+```text
+Terra Architecture (read-only)
+  -> Sol Test author (tests only)
+  -> operator-local Qwen Code Development (implementation allowlist only)
+  -> Sol Test verification (read-only)
+  -> deterministic Ops
+  -> existing advisory-only Quality Shield system
+  -> deterministic zero-authority Release
+```
+
+Architecture is pinned to `gpt-5.6-terra`; both Test turns are pinned to
+`gpt-5.6-sol`; Development is pinned to the exact operator-local model
+`qwen3.8:27b-mxfp8`. Quality Shield and Release are systems, not Agents. Each
+stage must preserve task/source/context identity, exact execution HEAD,
+filesystem ownership, handoff digest continuity, and zero deployment, Paper,
+or Real authority. Release must consume the validated six-stage topology
+digest; separate successful canaries are not enough.
+
+The `ScriptedModel` and four-role local-Qwen sections later in this document
+remain historical regression and stability evidence. They do not describe the
+current live role assignment. Local Codex execution uses ChatGPT subscription
+login; public or unattended CI remains deterministic and model-free until a
+separate workload-identity decision is authorized.
+
 ## 1. Objective
 
 Build the smallest real multi-Agent software-delivery platform that can take one
