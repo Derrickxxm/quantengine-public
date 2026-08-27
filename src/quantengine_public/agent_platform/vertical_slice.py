@@ -217,7 +217,11 @@ def derive_release(
         raise ReleaseTopologyError("graph_identity_mismatch")
     if graph_identity is not None and graph_ids != {graph_identity}:
         raise ReleaseTopologyError("graph_identity_mismatch")
-    required = {"public_delivery.test_result", "public_delivery.ops_plan", "public_delivery.runtime_evidence"}
+    required_statuses = {
+        "public_delivery.test_result": "PASS",
+        "public_delivery.ops_plan": "READY",
+        "public_delivery.runtime_evidence": "PASS",
+    }
     if quality.status != "PASS":
         raise ReleaseTopologyError("quality_not_pass")
     if runtime.status != "PASS":
@@ -225,9 +229,9 @@ def derive_release(
     if len(quality.upstream) != 1 or quality.upstream[0] != runtime.ref():
         raise ReleaseTopologyError("quality_runtime_topology_mismatch")
 
-    for artifact_type in required:
+    for artifact_type, required_status in required_statuses.items():
         upstream = exact(artifact_type)
-        if upstream.status != "PASS":
+        if upstream.status != required_status:
             raise ReleaseTopologyError(f"upstream_not_pass:{artifact_type}")
 
     # The quality contract intentionally has one runtime edge; test/Ops are
@@ -239,7 +243,10 @@ def derive_release(
         if ref.artifact_digest not in by_digest:
             raise ReleaseTopologyError("runtime_unknown_upstream")
         upstream = by_digest[ref.artifact_digest]
-        if upstream.artifact_type != ref.artifact_type or upstream.status != "PASS":
+        if (
+            upstream.artifact_type != ref.artifact_type
+            or upstream.status != required_statuses[ref.artifact_type]
+        ):
             raise ReleaseTopologyError("runtime_upstream_mismatch")
 
     return seal_artifact(
@@ -319,14 +326,28 @@ class VerticalSliceRunner:
         chain_errors = verify_artifact_chain([item.to_dict() for item in (*prior, artifact)])
         if chain_errors:
             raise ReleaseTopologyError("artifact_chain_not_admitted:" + ",".join(chain_errors))
+        self._control.admit_artifact(artifact.to_dict())
         self._db.execute("INSERT OR IGNORE INTO vertical_evidence VALUES (?, ?)", (artifact.artifact_digest, json.dumps(artifact.to_dict(), sort_keys=True)))
         self._db.commit()
 
     def _save_handoff(self, receipt: HandoffReceipt) -> None:
+        self._control.record_handoff(receipt, graph_identity=self.graph.identity_digest)
         self._db.execute("INSERT OR IGNORE INTO vertical_handoffs VALUES (?, ?)", (receipt.receipt_digest, json.dumps(receipt.to_dict(), sort_keys=True)))
         self._db.commit()
+        self._control.accept_handoff(receipt, graph_identity=self.graph.identity_digest)
 
-    def _save_run(self, result: RunResult) -> None:
+    def _save_run(self, result: RunResult, *, context_digest: str) -> None:
+        state = self._state()
+        self._control.record_run(
+            result.run_id,
+            task_id=self.task.task_id,
+            task_version=state.version,
+            source_identity=self.source.identity_digest,
+            context_digest=context_digest,
+            status=result.status,
+            result_digest=result.result_digest,
+            role=result.role,
+        )
         self._db.execute("INSERT OR IGNORE INTO vertical_runs VALUES (?, ?)", (result.run_id, json.dumps(result.to_dict(), sort_keys=True)))
         self._db.commit()
 
@@ -334,6 +355,7 @@ class VerticalSliceRunner:
         errors = verify_artifact(dict(release))
         if errors:
             raise ReleaseTopologyError("release_not_admitted:" + ",".join(errors))
+        self._control.admit_artifact(dict(release))
         self._db.execute("INSERT OR IGNORE INTO vertical_releases VALUES (?, ?)", (release["artifact_digest"], json.dumps(dict(release), sort_keys=True)))
         self._db.commit()
 
@@ -352,7 +374,15 @@ class VerticalSliceRunner:
             upstream_artifact_refs=tuple(upstream),
             selected_context_refs=(("task", self.task.task_id, "accepted"), ("graph", self.graph.revision, "source-bound")),
         )
-        validate_context(context, self.source, self.graph)
+        validate_context(
+            context,
+            self.source,
+            self.graph,
+            task=self.task,
+            expected_role=role,
+            expected_skill_identity=ROLE_SKILLS[role],
+            expected_tool_policy_identity=ToolPolicy.for_role(role).policy_digest,
+        )
         return context
 
     async def _agent_run(self, *, role: str, context: ContextSnapshot, stage: str) -> RunResult:
@@ -405,7 +435,7 @@ class VerticalSliceRunner:
             requested_next_action=None,
             role=role,
         )
-        self._save_run(sealed)
+        self._save_run(sealed, context_digest=context.context_digest)
         return sealed
 
     def _artifact(self, *, context: ContextSnapshot, artifact_type: str, status: str = "PASS", upstream: Iterable[ArtifactRef] = (), payload: Mapping[str, Any] | None = None) -> SliceArtifact:
@@ -449,7 +479,17 @@ class VerticalSliceRunner:
         validate_handoff_receipt(receipt, task=self.task, source=self.source, context=context, expected_task_version=task_version)
         self._save_handoff(receipt)
 
-    def _transition(self, state: TaskState, next_state: str, *, next_owner: str, reason: str, key: str) -> Transition:
+    def _transition(
+        self,
+        state: TaskState,
+        next_state: str,
+        *,
+        next_owner: str,
+        reason: str,
+        key: str,
+        evidence_refs: Iterable[ArtifactRef] = (),
+        context_digest: str | None = None,
+    ) -> Transition:
         return self._control.transition(
             task_id=self.task.task_id,
             expected_version=state.version,
@@ -460,6 +500,8 @@ class VerticalSliceRunner:
             reason=reason,
             idempotency_key=key,
             next_owner=next_owner,
+            evidence_refs=tuple(evidence_refs),
+            context_digest=context_digest,
         )
 
     async def run(self, stop_after: str | None = None) -> VerticalSliceResult:
@@ -475,41 +517,53 @@ class VerticalSliceRunner:
             elif state.state == "CONTEXT_READY":
                 context = self._context("Architecture", ())
                 await self._agent_run(role="Architecture", context=context, stage="architecture")
-                artifact = self._artifact(context=context, artifact_type="architecture_packet", payload={"affected_contract": "release topology", "approved_paths": ["src/quantengine_public/agent_platform"]})
-                transition = self._transition(state, "ARCHITECTURE_READY", next_owner="Test", reason="architecture impact packet admitted", key="architecture")
+                artifact = self._artifact(context=context, artifact_type="architecture_packet", status="READY", payload={"affected_contract": "release topology", "approved_paths": ["src/quantengine_public/agent_platform"]})
+                transition = self._transition(state, "ARCHITECTURE_READY", next_owner="Architecture", reason="architecture impact packet admitted", key="architecture", evidence_refs=(artifact.ref(),), context_digest=context.context_digest)
                 self._handoff(from_owner="Architecture", to_role="Test", task_version=transition.version, context=context, refs=(artifact.ref(),), prior_state=state)
             elif state.state == "ARCHITECTURE_READY":
                 refs = [item.ref() for item in self._evidence()]
                 context = self._context("Test", refs)
                 await self._agent_run(role="Test", context=context, stage="red-oracle")
-                artifact = self._artifact(context=context, artifact_type="validation_plan", payload={"negative_cases": ["missing runtime", "missing quality", "wrong producer", "authority injection"]})
-                transition = self._transition(state, "VALIDATION_READY", next_owner="Development", reason="author red oracle admitted", key="validation")
+                artifact = self._artifact(context=context, artifact_type="validation_plan", status="READY", payload={"negative_cases": ["missing runtime", "missing quality", "wrong producer", "authority injection"]})
+                transition = self._transition(state, "VALIDATION_READY", next_owner="Test", reason="author red oracle admitted", key="validation", evidence_refs=(artifact.ref(),), context_digest=context.context_digest)
                 self._handoff(from_owner="Test", to_role="Development", task_version=transition.version, context=context, refs=tuple(refs + [artifact.ref()]), prior_state=state)
             elif state.state == "VALIDATION_READY":
                 refs = [item.ref() for item in self._evidence()]
                 context = self._context("Development", refs)
                 await self._agent_run(role="Development", context=context, stage="development")
-                artifact = self._artifact(context=context, artifact_type="patch_manifest", payload={"changed_paths": ["src/quantengine_public/agent_platform/vertical_slice.py"], "scope_checked": True})
-                transition = self._transition(state, "IMPLEMENTATION_READY", next_owner="Test", reason="approved-scope implementation admitted", key="development")
+                artifact = self._artifact(context=context, artifact_type="patch_manifest", status="READY", payload={"changed_paths": ["src/quantengine_public/agent_platform/vertical_slice.py"], "scope_checked": True})
+                transition = self._transition(state, "IMPLEMENTATION_READY", next_owner="Development", reason="approved-scope implementation admitted", key="development", evidence_refs=(artifact.ref(),), context_digest=context.context_digest)
                 self._handoff(from_owner="Development", to_role="Test", task_version=transition.version, context=context, refs=tuple(refs + [artifact.ref()]), prior_state=state)
             elif state.state == "IMPLEMENTATION_READY":
                 refs = [item.ref() for item in self._evidence()]
                 context = self._context("Test", refs)
                 await self._agent_run(role="Test", context=context, stage="verify")
                 artifact = self._artifact(context=context, artifact_type="test_result", payload={"red_oracle": "PASS", "verification": "PASS"})
-                transition = self._transition(state, "TEST_VERIFIED", next_owner="Ops", reason="independent declared tests pass", key="test-verify")
+                transition = self._transition(state, "TEST_VERIFIED", next_owner="Test", reason="independent declared tests pass", key="test-verify", evidence_refs=(artifact.ref(),), context_digest=context.context_digest)
                 self._handoff(from_owner="Test", to_role="Ops", task_version=transition.version, context=context, refs=tuple(refs + [artifact.ref()]), prior_state=state)
             elif state.state == "TEST_VERIFIED":
                 refs = [item.ref() for item in self._evidence()]
                 context = self._context("Ops", refs)
                 await self._agent_run(role="Ops", context=context, stage="ops")
-                ops = self._artifact(context=context, artifact_type="ops_plan", payload={"ci": "PASS", "clean_install": "PASS", "deployment": "FORBIDDEN"})
+                ops = self._artifact(context=context, artifact_type="ops_plan", status="READY", payload={"ci": "PASS", "clean_install": "PASS", "deployment": "FORBIDDEN"})
                 runtime = self._artifact(context=context, artifact_type="runtime_evidence", upstream=(refs[-1], ops.ref()), payload={"status": "PASS", "authority": "zero"})
-                transition = self._transition(state, "OPS_READY", next_owner="Ops", reason="Ops plan and zero-authority runtime evidence prepared", key="ops")
+                transition = self._transition(state, "OPS_READY", next_owner="Ops", reason="Ops plan and zero-authority runtime evidence prepared", key="ops", evidence_refs=(ops.ref(),), context_digest=context.context_digest)
             elif state.state == "OPS_READY":
-                refs = [item.ref() for item in self._evidence()]
-                context = self._context("Ops", refs)
-                transition = self._transition(state, "RUNTIME_VERIFIED", next_owner="Quality", reason="runtime readback verified", key="runtime")
+                evidence = self._evidence()
+                refs = [item.ref() for item in evidence]
+                pre_ops_refs = [
+                    item.ref()
+                    for item in evidence
+                    if item.artifact_type
+                    not in {"public_delivery.ops_plan", "public_delivery.runtime_evidence"}
+                ]
+                context = self._context("Ops", pre_ops_refs)
+                runtime = next(
+                    item
+                    for item in evidence
+                    if item.artifact_type == "public_delivery.runtime_evidence"
+                )
+                transition = self._transition(state, "RUNTIME_VERIFIED", next_owner="Ops", reason="runtime readback verified", key="runtime", evidence_refs=(runtime.ref(),), context_digest=runtime.context_digest)
                 self._handoff(from_owner="Ops", to_role="Quality", task_version=transition.version, context=context, refs=tuple(refs), prior_state=state)
             elif state.state == "RUNTIME_VERIFIED":
                 refs = [item.ref() for item in self._evidence()]
@@ -517,12 +571,21 @@ class VerticalSliceRunner:
                 context = self._context("Quality", refs)
                 await self._agent_run(role="Quality", context=context, stage="independent-quality")
                 quality = self._artifact(context=context, artifact_type="quality_verdict", upstream=(runtime_ref,), payload={"negative_attack_suite": "PASS", "authority": "zero"})
-                transition = self._transition(state, "QUALITY_REVIEWED", next_owner="Release Controller", reason="independent quality consumes exact runtime evidence", key="quality")
+                transition = self._transition(state, "QUALITY_REVIEWED", next_owner="Quality", reason="independent quality consumes exact runtime evidence", key="quality", evidence_refs=(quality.ref(),), context_digest=context.context_digest)
                 self._handoff(from_owner="Quality", to_role="Release Controller", task_version=transition.version, context=context, refs=tuple(refs + [quality.ref()]), prior_state=state)
             elif state.state == "QUALITY_REVIEWED":
                 release = derive_release(task_id=self.task.task_id, source_identity=self.source.identity_digest, graph_identity=self.graph.identity_digest, evidence=self._evidence())
                 self._save_release(release)
-                self._transition(state, "RELEASE_DECIDED", next_owner="Owner", reason="deterministic exact-topology release decision", key="release")
+                release_ref = ArtifactRef(release["artifact_type"], release["artifact_digest"])
+                self._transition(
+                    state,
+                    "RELEASE_DECIDED",
+                    next_owner="Owner",
+                    reason="deterministic exact-topology release decision",
+                    key="release",
+                    evidence_refs=(release_ref,),
+                    context_digest=release["payload"]["context_digest"],
+                )
                 return self.result(release=release)
             elif state.state == "RELEASE_DECIDED":
                 return self.result()

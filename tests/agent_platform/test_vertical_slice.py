@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import sqlite3
 
 import pytest
 
@@ -65,6 +67,22 @@ def test_vertical_slice_runs_all_roles_and_reopens(tmp_path, identities):
     }
     assert all(h.graph_identity == graph.identity_digest for h in result.handoffs)
     resumed.close()
+
+    with sqlite3.connect(db) as persisted:
+        assert persisted.execute("SELECT COUNT(*) FROM artifacts").fetchone()[0] == 8
+        assert persisted.execute("SELECT COUNT(*) FROM runs").fetchone()[0] == 6
+        assert persisted.execute("SELECT COUNT(*) FROM handoffs WHERE accepted = 1").fetchone()[0] == 6
+        assert {
+            row[0] for row in persisted.execute("SELECT DISTINCT graph_identity FROM handoffs")
+        } == {graph.identity_digest}
+        guarded = persisted.execute(
+            "SELECT evidence_refs_json FROM transitions WHERE next_state IN "
+            "('ARCHITECTURE_READY','VALIDATION_READY','IMPLEMENTATION_READY',"
+            "'TEST_VERIFIED','OPS_READY','RUNTIME_VERIFIED','QUALITY_REVIEWED',"
+            "'RELEASE_DECIDED')"
+        ).fetchall()
+        assert len(guarded) == 8
+        assert all(json.loads(row[0]) for row in guarded)
 
 
 def test_release_rejects_forged_producer_type_or_digest(vertical_result):

@@ -303,6 +303,8 @@ class ControlStateStore:
         if not graph_ids or "" in graph_ids or len(graph_ids) != 1:
             raise ControlStateError("handoff_graph_identity_mismatch")
         resolved_graph = next(iter(graph_ids))
+        if receipt.graph_identity != resolved_graph:
+            raise StaleContextError("handoff_graph_identity_mismatch")
         if graph_identity is not None and graph_identity != resolved_graph:
             raise StaleContextError("handoff_graph_identity_mismatch")
         with self._db:
@@ -450,6 +452,7 @@ class ControlStateStore:
             to_role=row["to_role"], source_identity=row["source_identity"], context_digest=row["context_digest"],
             required_artifact_refs=ControlStateStore._decode_refs(row["required_artifact_refs_json"]),
             accepted_or_rejected=row["accepted_or_rejected"], reason=row["reason"], next_owner=row["next_owner"],
+            graph_identity=row["graph_identity"],
         )
 
     @staticmethod

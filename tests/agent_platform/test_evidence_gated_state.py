@@ -17,6 +17,7 @@ from quantengine_public.agent_platform.control_state import (
     ControlStateError,
     ControlStateStore,
 )
+from quantengine_public.agent_platform.tool_policy import ToolPolicy
 from quantengine_public.delivery.identity import seal_artifact
 
 
@@ -101,7 +102,7 @@ def test_evidence_gate_requires_admitted_matching_delivery_artifact(tmp_path):
         graph=graph,
         role="Architecture",
         skill_identity="skill://architecture@1",
-        tool_policy_identity="policy://architecture@1",
+        tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
     )
     move(store, task, source, "ACCEPTED", next_owner="Owner")
     move(store, task, source, "CONTEXT_READY", next_owner="Owner")
@@ -143,7 +144,7 @@ def test_admission_rejects_tamper_source_context_and_authority(tmp_path):
         graph=graph,
         role="Architecture",
         skill_identity="skill://architecture@1",
-        tool_policy_identity="policy://architecture@1",
+        tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
     )
     tampered = artifact(
         task, source, graph,
@@ -173,7 +174,7 @@ def test_handoff_is_atomic_owner_version_bound_and_rejected_cannot_take_over(tmp
     store, task, source, graph = setup(tmp_path)
     context = build_context_snapshot(
         task=task, source=source, graph=graph, role="Architecture",
-        skill_identity="skill://architecture@1", tool_policy_identity="policy://architecture@1",
+        skill_identity="skill://architecture@1", tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
     )
     evidence = artifact(
         task, source, graph,
@@ -186,7 +187,7 @@ def test_handoff_is_atomic_owner_version_bound_and_rejected_cannot_take_over(tmp
         task_id=task.task_id, task_version=0, from_owner="Owner", to_role="Development",
         source_identity=source.identity_digest, context_digest=context.context_digest,
         required_artifact_refs=(ref,), accepted_or_rejected="rejected",
-        reason="not ready", next_owner="Development",
+        reason="not ready", next_owner="Development", graph_identity=graph.identity_digest,
     )
     store.record_handoff(rejected)
     with pytest.raises(ControlStateError, match="handoff_rejected"):
@@ -196,11 +197,12 @@ def test_handoff_is_atomic_owner_version_bound_and_rejected_cannot_take_over(tmp
         task_id=task.task_id, task_version=0, from_owner="Owner", to_role="Architecture",
         source_identity=source.identity_digest, context_digest=context.context_digest,
         required_artifact_refs=(ref,), accepted_or_rejected="accepted",
-        reason="architecture evidence", next_owner="Architecture",
+        reason="architecture evidence", next_owner="Architecture", graph_identity=graph.identity_digest,
     )
     store.record_handoff(receipt)
     accepted = store.accept_handoff(receipt)
     assert accepted.receipt_digest == receipt.receipt_digest
+    assert accepted.graph_identity == graph.identity_digest
     assert store.get_task(task.task_id).owner == "Architecture"
     reopened = ControlStateStore(store.path)
     assert reopened.get_task(task.task_id).owner == "Architecture"
@@ -211,7 +213,7 @@ def test_transition_cas_rowcount_and_evidence_index_survive_reopen(tmp_path):
     store, task, source, graph = setup(tmp_path)
     context = build_context_snapshot(
         task=task, source=source, graph=graph, role="Architecture",
-        skill_identity="skill://architecture@1", tool_policy_identity="policy://architecture@1",
+        skill_identity="skill://architecture@1", tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
     )
     good = artifact(
         task, source, graph,
@@ -240,11 +242,11 @@ def test_handoff_allows_historical_context_refs_but_binds_graph_and_current_cont
     store, task, source, graph = setup(tmp_path)
     current = build_context_snapshot(
         task=task, source=source, graph=graph, role="Architecture",
-        skill_identity="skill://architecture@1", tool_policy_identity="policy://architecture@1",
+        skill_identity="skill://architecture@1", tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
     )
     historical = build_context_snapshot(
-        task=task, source=source, graph=graph, role="Owner",
-        skill_identity="skill://owner@1", tool_policy_identity="policy://owner@1",
+        task=task, source=source, graph=graph, role="Architecture",
+        skill_identity="skill://owner-context@1", tool_policy_identity=ToolPolicy.for_role("Architecture").policy_digest,
     )
     current_ref = store.admit_artifact(artifact(
         task, source, graph, artifact_type="public_delivery.architecture_packet",
@@ -258,7 +260,7 @@ def test_handoff_allows_historical_context_refs_but_binds_graph_and_current_cont
         task_id=task.task_id, task_version=0, from_owner="Owner", to_role="Architecture",
         source_identity=source.identity_digest, context_digest=current.context_digest,
         required_artifact_refs=(historical_ref, current_ref), accepted_or_rejected="accepted",
-        reason="bound current evidence", next_owner="Architecture",
+        reason="bound current evidence", next_owner="Architecture", graph_identity=graph.identity_digest,
     )
     store.record_handoff(receipt, graph_identity=graph.identity_digest)
     assert store.accept_handoff(receipt, graph_identity=graph.identity_digest).receipt_digest == receipt.receipt_digest
@@ -273,7 +275,7 @@ def test_handoff_allows_historical_context_refs_but_binds_graph_and_current_cont
             task_id=task.task_id, task_version=0, from_owner="Owner", to_role="Development",
             source_identity=source.identity_digest, context_digest=current.context_digest,
             required_artifact_refs=(current_ref, other_ref), accepted_or_rejected="rejected",
-            reason="graph mismatch", next_owner="Development",
+            reason="graph mismatch", next_owner="Development", graph_identity=graph.identity_digest,
         ))
 
 
