@@ -70,6 +70,8 @@ def test_ci_proves_supported_python_and_quality_contracts() -> None:
     assert any("--no-build-isolation -e \".[dev]\"" in command for command in install_commands)
     assert "python -m coverage run --branch --source=src/quantengine_public -m pytest" in commands
     assert "python -m coverage report --skip-covered --fail-under=82" in commands
+    assert "python scripts/run_hosted_phase2.py" in commands
+    assert all("run_hosted_phase2.py --execute" not in command for command in commands)
     assert "python scripts/native_agent_public_proof.py --artifact-dir artifacts/native-agent-public-proof" in commands
 
 
