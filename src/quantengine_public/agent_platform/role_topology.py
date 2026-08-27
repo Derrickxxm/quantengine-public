@@ -128,6 +128,7 @@ def validate_native_role_topology(
     expected_source_identity: str,
     initial_input_digest: str,
     expected_qwen_model: str,
+    expected_context_digests: Mapping[str, str],
 ) -> RoleTopologyVerdict:
     """Admit exactly Terra -> Sol -> Qwen Code -> Sol -> Ops -> QS."""
     if not _SHA256.fullmatch(expected_source_identity):
@@ -136,6 +137,11 @@ def validate_native_role_topology(
         raise RoleTopologyError("initial input digest invalid")
     if not isinstance(expected_qwen_model, str) or not expected_qwen_model.strip():
         raise RoleTopologyError("expected Qwen model required")
+    if not isinstance(expected_context_digests, Mapping) or set(expected_context_digests) != set(_STAGES):
+        raise RoleTopologyError("expected context digests must cover every stage")
+    for stage, digest in expected_context_digests.items():
+        if not isinstance(digest, str) or not _SHA256.fullmatch(digest):
+            raise RoleTopologyError(f"expected context digest invalid: {stage}")
     items = tuple(
         item if isinstance(item, NativeRoleReceipt) else NativeRoleReceipt.from_dict(item)
         for item in receipts
@@ -147,6 +153,8 @@ def validate_native_role_topology(
     for item in items:
         if item.task_id != expected_task_id or item.source_identity != expected_source_identity:
             raise RoleTopologyError("task or source identity mismatch")
+        if item.context_digest != expected_context_digests[item.stage]:
+            raise RoleTopologyError(f"context digest mismatch: {item.stage}")
         if dict(item.authority) != _ZERO_AUTHORITY:
             raise RoleTopologyError("authority injection")
         if item.input_digest != prior:
@@ -167,6 +175,7 @@ def validate_native_role_topology(
                 "task_id": expected_task_id,
                 "source_identity": expected_source_identity,
                 "initial_input_digest": initial_input_digest,
+                "expected_context_digests": dict(expected_context_digests),
                 "receipt_digests": list(receipt_digests),
             }
         ),
