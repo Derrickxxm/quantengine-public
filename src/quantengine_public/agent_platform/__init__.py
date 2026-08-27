@@ -88,6 +88,7 @@ from .role_topology import (
     NativeRoleReceipt,
     RoleTopologyError,
     RoleTopologyVerdict,
+    STUDIO_QWEN_MODEL,
     derive_native_role_release,
     validate_native_role_topology,
 )
@@ -126,6 +127,7 @@ __all__ = [
     "NativeRoleReleaseVerdict",
     "RoleTopologyError",
     "RoleTopologyVerdict",
+    "STUDIO_QWEN_MODEL",
     "ReadonlyToolOutput",
     "StageAuthorization",
     "RecordingTraceProcessor",

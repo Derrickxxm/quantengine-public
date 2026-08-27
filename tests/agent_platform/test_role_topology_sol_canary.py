@@ -16,7 +16,8 @@ ACCEPTED_SOURCE_IDENTITY = "a" * 64
 ACCEPTED_CONTEXT_DIGEST = "b" * 64
 INITIAL_INPUT_DIGEST = "0" * 64
 EXECUTION_HEAD = "c" * 40
-QWEN_MODEL = "qwen2.7-coder-local"
+QWEN_MODEL = "qwen3.8:27b-mxfp8"
+DEVELOPMENT_PATHS = ("src/quantengine_public/agent_platform/role_topology.py",)
 ZERO_AUTHORITY = {
     "deployment_allowed": False,
     "paper_allowed": False,
@@ -86,6 +87,7 @@ def _validate(
         expected_source_identity=ACCEPTED_SOURCE_IDENTITY,
         initial_input_digest=INITIAL_INPUT_DIGEST,
         expected_qwen_model=QWEN_MODEL,
+        expected_development_paths=DEVELOPMENT_PATHS,
         expected_context_digests=expected_contexts,
         expected_execution_heads={stage: EXECUTION_HEAD for stage, *_ in STAGE_POLICIES},
     )

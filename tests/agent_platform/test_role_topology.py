@@ -39,6 +39,9 @@ EXPECTED_CONTEXTS = {
         "quality",
     )
 }
+EXPECTED_DEVELOPMENT_PATHS = (
+    "src/quantengine_public/agent_platform/runtime.py",
+)
 
 
 def _receipt(
@@ -92,7 +95,7 @@ def _topology() -> tuple[NativeRoleReceipt, ...]:
         stage="development",
         role="Development",
         runtime="qwen-code-cli-studio-local",
-        model="qwen2.7-coder-local",
+        model="qwen3.8:27b-mxfp8",
         input_digest=test_author.output_digest,
         output_digit="3",
         changed_paths=("src/quantengine_public/agent_platform/runtime.py",),
@@ -132,7 +135,8 @@ def test_corrected_native_role_topology_is_admitted() -> None:
         expected_task_id="TASKSYS-1327",
         expected_source_identity="a" * 64,
         initial_input_digest="0" * 64,
-        expected_qwen_model="qwen2.7-coder-local",
+        expected_qwen_model="qwen3.8:27b-mxfp8",
+        expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
         expected_context_digests=EXPECTED_CONTEXTS,
         expected_execution_heads=EXPECTED_HEADS,
     )
@@ -158,7 +162,8 @@ def test_deterministic_release_consumes_the_exact_six_stage_topology() -> None:
         expected_task_id="TASKSYS-1327",
         expected_source_identity="a" * 64,
         initial_input_digest="0" * 64,
-        expected_qwen_model="qwen2.7-coder-local",
+        expected_qwen_model="qwen3.8:27b-mxfp8",
+        expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
         expected_context_digests=EXPECTED_CONTEXTS,
         expected_execution_heads=EXPECTED_HEADS,
     )
@@ -170,7 +175,8 @@ def test_deterministic_release_consumes_the_exact_six_stage_topology() -> None:
         expected_task_id="TASKSYS-1327",
         expected_source_identity="a" * 64,
         initial_input_digest="0" * 64,
-        expected_qwen_model="qwen2.7-coder-local",
+        expected_qwen_model="qwen3.8:27b-mxfp8",
+        expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
         expected_context_digests=EXPECTED_CONTEXTS,
         expected_execution_heads=EXPECTED_HEADS,
     ).topology_digest
@@ -189,7 +195,8 @@ def test_deterministic_release_rejects_a_forged_native_stage() -> None:
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -217,7 +224,8 @@ def test_wrong_model_or_runtime_is_rejected(
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -232,7 +240,8 @@ def test_handoff_digest_and_authority_fail_closed() -> None:
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -248,7 +257,8 @@ def test_handoff_digest_and_authority_fail_closed() -> None:
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -263,7 +273,8 @@ def test_role_filesystem_ownership_is_enforced() -> None:
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -276,7 +287,8 @@ def test_role_filesystem_ownership_is_enforced() -> None:
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -292,7 +304,8 @@ def test_each_stage_is_bound_to_its_accepted_context_digest() -> None:
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -312,7 +325,8 @@ def test_each_stage_is_bound_to_its_expected_execution_head() -> None:
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -329,6 +343,7 @@ def test_studio_qwen_model_is_pinned_by_the_public_contract() -> None:
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
             expected_qwen_model="attacker-selected-local-model",
+            expected_development_paths=EXPECTED_DEVELOPMENT_PATHS,
             expected_context_digests=EXPECTED_CONTEXTS,
             expected_execution_heads=EXPECTED_HEADS,
         )
@@ -347,7 +362,7 @@ def test_development_must_stay_inside_the_accepted_path_allowlist() -> None:
             expected_task_id="TASKSYS-1327",
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
-            expected_qwen_model="qwen2.7-coder-local",
+            expected_qwen_model="qwen3.8:27b-mxfp8",
             expected_development_paths=(
                 "src/quantengine_public/agent_platform/runtime.py",
             ),

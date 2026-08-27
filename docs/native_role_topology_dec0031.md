@@ -21,7 +21,10 @@ Every native receipt uses
 identity, accepted per-stage context digest, exact execution HEAD before and
 after, handoff input/output digests, runtime/model, changed paths, PASS status,
 and an explicit zero-authority object. A role may not create a commit during
-its turn.
+its turn. Public admission independently pins the Studio model to
+`qwen3.8:27b-mxfp8`, requires the accepted Development path allowlist, rejects
+every changed path outside it, and includes both the model and allowlist in the
+topology digest.
 
 `validate_native_role_topology()` accepts exactly six receipts in the declared
 order. `derive_native_role_release()` calls that validator and hashes the

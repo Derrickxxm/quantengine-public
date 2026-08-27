@@ -24,6 +24,7 @@ _STAGES = (
     "ops",
     "quality",
 )
+STUDIO_QWEN_MODEL = "qwen3.8:27b-mxfp8"
 _ZERO_AUTHORITY = {
     "deployment_allowed": False,
     "paper_allowed": False,
@@ -189,6 +190,7 @@ def validate_native_role_topology(
     expected_source_identity: str,
     initial_input_digest: str,
     expected_qwen_model: str,
+    expected_development_paths: Sequence[str],
     expected_context_digests: Mapping[str, str],
     expected_execution_heads: Mapping[str, str],
 ) -> RoleTopologyVerdict:
@@ -197,8 +199,21 @@ def validate_native_role_topology(
         raise RoleTopologyError("expected source identity invalid")
     if not _SHA256.fullmatch(initial_input_digest):
         raise RoleTopologyError("initial input digest invalid")
-    if not isinstance(expected_qwen_model, str) or not expected_qwen_model.strip():
-        raise RoleTopologyError("expected Qwen model required")
+    if expected_qwen_model != STUDIO_QWEN_MODEL:
+        raise RoleTopologyError("expected Qwen model mismatch")
+    development_paths = tuple(expected_development_paths)
+    if not development_paths or len(set(development_paths)) != len(development_paths):
+        raise RoleTopologyError("expected Development paths invalid")
+    for value in development_paths:
+        path = PurePosixPath(value)
+        if (
+            not isinstance(value, str)
+            or not value
+            or path.is_absolute()
+            or ".." in path.parts
+            or path.parts[0] != "src"
+        ):
+            raise RoleTopologyError("expected Development paths invalid")
     if not isinstance(expected_context_digests, Mapping) or set(expected_context_digests) != set(_STAGES):
         raise RoleTopologyError("expected context digests must cover every stage")
     for stage, digest in expected_context_digests.items():
@@ -233,7 +248,11 @@ def validate_native_role_topology(
             raise RoleTopologyError("handoff digest mismatch")
         if item.status != "PASS":
             raise RoleTopologyError(f"stage not pass: {item.stage}")
-        _validate_policy(item, expected_qwen_model=expected_qwen_model)
+        _validate_policy(
+            item,
+            expected_qwen_model=expected_qwen_model,
+            expected_development_paths=development_paths,
+        )
         prior = item.output_digest
 
     receipt_digests = tuple(item.receipt_digest for item in items)
@@ -247,6 +266,8 @@ def validate_native_role_topology(
                 "task_id": expected_task_id,
                 "source_identity": expected_source_identity,
                 "initial_input_digest": initial_input_digest,
+                "expected_qwen_model": expected_qwen_model,
+                "expected_development_paths": list(development_paths),
                 "expected_context_digests": dict(expected_context_digests),
                 "expected_execution_heads": dict(expected_execution_heads),
                 "receipt_digests": list(receipt_digests),
@@ -263,6 +284,7 @@ def derive_native_role_release(
     expected_source_identity: str,
     initial_input_digest: str,
     expected_qwen_model: str,
+    expected_development_paths: Sequence[str],
     expected_context_digests: Mapping[str, str],
     expected_execution_heads: Mapping[str, str],
 ) -> NativeRoleReleaseVerdict:
@@ -273,6 +295,7 @@ def derive_native_role_release(
         expected_source_identity=expected_source_identity,
         initial_input_digest=initial_input_digest,
         expected_qwen_model=expected_qwen_model,
+        expected_development_paths=expected_development_paths,
         expected_context_digests=expected_context_digests,
         expected_execution_heads=expected_execution_heads,
     )
@@ -284,7 +307,12 @@ def derive_native_role_release(
     )
 
 
-def _validate_policy(receipt: NativeRoleReceipt, *, expected_qwen_model: str) -> None:
+def _validate_policy(
+    receipt: NativeRoleReceipt,
+    *,
+    expected_qwen_model: str,
+    expected_development_paths: Sequence[str],
+) -> None:
     expected = {
         "architecture": ("Architecture", "codex-cli-chatgpt-subscription", "gpt-5.6-terra"),
         "test_author": ("Test", "codex-cli-chatgpt-subscription", "gpt-5.6-sol"),
@@ -306,6 +334,10 @@ def _validate_policy(receipt: NativeRoleReceipt, *, expected_qwen_model: str) ->
             raise RoleTopologyError("Development requires an implementation change")
         if any(path.startswith("tests/") for path in receipt.changed_paths):
             raise RoleTopologyError("Development must not modify tests")
+        if any(path not in expected_development_paths for path in receipt.changed_paths):
+            raise RoleTopologyError(
+                "Development changed paths outside accepted allowlist"
+            )
     elif receipt.changed_paths:
         raise RoleTopologyError(f"stage must not modify files: {receipt.stage}")
 
@@ -316,6 +348,7 @@ def _digest(value: Any) -> str:
 
 
 __all__ = [
+    "STUDIO_QWEN_MODEL",
     "NativeRoleReleaseVerdict",
     "NativeRoleReceipt",
     "RoleTopologyError",

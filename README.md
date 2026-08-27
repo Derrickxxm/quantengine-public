@@ -43,6 +43,9 @@ Every receipt is bound to the accepted task, source identity, context digest,
 execution HEAD, runtime/model, changed-path ownership, and the preceding
 handoff digest. `derive_native_role_release()` revalidates the exact six-stage
 chain before producing a content-addressed, zero-authority Release verdict.
+The public contract itself pins `qwen3.8:27b-mxfp8` and includes the accepted
+Development path allowlist in the topology digest; a caller cannot substitute
+another local model or broaden the receipt's file scope.
 Local Codex roles use ChatGPT subscription login and do not require an OpenAI
 API key. The local Qwen lane uses a temporary loopback path to the Studio model.
 See [the DEC-0031 topology contract](docs/native_role_topology_dec0031.md).
