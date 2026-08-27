@@ -7,7 +7,7 @@ name = "quantengine-public"
 dynamic = ["version"]
 description = "Evidence-controlled AI software delivery with a QuantEngine reference runtime."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.15"
 license = {text = "MIT"}
 authors = [
   {name = "Derrick Xu"}
@@ -19,6 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "coverage>=7.15.4",
   "jsonschema>=4.0",
   "pytest>=8.0"
 ]

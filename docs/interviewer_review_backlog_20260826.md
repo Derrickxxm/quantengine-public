@@ -12,8 +12,11 @@ Alignment status: TASKSYS-1259 implements the Release-topology/version repair,
 OpenAI Agents SDK 0.22.0 adapter, evidence-gated Thin Control, and the six-role
 vertical slice. TASKSYS-1264 executes the learning closure. TASKSYS-1266 adds a
 bounded CI proof and byte-level verifier, repeats the three review perspectives,
-and aligns the focused public release as `v0.5.0`. The proof uses a local
-ScriptedModel and explicitly excludes network model calls, deployment,
+and aligns the focused public release as `v0.5.0`. TASKSYS-1267 aligns the CLI
+identity and hardens the `v0.5.1` release contract with reviewed immutable
+Action commits, Python 3.11/3.14 lanes, top-level toolchain constraints, and an
+82% source branch-coverage gate measured from an 83% baseline. The proof uses a
+local ScriptedModel and explicitly excludes network model calls, deployment,
 QuantEngine Replay, Paper, and Real.
 
 Current release re-reviewed: `v0.5.0`; the uploaded proof binds its exact source
@@ -28,10 +31,11 @@ commit, tree digest, source-set graph digest, SDK version, Release, and AAR.
 | Senior architect | PASS | Agent execution is separated from deterministic state, evidence admission, independent Quality, and zero-authority Release; forged or stale proof fails closed. | No deployment, external runtime, QuantEngine Replay, Paper, or Real authority exists. |
 
 The detailed findings below are preserved as the pre-remediation backlog. P0-01,
-P1-01, P1-02, P1-03, and P1-04 are closed by the v0.5.0 evidence. Repository
-protection and GitHub discovery metadata are verified as release-time settings;
-broader production, hosted-model eval, coverage, type-checking, and workflow-pin
-hardening remain future work.
+P1-01, P1-02, P1-03, and P1-04 are closed by the v0.5.0 evidence. P1-05 and
+the bounded portions of P1-06 and P2-01 are closed by repository settings and
+the v0.5.1 contract. Broader production, hosted-model eval, full transitive
+locking, and a clean whole-repository static-analysis baseline remain future
+work.
 
 ## 1. Review Decision
 
@@ -259,7 +263,16 @@ repository presenting release-control engineering.
 
 ### P1-06: CI is green but does not yet prove a reproducible release
 
-#### Current gaps
+#### M9 closure
+
+The release now builds without an unpinned isolated build environment, checks
+tag/package/CLI identity, tests Python 3.11 and 3.14, pins release-critical
+Actions by full commit, constrains the top-level CI/build toolchain, declares
+least-privilege permissions, and enforces 82% source branch coverage. A Ruff
+baseline found 48 pre-existing findings, so TASKSYS-1267 deliberately did not
+turn a release-hardening patch into an unrelated whole-repository rewrite.
+
+#### Original review gaps (historical)
 
 - no package build and clean-install smoke test;
 - no version-to-tag check;
@@ -269,6 +282,11 @@ repository presenting release-control engineering.
 - dependencies use lower bounds without a committed lock or constraints file;
 - GitHub Actions use floating major tags rather than immutable commit SHAs;
 - no explicit least-privilege workflow permissions.
+
+Remaining after M9: the constraint file covers the reviewed top-level
+CI/build toolchain rather than every transitive dependency, and the existing
+48-finding Ruff baseline is not yet clean enough for a fail-closed
+whole-repository static gate.
 
 #### Acceptance criteria
 
@@ -283,7 +301,14 @@ repository presenting release-control engineering.
 
 ### P2-01: New and legacy project identities remain mixed
 
-#### Current observation
+#### M9 closure
+
+The package metadata, GitHub About text, README, and CLI now use one current
+Evidence-Controlled AI Software Delivery identity. The QuantEngine walkthrough
+is explicitly labeled as the retained implemented reference domain, not a
+second current product identity.
+
+#### Original observation (historical)
 
 The README now presents Evidence-Controlled AI Software Delivery, while the CLI,
 Roadmap, and older architecture documents still describe a synthetic backend or

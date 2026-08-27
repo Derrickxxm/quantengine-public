@@ -17,7 +17,10 @@ from quantengine_public.risk import RiskPolicy
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="quantengine-public",
-        description="Synthetic backend verification toolkit.",
+        description=(
+            "Evidence-controlled AI software delivery with a QuantEngine "
+            "reference runtime."
+        ),
     )
     parser.add_argument(
         "--version",
