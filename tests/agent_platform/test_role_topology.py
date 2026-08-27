@@ -16,6 +16,17 @@ ZERO_AUTHORITY = {
     "paper_allowed": False,
     "real_allowed": False,
 }
+EXPECTED_CONTEXTS = {
+    stage: "b" * 64
+    for stage in (
+        "architecture",
+        "test_author",
+        "development",
+        "test_verify",
+        "ops",
+        "quality",
+    )
+}
 
 
 def _receipt(
@@ -108,6 +119,7 @@ def test_corrected_native_role_topology_is_admitted() -> None:
         expected_source_identity="a" * 64,
         initial_input_digest="0" * 64,
         expected_qwen_model="qwen2.7-coder-local",
+        expected_context_digests=EXPECTED_CONTEXTS,
     )
 
     assert verdict.status == "PASS"
@@ -146,6 +158,7 @@ def test_wrong_model_or_runtime_is_rejected(
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
+            expected_context_digests=EXPECTED_CONTEXTS,
         )
 
 
@@ -159,6 +172,7 @@ def test_handoff_digest_and_authority_fail_closed() -> None:
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
+            expected_context_digests=EXPECTED_CONTEXTS,
         )
 
     receipts = list(_topology())
@@ -173,6 +187,7 @@ def test_handoff_digest_and_authority_fail_closed() -> None:
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
+            expected_context_digests=EXPECTED_CONTEXTS,
         )
 
 
@@ -186,6 +201,7 @@ def test_role_filesystem_ownership_is_enforced() -> None:
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
+            expected_context_digests=EXPECTED_CONTEXTS,
         )
 
     receipts = list(_topology())
@@ -197,4 +213,20 @@ def test_role_filesystem_ownership_is_enforced() -> None:
             expected_source_identity="a" * 64,
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
+            expected_context_digests=EXPECTED_CONTEXTS,
+        )
+
+
+def test_each_stage_is_bound_to_its_accepted_context_digest() -> None:
+    receipts = list(_topology())
+    receipts[2] = replace(receipts[2], context_digest="e" * 64)
+
+    with pytest.raises(RoleTopologyError, match="context digest mismatch: development"):
+        validate_native_role_topology(
+            receipts,
+            expected_task_id="TASKSYS-1327",
+            expected_source_identity="a" * 64,
+            initial_input_digest="0" * 64,
+            expected_qwen_model="qwen2.7-coder-local",
+            expected_context_digests=EXPECTED_CONTEXTS,
         )
