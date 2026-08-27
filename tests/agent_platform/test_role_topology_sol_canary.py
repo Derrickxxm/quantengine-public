@@ -15,6 +15,7 @@ TASK_ID = "TASKSYS-1327"
 ACCEPTED_SOURCE_IDENTITY = "a" * 64
 ACCEPTED_CONTEXT_DIGEST = "b" * 64
 INITIAL_INPUT_DIGEST = "0" * 64
+EXECUTION_HEAD = "c" * 40
 QWEN_MODEL = "qwen2.7-coder-local"
 ZERO_AUTHORITY = {
     "deployment_allowed": False,
@@ -63,6 +64,8 @@ def _valid_receipts() -> tuple[NativeRoleReceipt, ...]:
                 model=model,
                 source_identity=ACCEPTED_SOURCE_IDENTITY,
                 context_digest=ACCEPTED_CONTEXT_DIGEST,
+                execution_head_before=EXECUTION_HEAD,
+                execution_head_after=EXECUTION_HEAD,
                 input_digest=input_digest,
                 output_digest=output_digest,
                 changed_paths=changed_paths,
@@ -84,6 +87,7 @@ def _validate(
         initial_input_digest=INITIAL_INPUT_DIGEST,
         expected_qwen_model=QWEN_MODEL,
         expected_context_digests=expected_contexts,
+        expected_execution_heads={stage: EXECUTION_HEAD for stage, *_ in STAGE_POLICIES},
     )
 
 

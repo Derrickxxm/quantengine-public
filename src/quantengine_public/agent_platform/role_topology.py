@@ -15,6 +15,7 @@ from typing import Any, Mapping, Sequence
 
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
 _STAGES = (
     "architecture",
     "test_author",
@@ -43,6 +44,8 @@ class NativeRoleReceipt:
     model: str | None
     source_identity: str
     context_digest: str
+    execution_head_before: str
+    execution_head_after: str
     input_digest: str
     output_digest: str
     changed_paths: tuple[str, ...]
@@ -62,6 +65,11 @@ class NativeRoleReceipt:
         for name in ("source_identity", "context_digest", "input_digest", "output_digest"):
             if not isinstance(getattr(self, name), str) or not _SHA256.fullmatch(getattr(self, name)):
                 raise RoleTopologyError(f"{name} invalid")
+        for name in ("execution_head_before", "execution_head_after"):
+            if not isinstance(getattr(self, name), str) or not _GIT_SHA.fullmatch(getattr(self, name)):
+                raise RoleTopologyError(f"{name} invalid")
+        if self.execution_head_before != self.execution_head_after:
+            raise RoleTopologyError("role must not create a commit")
         paths = tuple(self.changed_paths)
         for value in paths:
             path = PurePosixPath(value)
@@ -87,6 +95,8 @@ class NativeRoleReceipt:
             "model": self.model,
             "source_identity": self.source_identity,
             "context_digest": self.context_digest,
+            "execution_head_before": self.execution_head_before,
+            "execution_head_after": self.execution_head_after,
             "input_digest": self.input_digest,
             "output_digest": self.output_digest,
             "changed_paths": list(self.changed_paths),
@@ -129,6 +139,7 @@ def validate_native_role_topology(
     initial_input_digest: str,
     expected_qwen_model: str,
     expected_context_digests: Mapping[str, str],
+    expected_execution_heads: Mapping[str, str],
 ) -> RoleTopologyVerdict:
     """Admit exactly Terra -> Sol -> Qwen Code -> Sol -> Ops -> QS."""
     if not _SHA256.fullmatch(expected_source_identity):
@@ -142,6 +153,11 @@ def validate_native_role_topology(
     for stage, digest in expected_context_digests.items():
         if not isinstance(digest, str) or not _SHA256.fullmatch(digest):
             raise RoleTopologyError(f"expected context digest invalid: {stage}")
+    if not isinstance(expected_execution_heads, Mapping) or set(expected_execution_heads) != set(_STAGES):
+        raise RoleTopologyError("expected execution heads must cover every stage")
+    for stage, head in expected_execution_heads.items():
+        if not isinstance(head, str) or not _GIT_SHA.fullmatch(head):
+            raise RoleTopologyError(f"expected execution head invalid: {stage}")
     items = tuple(
         item if isinstance(item, NativeRoleReceipt) else NativeRoleReceipt.from_dict(item)
         for item in receipts
@@ -155,6 +171,11 @@ def validate_native_role_topology(
             raise RoleTopologyError("task or source identity mismatch")
         if item.context_digest != expected_context_digests[item.stage]:
             raise RoleTopologyError(f"context digest mismatch: {item.stage}")
+        if (
+            item.execution_head_before != expected_execution_heads[item.stage]
+            or item.execution_head_after != expected_execution_heads[item.stage]
+        ):
+            raise RoleTopologyError(f"execution head mismatch: {item.stage}")
         if dict(item.authority) != _ZERO_AUTHORITY:
             raise RoleTopologyError("authority injection")
         if item.input_digest != prior:
@@ -176,6 +197,7 @@ def validate_native_role_topology(
                 "source_identity": expected_source_identity,
                 "initial_input_digest": initial_input_digest,
                 "expected_context_digests": dict(expected_context_digests),
+                "expected_execution_heads": dict(expected_execution_heads),
                 "receipt_digests": list(receipt_digests),
             }
         ),
