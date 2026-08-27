@@ -4,7 +4,8 @@ Date: 2026-08-26
 
 Status: Owner-approved reuse-first implementation baseline; Milestones 0-6
 implemented through the bounded public proof; Phase 2 P2-1 fail-closed preflight
-implemented on an isolated branch with no hosted execution authority
+and the separate DEC-0018 private-workstation local-model simulation are
+implemented on an isolated branch with no hosted Luna or release authority
 
 Audience: platform, Agent, quality, and delivery engineers
 
@@ -861,6 +862,34 @@ ceiling, trace policy, evidence/redaction policy, and one exact request. Tools,
 handoffs, merge, release publication, deployment, QuantEngine Replay, Paper,
 and Real remain unauthorized.
 
+### Phase 2 local simulation: DEC-0018 private workstation
+
+The Owner's ChatGPT Pro entitlement does not supply OpenAI API credit, so
+DEC-0018 authorizes a separate protocol and orchestration simulation using the
+existing loopback-only compatible service and `qwen3.8:27b-mxfp8`. It does not
+change the DEC-0017 hosted Luna identity or consume its single-use durable claim.
+
+The real local run completed four ordered stages:
+
+- one structured Architecture request;
+- one allowlisted source lookup called exactly once;
+- one Architecture-to-Test SDK handoff;
+- one Architecture, Test, Development, and Quality role loop.
+
+The public receipt binds source, plan, predecessor, Agent graph, output, usage,
+and stage digests. It reports 9 model requests, 12,685 input tokens, 1,714 output
+tokens, 50,911 ms aggregate stage latency, and zero hosted cost. Its authority
+flags explicitly deny hosted Luna proof, hosted claim consumption, tracing,
+write, Release, deployment, and QuantEngine runtime authority.
+
+This successful run provides local evidence for the compatible protocol, SDK
+orchestration, one tool call, one handoff, and ordered role execution. Unit
+tests cover its validation, redaction, and selected failure gates. The receipt
+does not expose per-role handoff identities and is not a complete provider
+security baseline. It does not prove `gpt-5.6-luna` behavior, OpenAI
+authentication, limits, pricing, or a hosted-provider integration. Therefore it
+does not unlock P2-7 release.
+
 ## 18. Test Strategy
 
 1. **Unit tests:** canonical identities, contracts, transition guards, tool
@@ -873,9 +902,10 @@ and Real remain unauthorized.
    resume behavior.
 5. **Adversarial tests:** stale source, wrong producer, missing upstream,
    authority injection, scope escape, duplicate run, and malformed output.
-6. **One real integration test (not yet authorized):** after the P2-1 preflight
-   and a separate Owner approval, run the selected Native-Agent provider on one
-   bounded Architecture task and retain the approved public-safe evidence.
+6. **Provider integration tests:** retain the DEC-0018 local-model
+   simulation as non-hosted protocol/orchestration evidence. A real hosted Luna
+   integration remains unexecuted and must retain its separate identity,
+   credential, cost, and public-safe evidence boundaries.
 
 Real model execution should not be required for every unit-test run. The
 deterministic harness remains the fast CI oracle.

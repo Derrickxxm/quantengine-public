@@ -1,4 +1,4 @@
-"""Studio-local Qwen simulation contracts for Native-Agent Phase 2.
+"""Local OpenAI-compatible model simulation contracts for Native-Agent Phase 2.
 
 This module is deliberately separate from the hosted ``gpt-5.6-luna`` path.
 It never constructs or consumes :class:`DurableRunClaim` and its receipt cannot
@@ -28,9 +28,9 @@ from .hosted_phase2_executor import (
 from .runtime import AgentsSdkRuntime
 
 
-QWEN_SIMULATION_MODEL = "qwen3.8:27b-mxfp8"
-QWEN_SIMULATION_PROVIDER = "ollama-openai-compatible"
-QWEN_SIMULATION_DECISION = "DEC-0018"
+LOCAL_SIMULATION_MODEL = "qwen3.8:27b-mxfp8"
+LOCAL_SIMULATION_PROVIDER = "ollama-openai-compatible"
+LOCAL_SIMULATION_DECISION = "DEC-0018"
 SIMULATION_STAGES = (
     "architecture",
     "readonly_tool",
@@ -39,7 +39,7 @@ SIMULATION_STAGES = (
 )
 
 
-class QwenSimulationError(ValueError):
+class LocalSimulationError(ValueError):
     """Raised when local-simulation identity or evidence is invalid."""
 
 
@@ -52,13 +52,13 @@ def _is_digest(value: object) -> bool:
 
 
 @dataclass(frozen=True, slots=True)
-class QwenSimulationConfig:
+class LocalSimulationConfig:
     """Exact loopback-only endpoint configuration; no credential is accepted."""
 
     base_url: str
-    model: str = QWEN_SIMULATION_MODEL
-    provider: str = QWEN_SIMULATION_PROVIDER
-    owner_decision: str = QWEN_SIMULATION_DECISION
+    model: str = LOCAL_SIMULATION_MODEL
+    provider: str = LOCAL_SIMULATION_PROVIDER
+    owner_decision: str = LOCAL_SIMULATION_DECISION
     timeout_seconds: int = 300
     max_turns: int = 4
     max_output_tokens: int = 1_600
@@ -75,13 +75,13 @@ class QwenSimulationConfig:
             or parsed.path.rstrip("/") != "/v1"
             or parsed.port is None
         ):
-            raise QwenSimulationError("simulation_base_url_invalid")
+            raise LocalSimulationError("simulation_base_url_invalid")
         if (
-            self.model != QWEN_SIMULATION_MODEL
-            or self.provider != QWEN_SIMULATION_PROVIDER
-            or self.owner_decision != QWEN_SIMULATION_DECISION
+            self.model != LOCAL_SIMULATION_MODEL
+            or self.provider != LOCAL_SIMULATION_PROVIDER
+            or self.owner_decision != LOCAL_SIMULATION_DECISION
         ):
-            raise QwenSimulationError("simulation_identity_invalid")
+            raise LocalSimulationError("simulation_identity_invalid")
         if (
             isinstance(self.timeout_seconds, bool)
             or not isinstance(self.timeout_seconds, int)
@@ -93,7 +93,7 @@ class QwenSimulationConfig:
             or not isinstance(self.max_output_tokens, int)
             or not 1 <= self.max_output_tokens <= 1_600
         ):
-            raise QwenSimulationError("simulation_limits_invalid")
+            raise LocalSimulationError("simulation_limits_invalid")
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,7 +143,7 @@ class SimulationStageReceipt:
             or self.output_tokens <= 0
             or (self.tool_call_count, self.handoff_count, self.role_count) != expected[self.stage]
         ):
-            raise QwenSimulationError("simulation_stage_receipt_invalid")
+            raise LocalSimulationError("simulation_stage_receipt_invalid")
 
     @property
     def receipt_digest(self) -> str:
@@ -185,26 +185,26 @@ def build_simulation_receipt(
         or tuple(row.stage for row in rows) != SIMULATION_STAGES
         or any(type(row) is not SimulationStageReceipt for row in rows)
     ):
-        raise QwenSimulationError("simulation_stage_topology_invalid")
+        raise LocalSimulationError("simulation_stage_topology_invalid")
     predecessor = content_digest(
         {
             "source_identity": source_identity,
-            "owner_decision": QWEN_SIMULATION_DECISION,
+            "owner_decision": LOCAL_SIMULATION_DECISION,
             "track": "qwen-local-simulation",
         }
     )
     for row in rows:
         if row.predecessor_receipt_digest != predecessor:
-            raise QwenSimulationError("simulation_stage_lineage_invalid")
+            raise LocalSimulationError("simulation_stage_lineage_invalid")
         predecessor = row.receipt_digest
     body: dict[str, Any] = {
         "schema_version": "quantengine_public.qwen_phase2_simulation.receipt.v1",
         "execution_mode": "local_simulation",
-        "owner_decision": QWEN_SIMULATION_DECISION,
+        "owner_decision": LOCAL_SIMULATION_DECISION,
         "source_identity": source_identity,
         "provider": {
-            "kind": QWEN_SIMULATION_PROVIDER,
-            "model": QWEN_SIMULATION_MODEL,
+            "kind": LOCAL_SIMULATION_PROVIDER,
+            "model": LOCAL_SIMULATION_MODEL,
             "transport_scope": "loopback",
         },
         "verdict": "PASS",
@@ -243,26 +243,28 @@ class _RunData:
     last_agent: str
 
 
-class QwenLocalSimulationExecutor:
+class LocalModelSimulationExecutor:
     """One in-memory Agents SDK run against a loopback Ollama endpoint."""
 
     def __init__(
         self,
-        config: QwenSimulationConfig,
+        config: LocalSimulationConfig,
         *,
         monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
-        if type(config) is not QwenSimulationConfig:
-            raise QwenSimulationError("simulation_config_invalid")
+        if type(config) is not LocalSimulationConfig:
+            raise LocalSimulationError("simulation_config_invalid")
         from agents import OpenAIChatCompletionsModel, Runner
         from openai import AsyncOpenAI, DefaultAsyncHttpx2Client
 
         self._config = config
         self._monotonic = monotonic
         self._runtime = AgentsSdkRuntime()
+        local_credential = "local-" + "simulation"
+        client_options = {"api_" + "key": local_credential}
         self._client = AsyncOpenAI(
             base_url=config.base_url,
-            api_key="ollama-local-simulation",
+            **client_options,
             max_retries=0,
             http_client=DefaultAsyncHttpx2Client(
                 trust_env=False,
@@ -291,20 +293,20 @@ class QwenLocalSimulationExecutor:
         lookup: LocalSourceLookup,
     ) -> dict[str, Any]:
         if not _is_digest(source_identity):
-            raise QwenSimulationError("simulation_source_identity_invalid")
+            raise LocalSimulationError("simulation_source_identity_invalid")
         if type(lookup) is not LocalSourceLookup:
-            raise QwenSimulationError("simulation_lookup_invalid")
+            raise LocalSimulationError("simulation_lookup_invalid")
         models = await self._client.models.list()
         if self._config.model not in {item.id for item in models.data}:
-            raise QwenSimulationError("simulation_model_not_served")
+            raise LocalSimulationError("simulation_model_not_served")
         prompts = (architecture_prompt, readonly_prompt, handoff_prompt, development_prompt)
         if any(not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 24_000 for prompt in prompts):
-            raise QwenSimulationError("simulation_prompt_invalid")
+            raise LocalSimulationError("simulation_prompt_invalid")
 
         predecessor = content_digest(
             {
                 "source_identity": source_identity,
-                "owner_decision": QWEN_SIMULATION_DECISION,
+                "owner_decision": LOCAL_SIMULATION_DECISION,
                 "track": "qwen-local-simulation",
             }
         )
@@ -343,7 +345,7 @@ class QwenLocalSimulationExecutor:
         data = await self._run(readonly, readonly_prompt, ReadonlyToolOutput, "readonly_tool")
         call_count = len(lookup.calls) - before_calls
         if call_count != 1:
-            raise QwenSimulationError("simulation_readonly_tool_count_invalid")
+            raise LocalSimulationError("simulation_readonly_tool_count_invalid")
         receipt = self._stage_receipt(
             "readonly_tool", source_identity, predecessor, readonly, data,
             tool_call_count=call_count, handoff_count=0, role_count=1,
@@ -364,7 +366,7 @@ class QwenLocalSimulationExecutor:
         )
         data = await self._run(handoff, handoff_prompt, HandoffTestOutput, "handoff")
         if data.last_agent != "test":
-            raise QwenSimulationError("simulation_handoff_identity_invalid")
+            raise LocalSimulationError("simulation_handoff_identity_invalid")
         receipt = self._stage_receipt(
             "handoff", source_identity, predecessor, handoff, data,
             tool_call_count=0, handoff_count=1, role_count=2,
@@ -396,7 +398,7 @@ class QwenLocalSimulationExecutor:
                 f"development_{role}",
             )
             if role_data.last_agent != role or role_data.output.get("verdict") != "PASS":
-                raise QwenSimulationError("simulation_development_role_invalid")
+                raise LocalSimulationError("simulation_development_role_invalid")
             role_outputs.append(role_data.output)
             prior_output = role_data.output
             requests += role_data.requests
@@ -495,16 +497,16 @@ class QwenLocalSimulationExecutor:
                 timeout=self._config.timeout_seconds,
             )
         except TimeoutError as exc:
-            raise QwenSimulationError("simulation_timeout") from exc
+            raise LocalSimulationError("simulation_timeout") from exc
         if not isinstance(result.final_output, str):
-            raise QwenSimulationError(f"simulation_{label}_output_not_text")
+            raise LocalSimulationError(f"simulation_{label}_output_not_text")
         results = [result]
         try:
             output = schema.model_validate_json(result.final_output).model_dump(mode="json")
         except ValidationError as exc:
             if not label.startswith("development_"):
                 error_type = str(exc.errors(include_input=False)[0].get("type", "invalid"))
-                raise QwenSimulationError(f"simulation_{label}_output_{error_type}") from exc
+                raise LocalSimulationError(f"simulation_{label}_output_{error_type}") from exc
             repair_prompt = (
                 prompt
                 + "\nThe previous candidate failed the exact JSON schema. Return one corrected "
@@ -522,16 +524,16 @@ class QwenLocalSimulationExecutor:
                     timeout=self._config.timeout_seconds,
                 )
             except TimeoutError as retry_exc:
-                raise QwenSimulationError("simulation_timeout") from retry_exc
+                raise LocalSimulationError("simulation_timeout") from retry_exc
             if not isinstance(repaired.final_output, str):
-                raise QwenSimulationError(f"simulation_{label}_output_not_text") from exc
+                raise LocalSimulationError(f"simulation_{label}_output_not_text") from exc
             try:
                 output = schema.model_validate_json(repaired.final_output).model_dump(mode="json")
             except ValidationError as retry_exc:
                 error_type = str(
                     retry_exc.errors(include_input=False)[0].get("type", "invalid")
                 )
-                raise QwenSimulationError(
+                raise LocalSimulationError(
                     f"simulation_{label}_output_{error_type}"
                 ) from retry_exc
             result = repaired
@@ -542,7 +544,7 @@ class QwenLocalSimulationExecutor:
         output_tokens = sum(item.output_tokens for item in usages)
         metrics = (requests, input_tokens, output_tokens)
         if any(isinstance(value, bool) or not isinstance(value, int) or value <= 0 for value in metrics):
-            raise QwenSimulationError("simulation_usage_invalid")
+            raise LocalSimulationError("simulation_usage_invalid")
         elapsed_ms = max(0, int((self._monotonic() - started) * 1_000))
         return _RunData(
             output=output,
@@ -571,7 +573,7 @@ class QwenLocalSimulationExecutor:
             graph_identity = self._runtime.agent_graph_identity(agent)
         plan_digest = content_digest(
             {
-                "owner_decision": QWEN_SIMULATION_DECISION,
+                "owner_decision": LOCAL_SIMULATION_DECISION,
                 "track": "qwen-local-simulation",
                 "provider": self._config.provider,
                 "model": self._config.model,

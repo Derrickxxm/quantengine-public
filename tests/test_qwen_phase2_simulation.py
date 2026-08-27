@@ -1,21 +1,23 @@
-"""Red contracts for the Studio-local Qwen Phase 2 simulation."""
+"""Red contracts for the local OpenAI-compatible Phase 2 simulation."""
 
 from __future__ import annotations
 
 from dataclasses import replace
 import asyncio
+import json
 import os
+from pathlib import Path
 
 import pytest
 
 from quantengine_public.agent_platform.contracts import content_digest
 
 from quantengine_public.agent_platform.qwen_phase2_simulation import (
-    QWEN_SIMULATION_MODEL,
+    LOCAL_SIMULATION_MODEL,
     SIMULATION_STAGES,
-    QwenSimulationConfig,
-    QwenSimulationError,
-    QwenLocalSimulationExecutor,
+    LocalSimulationConfig,
+    LocalSimulationError,
+    LocalModelSimulationExecutor,
     SimulationStageReceipt,
     build_simulation_receipt,
 )
@@ -56,19 +58,19 @@ def stages(source_identity: str = "b" * 64) -> tuple[SimulationStageReceipt, ...
 
 
 def test_config_is_exact_qwen_and_loopback_only() -> None:
-    config = QwenSimulationConfig(base_url="http://127.0.0.1:21434/v1")
+    config = LocalSimulationConfig(base_url="http://127.0.0.1:21434/v1")
 
-    assert config.model == QWEN_SIMULATION_MODEL == "qwen3.8:27b-mxfp8"
+    assert config.model == LOCAL_SIMULATION_MODEL == "qwen3.8:27b-mxfp8"
     assert config.provider == "ollama-openai-compatible"
     assert config.owner_decision == "DEC-0018"
     for url in (
-        "http://10.0.0.105:11434/v1",
+        "http://0.0.0.0:11434/v1",
         "https://127.0.0.1:11434/v1",
         "http://127.0.0.1:11434/api",
         "http://user:secret@127.0.0.1:11434/v1",
     ):
-        with pytest.raises(QwenSimulationError, match="simulation_base_url_invalid"):
-            QwenSimulationConfig(base_url=url)
+        with pytest.raises(LocalSimulationError, match="simulation_base_url_invalid"):
+            LocalSimulationConfig(base_url=url)
 
 
 def test_executor_uses_concrete_qwen_model_without_openai_key(
@@ -82,11 +84,11 @@ def test_executor_uses_concrete_qwen_model_without_openai_key(
         return real_getenv(name, *args)
 
     monkeypatch.setattr(os, "getenv", guarded_getenv)
-    executor = QwenLocalSimulationExecutor(
-        QwenSimulationConfig(base_url="http://127.0.0.1:21434/v1")
+    executor = LocalModelSimulationExecutor(
+        LocalSimulationConfig(base_url="http://127.0.0.1:21434/v1")
     )
     assert type(executor._model).__name__ == "OpenAIChatCompletionsModel"
-    assert executor._model.model == QWEN_SIMULATION_MODEL
+    assert executor._model.model == LOCAL_SIMULATION_MODEL
     asyncio.run(executor.close())
 
 
@@ -98,7 +100,7 @@ def test_public_receipt_cannot_claim_luna_hosting_cost_or_authority() -> None:
     serialized = str(receipt).lower()
 
     assert receipt["verdict"] == "PASS"
-    assert receipt["provider"]["model"] == QWEN_SIMULATION_MODEL
+    assert receipt["provider"]["model"] == LOCAL_SIMULATION_MODEL
     assert receipt["provider"]["transport_scope"] == "loopback"
     assert receipt["claims"] == {
         "hosted_luna_proof": False,
@@ -120,23 +122,39 @@ def test_public_receipt_cannot_claim_luna_hosting_cost_or_authority() -> None:
 
 def test_receipt_requires_exact_topology_and_stage_metrics() -> None:
     rows = stages()
-    with pytest.raises(QwenSimulationError, match="simulation_stage_topology_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_topology_invalid"):
         build_simulation_receipt(source_identity="b" * 64, stages=rows[:-1])
-    with pytest.raises(QwenSimulationError, match="simulation_stage_topology_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_topology_invalid"):
         build_simulation_receipt(
             source_identity="b" * 64,
             stages=(rows[1], rows[0], rows[2], rows[3]),
         )
-    with pytest.raises(QwenSimulationError, match="simulation_stage_lineage_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_lineage_invalid"):
         build_simulation_receipt(
             source_identity="b" * 64,
             stages=(rows[0], replace(rows[1], predecessor_receipt_digest="e" * 64), rows[2], rows[3]),
         )
-    with pytest.raises(QwenSimulationError, match="simulation_stage_receipt_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
         replace(rows[0], requests=0)
-    with pytest.raises(QwenSimulationError, match="simulation_stage_receipt_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
         replace(rows[1], tool_call_count=0)
-    with pytest.raises(QwenSimulationError, match="simulation_stage_receipt_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
         replace(rows[2], handoff_count=0)
-    with pytest.raises(QwenSimulationError, match="simulation_stage_receipt_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
         replace(rows[3], role_count=3)
+
+
+def test_committed_simulation_receipt_rederives_without_hosted_claims() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "docs/evidence/qwen_phase2_local_simulation_receipt_20260827.json"
+    )
+    receipt = json.loads(path.read_text(encoding="utf-8"))
+    supplied = receipt.pop("receipt_digest")
+
+    assert content_digest(receipt) == supplied
+    assert receipt["verdict"] == "PASS"
+    assert tuple(row["stage"] for row in receipt["stages"]) == SIMULATION_STAGES
+    assert receipt["claims"]["hosted_luna_proof"] is False
+    assert receipt["claims"]["durable_hosted_claim_consumed"] is False
+    assert receipt["claims"]["release_authority_granted"] is False

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the DEC-0018 Studio-local Qwen Phase 2 simulation."""
+"""Run the DEC-0018 local OpenAI-compatible Phase 2 simulation."""
 
 from __future__ import annotations
 
@@ -18,9 +18,9 @@ if __package__ in {None, ""}:  # pragma: no cover
 from quantengine_public.agent_platform.contracts import canonical_json, content_digest
 from quantengine_public.agent_platform.hosted_phase2 import LocalSourceLookup
 from quantengine_public.agent_platform.qwen_phase2_simulation import (
-    QWEN_SIMULATION_MODEL,
-    QwenLocalSimulationExecutor,
-    QwenSimulationConfig,
+    LOCAL_SIMULATION_MODEL,
+    LocalModelSimulationExecutor,
+    LocalSimulationConfig,
 )
 
 
@@ -68,7 +68,7 @@ async def _run(base_url: str) -> dict[str, object]:
         + source[:12_000]
     )
     lookup = LocalSourceLookup(root, allowed_paths=(SOURCE_PATH,), max_chars=16_000)
-    executor = QwenLocalSimulationExecutor(QwenSimulationConfig(base_url=base_url))
+    executor = LocalModelSimulationExecutor(LocalSimulationConfig(base_url=base_url))
     try:
         return await executor.execute(
             source_identity=source_identity,
@@ -100,7 +100,7 @@ def _blocked(exc: Exception) -> dict[str, object]:
         "owner_decision": "DEC-0018",
         "provider": {
             "kind": "ollama-openai-compatible",
-            "model": QWEN_SIMULATION_MODEL,
+            "model": LOCAL_SIMULATION_MODEL,
             "transport_scope": "loopback",
         },
         "verdict": "BLOCKED",
@@ -118,7 +118,7 @@ def _blocked(exc: Exception) -> dict[str, object]:
         },
     }
     failure_code = str(exc)
-    if type(exc).__name__ == "QwenSimulationError" and failure_code.startswith("simulation_"):
+    if type(exc).__name__ == "LocalSimulationError" and failure_code.startswith("simulation_"):
         body["failure_code"] = failure_code
     body["receipt_digest"] = content_digest(body)
     return body

@@ -57,6 +57,16 @@ hosted tracing, tools, handoffs, raw evidence, or model execution. Selecting a
 real model, reading a key, spending tokens, and making the first hosted request
 remain separate Owner approval boundaries.
 
+DEC-0018 adds a separate private-workstation local-model simulation without
+weakening that boundary. The isolated `qwen3.8:27b-mxfp8` track uses the Agents SDK through an
+ephemeral loopback Ollama connection and proves one Architecture run, exact
+read-only source lookup, Architecture-to-Test handoff, and a four-role
+Architecture/Test/Development/Quality loop. Its digest-only
+[receipt](docs/evidence/qwen_phase2_local_simulation_receipt_20260827.json)
+explicitly states `hosted_luna_proof=false`, zero hosted cost, no hosted claim,
+and no write, Release, deployment, or QuantEngine runtime authority. It is not
+evidence that `gpt-5.6-luna` or OpenAI API authentication was exercised.
+
 ## The Delivery Control Loop
 
 ```mermaid
@@ -245,6 +255,8 @@ Implemented and runnable here:
 - an OpenAI Agents SDK 0.22.0 adapter with bounded tools, durable RunState envelopes, and local traces;
 - one network-free Architecture → Test → Development → Test → Ops → independent Quality → deterministic Release slice;
 - a zero-network, digest-only hosted-model canary preflight that keeps execution blocked;
+- a local OpenAI-compatible Agents SDK simulation with an exact read-only tool,
+  one handoff, four identity-ordered roles, and an explicit non-hosted receipt;
 - request-bound negative evidence;
 - QuantEngine admission, package verification, synthetic Paper, independent
   Replay, reconciliation, stress, recovery, and release evidence;

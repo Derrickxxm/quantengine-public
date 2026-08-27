@@ -1,0 +1,107 @@
+{
+  "claims": {
+    "actual_hosted_cost": false,
+    "deployment_authority_granted": false,
+    "durable_hosted_claim_consumed": false,
+    "hosted_luna_proof": false,
+    "hosted_trace_enabled": false,
+    "persistent_service_created": false,
+    "quantengine_runtime_authority_granted": false,
+    "release_authority_granted": false,
+    "write_authority_granted": false
+  },
+  "execution_mode": "local_simulation",
+  "owner_decision": "DEC-0018",
+  "provider": {
+    "kind": "ollama-openai-compatible",
+    "model": "qwen3.8:27b-mxfp8",
+    "transport_scope": "loopback"
+  },
+  "receipt_digest": "c2be9300d03d76ea4150ee002c6e6f54d481d6c4ebaa1a2fa48c6c350e4d92c4",
+  "schema_version": "quantengine_public.qwen_phase2_simulation.receipt.v1",
+  "source_identity": "bd7a06df2814a391116b73a07013451e168d205e66d8cc667f11a94919c3be5a",
+  "stages": [
+    {
+      "agent_graph_identity": "1602397670935adc45cf8bf72a36b23880ca8d2b13070134da961fb73d9410c9",
+      "handoff_count": 0,
+      "latency_ms": 5972,
+      "output_digest": "c08637719de81107baa9a00cbbed32bc7d2fae860e3b9395db057740cd18d3f3",
+      "plan_digest": "a4cf516366429a63e36a739f86d5ebf629a7686203871b88067fd4e8fe02cd57",
+      "predecessor_receipt_digest": "611dd534cc2f02921e57ce34524cb699ff6d45fb924b90bcff56b77b09ec29a5",
+      "receipt_digest": "a8c083c46f4150b469757c468dbd501a74c24d7fbf83df1815935f860a570a84",
+      "role_count": 1,
+      "stage": "architecture",
+      "status": "PASS",
+      "tool_call_count": 0,
+      "usage": {
+        "input_tokens": 2805,
+        "output_tokens": 191,
+        "requests": 1
+      }
+    },
+    {
+      "agent_graph_identity": "f26b0e0eb5e2fc2335e82fdf29c4c761d42e933ea867c5e797b1e76f63371bf9",
+      "handoff_count": 0,
+      "latency_ms": 11779,
+      "output_digest": "41e9737725acdcd66dc8218af3e99cc581366bb987bce0eb30de0d3ad05fddd2",
+      "plan_digest": "6c3bd9eeb0ffd5190f1aa4361246631cc7fb9beb008a0cd6b20029faea506998",
+      "predecessor_receipt_digest": "a8c083c46f4150b469757c468dbd501a74c24d7fbf83df1815935f860a570a84",
+      "receipt_digest": "52727a8e7c4759f864032b6b996f9dcb98947822f44eee494be75fdafbc8e3b0",
+      "role_count": 1,
+      "stage": "readonly_tool",
+      "status": "PASS",
+      "tool_call_count": 1,
+      "usage": {
+        "input_tokens": 3488,
+        "output_tokens": 458,
+        "requests": 2
+      }
+    },
+    {
+      "agent_graph_identity": "8fad02b167764fff2f2a4ab091aa15eb649351760c765e203249b075d533c9de",
+      "handoff_count": 1,
+      "latency_ms": 8734,
+      "output_digest": "ccdf06db46fd2c8a4dfb6b5687e67b0439e65646ddaa483a5b9a48e99e84b3c7",
+      "plan_digest": "27c2348e81ea15255324bec6a97a0a4595e35ebf2336f6eca8293473088e47ce",
+      "predecessor_receipt_digest": "52727a8e7c4759f864032b6b996f9dcb98947822f44eee494be75fdafbc8e3b0",
+      "receipt_digest": "719a8be70f00fbf165c8c3caaced83481e630f3a9b2d3e54c3d4c3a3c6e8aced",
+      "role_count": 2,
+      "stage": "handoff",
+      "status": "PASS",
+      "tool_call_count": 0,
+      "usage": {
+        "input_tokens": 3320,
+        "output_tokens": 280,
+        "requests": 2
+      }
+    },
+    {
+      "agent_graph_identity": "2160ccaf228bd28160e25968f6ed2c69f2a0484cde42d3b5782d73f420a09ed8",
+      "handoff_count": 3,
+      "latency_ms": 24426,
+      "output_digest": "3b3dab9c9c7a6e1dcd21ea3d84cbcca5ab7e3086d1eee63d53bc9c44c9c8c606",
+      "plan_digest": "66b3703b6c4c6d7545d3e8b6a4293e07a2dbef86e2f82f2080847b626df6eba2",
+      "predecessor_receipt_digest": "719a8be70f00fbf165c8c3caaced83481e630f3a9b2d3e54c3d4c3a3c6e8aced",
+      "receipt_digest": "cf55adfa35bb58b263b57b1bffeb972e6a73761d6d390fef214e2af2501555a3",
+      "role_count": 4,
+      "stage": "development_loop",
+      "status": "PASS",
+      "tool_call_count": 0,
+      "usage": {
+        "input_tokens": 3072,
+        "output_tokens": 785,
+        "requests": 4
+      }
+    }
+  ],
+  "total": {
+    "accounted_cost_microusd": 0,
+    "latency_ms": 50911,
+    "usage": {
+      "input_tokens": 12685,
+      "output_tokens": 1714,
+      "requests": 9
+    }
+  },
+  "verdict": "PASS"
+}
