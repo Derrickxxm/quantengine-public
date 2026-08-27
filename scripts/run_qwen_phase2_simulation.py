@@ -117,6 +117,9 @@ def _blocked(exc: Exception) -> dict[str, object]:
             "quantengine_runtime_authority_granted": False,
         },
     }
+    failure_code = str(exc)
+    if type(exc).__name__ == "QwenSimulationError" and failure_code.startswith("simulation_"):
+        body["failure_code"] = failure_code
     body["receipt_digest"] = content_digest(body)
     return body
 

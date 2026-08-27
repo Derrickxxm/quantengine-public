@@ -315,7 +315,7 @@ class QwenLocalSimulationExecutor:
             "Use only the supplied public packet. Return bounded architecture findings.",
             ArchitectureOutput,
         )
-        data = await self._run(architecture, architecture_prompt, ArchitectureOutput)
+        data = await self._run(architecture, architecture_prompt, ArchitectureOutput, "architecture")
         receipt = self._stage_receipt(
             "architecture", source_identity, predecessor, architecture, data,
             tool_call_count=0, handoff_count=0, role_count=1,
@@ -340,7 +340,7 @@ class QwenLocalSimulationExecutor:
             ReadonlyToolOutput,
             tools=(tool,),
         )
-        data = await self._run(readonly, readonly_prompt, ReadonlyToolOutput)
+        data = await self._run(readonly, readonly_prompt, ReadonlyToolOutput, "readonly_tool")
         call_count = len(lookup.calls) - before_calls
         if call_count != 1:
             raise QwenSimulationError("simulation_readonly_tool_count_invalid")
@@ -362,7 +362,7 @@ class QwenLocalSimulationExecutor:
             "Immediately hand off this bounded public request to the test specialist. Do not answer it yourself.",
             handoffs=(test_agent,),
         )
-        data = await self._run(handoff, handoff_prompt, HandoffTestOutput)
+        data = await self._run(handoff, handoff_prompt, HandoffTestOutput, "handoff")
         if data.last_agent != "test":
             raise QwenSimulationError("simulation_handoff_identity_invalid")
         receipt = self._stage_receipt(
@@ -389,7 +389,12 @@ class QwenLocalSimulationExecutor:
             prompt = development_prompt
             if prior_output is not None:
                 prompt += "\nUpstream public packet:\n" + canonical_json(prior_output)
-            role_data = await self._run(role_agent, prompt, DevelopmentRoleOutput)
+            role_data = await self._run(
+                role_agent,
+                prompt,
+                DevelopmentRoleOutput,
+                f"development_{role}",
+            )
             if role_data.last_agent != role or role_data.output.get("verdict") != "PASS":
                 raise QwenSimulationError("simulation_development_role_invalid")
             role_outputs.append(role_data.output)
@@ -468,6 +473,7 @@ class QwenLocalSimulationExecutor:
         agent: Any,
         prompt: str,
         schema: type[BaseModel],
+        label: str,
     ) -> _RunData:
         from agents import RunConfig
 
@@ -489,11 +495,11 @@ class QwenLocalSimulationExecutor:
         except TimeoutError as exc:
             raise QwenSimulationError("simulation_timeout") from exc
         if not isinstance(result.final_output, str):
-            raise QwenSimulationError("simulation_output_invalid")
+            raise QwenSimulationError(f"simulation_{label}_output_invalid")
         try:
             output = schema.model_validate_json(result.final_output).model_dump(mode="json")
         except ValidationError as exc:
-            raise QwenSimulationError("simulation_output_invalid") from exc
+            raise QwenSimulationError(f"simulation_{label}_output_invalid") from exc
         usage = result.context_wrapper.usage
         metrics = (usage.requests, usage.input_tokens, usage.output_tokens)
         if any(isinstance(value, bool) or not isinstance(value, int) or value <= 0 for value in metrics):
