@@ -11,9 +11,11 @@ Alignment status: Owner resumed development through plan steps 1–6. TASKSYS-12
 now contains the Release-topology/version fix, OpenAI Agents SDK 0.22.0 adapter,
 evidence-gated Thin Control, and one Architecture → Test → Development → Test →
 Ops → independent Quality → deterministic Release slice. Clean-install
-acceptance is 95 tests plus release smoke and public safety scan. Learning
-closure, public re-review, graph refresh, deployment, Paper, Replay, and Real
-remain explicitly out of scope.
+acceptance now includes 100 tests plus release smoke and public safety scan.
+TASKSYS-1264 closes the learning loop with seven retained attack replays,
+repair/red-test receipts, independent promotion review, and an evidence-bound
+zero-authority AAR. Public re-review, graph refresh, deployment, QuantEngine
+Replay, Paper, and Real remain explicitly out of scope.
 
 Current release reviewed: `v0.4.0` at
 `f5e64e5c96d7aad7da1a9203c73eebec37dcd916`

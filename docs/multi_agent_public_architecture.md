@@ -1,7 +1,8 @@
 # Evidence-Controlled AI Software Delivery Architecture
 
-Status: target architecture with a runnable public Golden Path and one
-identity-bound OpenAI Agents SDK 0.22.0 vertical slice on the development branch
+Status: target architecture with a runnable public Golden Path, one
+identity-bound OpenAI Agents SDK 0.22.0 vertical slice, and an evidence-bound
+learning closure
 
 Reference implementation: QuantEngine public-safe synthetic runtime
 
@@ -324,6 +325,14 @@ problem or drift observed
 This loop keeps memory dynamic: failed paths become executable checks, accepted
 decisions become task state, implementation becomes Git history, and verified
 results become content-addressed evidence.
+
+TASKSYS-1264 executes this loop for the Release authority-topology defect. The
+retained evidence chain binds the original Release receipt, seven named attack
+replays, the exact repair layer and red-test receipt, independent Quality
+promotion review, and the final zero-authority AAR. The verifier rejects
+missing, forged, stale, cross-task, or self-reviewed learning evidence. Its
+local historical-defect replay does not grant or imply QuantEngine Replay,
+deployment, Paper, or Real authority.
 
 ## 10. QuantEngine Reference Scenario
 
