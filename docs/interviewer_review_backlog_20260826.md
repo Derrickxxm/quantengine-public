@@ -5,20 +5,33 @@ Date: 2026-08-26
 Scope: public repository content, runnable code, contracts, tests, CI, release,
 and GitHub presentation
 
-Review mode: read-only findings captured before remediation
+Review mode: original read-only findings retained below; M8 closure re-reviewed
+against executable proof
 
-Alignment status: Owner resumed development through plan steps 1–6. TASKSYS-1259
-now contains the Release-topology/version fix, OpenAI Agents SDK 0.22.0 adapter,
-evidence-gated Thin Control, and one Architecture → Test → Development → Test →
-Ops → independent Quality → deterministic Release slice. Clean-install
-acceptance now includes 100 tests plus release smoke and public safety scan.
-TASKSYS-1264 closes the learning loop with seven retained attack replays,
-repair/red-test receipts, independent promotion review, and an evidence-bound
-zero-authority AAR. Public re-review, graph refresh, deployment, QuantEngine
-Replay, Paper, and Real remain explicitly out of scope.
+Alignment status: TASKSYS-1259 implements the Release-topology/version repair,
+OpenAI Agents SDK 0.22.0 adapter, evidence-gated Thin Control, and the six-role
+vertical slice. TASKSYS-1264 executes the learning closure. TASKSYS-1266 adds a
+bounded CI proof and byte-level verifier, repeats the three review perspectives,
+and aligns the focused public release as `v0.5.0`. The proof uses a local
+ScriptedModel and explicitly excludes network model calls, deployment,
+QuantEngine Replay, Paper, and Real.
 
-Current release reviewed: `v0.4.0` at
-`f5e64e5c96d7aad7da1a9203c73eebec37dcd916`
+Current release re-reviewed: `v0.5.0`; the uploaded proof binds its exact source
+commit, tree digest, source-set graph digest, SDK version, Release, and AAR.
+
+## M8 Three-Perspective Re-review
+
+| Perspective | Verdict | Evidence-backed conclusion | Boundary |
+| --- | --- | --- | --- |
+| Hiring manager | PASS | The repository demonstrates a complete, runnable Architecture → Test → Development → Test → Ops → independent Quality → deterministic Release → learning loop. | Say “bounded multi-Agent MVP,” not production platform or team adoption. |
+| Technical interviewer | PASS | CI executes six SDK roles and six handoffs, replays seven retained attacks, and independently recomputes file, source, graph, Release, and AAR bindings. | ScriptedModel proves SDK/control integration but not hosted-model behavior or quality. |
+| Senior architect | PASS | Agent execution is separated from deterministic state, evidence admission, independent Quality, and zero-authority Release; forged or stale proof fails closed. | No deployment, external runtime, QuantEngine Replay, Paper, or Real authority exists. |
+
+The detailed findings below are preserved as the pre-remediation backlog. P0-01,
+P1-01, P1-02, P1-03, and P1-04 are closed by the v0.5.0 evidence. Repository
+protection and GitHub discovery metadata are verified as release-time settings;
+broader production, hosted-model eval, coverage, type-checking, and workflow-pin
+hardening remain future work.
 
 ## 1. Review Decision
 

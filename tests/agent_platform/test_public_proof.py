@@ -12,6 +12,7 @@ from quantengine_public.agent_platform.public_proof import (
     generate_public_proof,
     verify_public_proof,
 )
+from scripts.release_smoke import verify_tag_identity
 
 
 pytest.importorskip("agents", reason="install openai-agents==0.22.0")
@@ -104,3 +105,10 @@ def test_public_proof_is_deterministic_for_the_same_identity(tmp_path):
         name: (second / name).read_bytes()
         for name in PROOF_FILES
     }
+
+
+def test_release_tag_identity_matches_package_version():
+    verify_tag_identity("0.5.0", ref_type="tag", ref_name="v0.5.0")
+    verify_tag_identity("0.5.0", ref_type="branch", ref_name="main")
+    with pytest.raises(RuntimeError, match="tag version mismatch"):
+        verify_tag_identity("0.5.0", ref_type="tag", ref_name="v0.4.0")

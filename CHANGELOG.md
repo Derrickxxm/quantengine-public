@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0
+
+- Added a bounded CI proof that executes the real OpenAI Agents SDK vertical
+  slice with network-free scripted responses and replays the M7 learning loop.
+- Published byte-verifiable, public-safe receipts for six role runs, six
+  handoffs, seven vertical artifacts, seven retained attacks, the deterministic
+  zero-authority Release, independent promotion review, and AAR.
+- Added tamper, stale-source, non-zero-authority, and tag/version regressions.
+- Repeated hiring-manager, technical-interviewer, and senior-architect review;
+  the supported claim is a running bounded multi-Agent MVP, not a production
+  platform or deployment system.
+
 ## 0.4.0
 
 - Reframed the project as evidence-controlled AI software delivery, with

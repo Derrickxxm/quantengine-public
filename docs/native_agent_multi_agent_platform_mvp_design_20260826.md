@@ -2,8 +2,8 @@
 
 Date: 2026-08-26
 
-Status: Owner-approved reuse-first implementation baseline; Milestones 0-5
-implemented; Milestone 6 remains unexecuted
+Status: Owner-approved reuse-first implementation baseline; Milestones 0-6
+implemented through the bounded public proof
 
 Audience: platform, Agent, quality, and delivery engineers
 
@@ -819,6 +819,17 @@ QuantEngine Replay authorization or execution.
 - repeat hiring-manager, technical-interviewer, and senior-architect review.
 
 Exit: the repository can truthfully claim one running multi-Agent platform MVP.
+
+Implementation checkpoint (TASKSYS-1266, 2026-08-26): CI executes the existing
+OpenAI Agents SDK 0.22.0 vertical slice with network-free ScriptedModel
+responses, replays the M7 learning closure, independently reverifies every file
+digest and evidence binding, and uploads the public proof. The proof contains
+six role receipts, six handoffs, exact-topology zero-authority Release, seven
+retained attacks, independent promotion review, and AAR. It intentionally
+contains no prompt, hosted trace, credential, network model call, deployment,
+QuantEngine Replay, Paper, or Real authority. Three-perspective re-review
+supports the claim "running bounded multi-Agent MVP" and rejects any production
+platform or deployment claim.
 
 ## 18. Test Strategy
 
