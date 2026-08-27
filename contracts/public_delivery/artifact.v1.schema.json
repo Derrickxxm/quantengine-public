@@ -19,8 +19,23 @@
       "const": "quantengine_public.delivery_artifact.v1"
     },
     "artifact_type": {
-      "type": "string",
-      "minLength": 1
+      "enum": [
+        "public_delivery.ogsm",
+        "public_delivery.plane_task",
+        "public_delivery.architecture_packet",
+        "public_delivery.validation_plan",
+        "public_delivery.worker_handoff",
+        "public_delivery.patch_manifest",
+        "public_delivery.test_result",
+        "public_delivery.ops_plan",
+        "public_delivery.runtime_evidence",
+        "public_delivery.qcs_manifest",
+        "public_delivery.qcs_receipt",
+        "public_delivery.quality_verdict",
+        "public_delivery.release_verdict",
+        "public_delivery.aar",
+        "public_delivery.block_receipt"
+      ]
     },
     "producer": {
       "type": "string",
@@ -55,6 +70,146 @@
     "artifact_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "allOf": [
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.release_verdict"}}
+      },
+      "then": {
+        "properties": {
+          "producer": {"const": "public_release_controller"},
+          "upstream": {
+            "minItems": 2,
+            "maxItems": 2,
+            "allOf": [
+              {"contains": {"properties": {"artifact_type": {"const": "public_delivery.quality_verdict"}}}},
+              {"contains": {"properties": {"artifact_type": {"const": "public_delivery.runtime_evidence"}}}}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.quality_verdict"}}
+      },
+      "then": {
+        "properties": {
+          "producer": {"const": "public_quality_shield"},
+          "upstream": {
+            "contains": {"properties": {"artifact_type": {"const": "public_delivery.runtime_evidence"}}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.ogsm"}}
+      },
+      "then": {"properties": {"producer": {"const": "owner_fixture"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.plane_task"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_plane_fixture"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.architecture_packet"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_architecture_agent"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.validation_plan"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_test_agent"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.worker_handoff"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_control_plane"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.patch_manifest"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_development_agent"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.test_result"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_test_agent"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.ops_plan"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_ops_agent"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.runtime_evidence"}}
+      },
+      "then": {"properties": {"producer": {"const": "quantengine_public"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.qcs_manifest"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_qcs"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.qcs_receipt"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_qcs"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.aar"}}
+      },
+      "then": {"properties": {"producer": {"const": "public_learning_flywheel"}}}
+    },
+    {
+      "if": {
+        "required": ["artifact_type"],
+        "properties": {"artifact_type": {"const": "public_delivery.block_receipt"}}
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "enum": [
+              "owner_fixture",
+              "public_architecture_agent",
+              "public_development_agent",
+              "public_test_agent",
+              "public_ops_agent",
+              "public_qcs",
+              "public_quality_shield",
+              "quantengine_public",
+              "public_release_controller"
+            ]
+          }
+        }
+      }
+    },
     {
       "if": {
         "required": ["artifact_type"],

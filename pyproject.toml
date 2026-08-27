@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quantengine-public"
-version = "0.4.0"
+dynamic = ["version"]
 description = "Evidence-controlled AI software delivery with a QuantEngine reference runtime."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,6 +13,7 @@ authors = [
   {name = "Derrick Xu"}
 ]
 dependencies = [
+  "openai-agents==0.22.0",
   "PyYAML>=6.0"
 ]
 
@@ -27,6 +28,9 @@ quantengine-public = "quantengine_public.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "quantengine_public.__version__"}
 
 [tool.setuptools.package-data]
 quantengine_public = ["py.typed"]

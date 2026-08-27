@@ -2,7 +2,8 @@
 
 Date: 2026-08-26
 
-Status: proposed for implementation
+Status: Owner-approved reuse-first implementation baseline; development paused
+by Owner and resumable only on later explicit direction
 
 Audience: platform, Agent, quality, and delivery engineers
 
@@ -131,6 +132,49 @@ evidence and an independent Quality verdict.
 The package, CLI, tag, and Release version identity must also be made consistent
 before the first runtime release.
 
+### 3.1 Approved reuse decision
+
+The MVP will not implement a generic Agent loop, conversation store, ordinary
+handoff mechanism, approval loop, or tracing subsystem from scratch. The
+Owner-approved runtime baseline is the MIT-licensed OpenAI Agents SDK for
+Python.
+
+Reuse from the SDK:
+
+- `Agent` and `Runner` execution;
+- `Agent.as_tool()` and handoffs;
+- `SQLiteSession` for Agent conversation history;
+- serializable `RunState` for interruption, approval, and resume;
+- tool approvals, guardrails, and structured results;
+- tracing with a repository-owned public-safe exporter;
+- Shell, ApplyPatch, MCP, and Sandbox Agent capabilities only after each
+  selected capability passes the repository's fail-closed wrapper tests.
+
+Keep repository-owned deterministic code only for:
+
+- task, source, context, Skill, tool-policy, and evidence identity;
+- allowed role transitions and idempotent cross-run state;
+- cross-run handoff receipts and source invalidation;
+- evidence admission, producer separation, and failure retention;
+- independent Quality boundaries and Release authority topology.
+
+Do not add LangGraph, AutoGen, CrewAI, Microsoft Agent Framework, or another
+overlapping orchestration framework to the MVP. in-toto compatibility and
+GitHub Agentic Workflows are optional Milestone 6 integrations, not control
+plane dependencies.
+
+The SDK does not become an authority source. SDK sessions, traces, handoffs,
+guardrails, approvals, or model outputs cannot grant Quality, Release, deploy,
+Paper, or Real authority.
+
+### 3.2 Current execution status
+
+As of the 2026-08-26 source-alignment pass, development is intentionally
+paused by Owner and does not resume automatically when alignment finishes. No
+Milestone 0-6 Agent-platform implementation has started. The current runnable
+truth remains the deterministic Golden Path and synthetic QuantEngine reference
+runtime described above.
+
 ## 4. MVP Boundaries
 
 ### 4.1 Included
@@ -138,7 +182,7 @@ before the first runtime release.
 - one repository;
 - one accepted task at a time per task identity;
 - Architecture, Test, Development, Ops, and independent Quality roles;
-- one Native-Agent provider adapter;
+- one OpenAI Agents SDK Python runtime adapter;
 - the three collaboration modes: Agent-as-tool, handoff, independent review;
 - current Git source identity;
 - optional Plane task input through an adapter;
@@ -271,10 +315,10 @@ The assembler records every selected item, its identity, and the reason it was
 included. It never includes credentials, private prompts, unrelated history, or
 an unbounded knowledge dump.
 
-### 7.5 Native-Agent runtime adapter
+### 7.5 OpenAI Agents SDK runtime adapter
 
-Wraps an existing Native-Agent provider. The platform must not implement its own
-generic model loop.
+Wraps OpenAI Agents SDK Python. The platform must not implement its own generic
+model loop or duplicate SDK session, handoff, approval, or tracing mechanics.
 
 Responsibilities:
 
@@ -310,8 +354,12 @@ content are excluded from public traces.
 
 ### 7.7 State store
 
-Use SQLite for the MVP. It gives durable local state, transactions, optimistic
-concurrency, and inspection without introducing a service.
+Reuse the SDK `SQLiteSession` for Agent conversation history and serialized
+`RunState` for paused-run continuation. Add only a thin repository-owned SQLite
+event index for deterministic platform facts that an Agent session must not
+own. This avoids implementing a second conversation store while preserving
+transactions, optimistic concurrency, append-only inspection, and exact task
+recovery without introducing a service.
 
 Minimum logical records:
 
@@ -655,10 +703,10 @@ actions without an explicit approval identity.
 ```text
 src/quantengine_public/agent_platform/
   contracts.py          closed task, context, run, handoff contracts
-  state_store.py        SQLite transactions and optimistic transitions
+  control_state.py      thin task events, optimistic transitions, SDK run refs
   control_plane.py      routing, invalidation, retry, and resume
   context.py            bounded context assembly
-  runtime.py            Native-Agent provider interface
+  runtime.py            OpenAI Agents SDK adapter and sealed result conversion
   tool_policy.py        role allowlists and tool-call receipts
   evidence.py           artifact index and topology admission
   evals.py              deterministic role and platform evals
@@ -693,12 +741,13 @@ the boundary.
 
 Exit: the existing public contract can safely serve as the platform gate.
 
-### Milestone 1: Contracts and durable state
+### Milestone 1: Contracts and thin durable control state
 
 - freeze `TaskSnapshot`, `ContextSnapshot`, `RunRequest`, `RunResult`, and
   `HandoffReceipt` v1;
-- implement SQLite state, append-only transitions, optimistic versioning, and
-  idempotency;
+- reuse SDK SQLite sessions and serializable `RunState`;
+- implement only the append-only task transitions, optimistic versioning,
+  idempotency, and SDK run references not owned by an Agent session;
 - prove stop and resume without an Agent provider.
 
 Exit: a scripted task survives process termination and resumes exactly once.
@@ -712,10 +761,11 @@ Exit: a scripted task survives process termination and resumes exactly once.
 Exit: current context is reproducible and an unauthorized tool call is retained
 and blocked.
 
-### Milestone 3: Runtime adapter
+### Milestone 3: OpenAI Agents SDK adapter
 
-- define the provider-neutral runtime interface;
-- implement one Native-Agent adapter;
+- bind the closed runtime contract to OpenAI Agents SDK Python;
+- adapt one real Skill-led Agent run without adding another orchestration
+  framework;
 - capture structured result, trace, failure, timeout, and usage metadata;
 - validate output before state transition.
 
@@ -731,6 +781,16 @@ architecture packet.
 
 Exit: the authority-topology defect travels through the full real workflow and
 cannot receive PASS before every required stage succeeds.
+
+Implementation checkpoint (TASKSYS-1259, 2026-08-26): Milestones 0–4 are now
+implemented on `codex/TASKSYS-1259/native-agent-mvp-steps-1-6`. The slice uses
+OpenAI Agents SDK 0.22.0 with scripted, network-free model responses; persists
+task transitions, runs, handoffs, artifacts, tool calls, and approvals; resumes
+from SQLite; and derives a zero-authority Release verdict only from the exact
+admitted Test, Ops, runtime, and independent Quality topology. The clean-install
+acceptance run passes 95 tests plus the release smoke and public safety scan.
+Milestones 5–6, graph refresh, deployment, Paper, Replay, and Real remain outside
+the approved execution scope.
 
 ### Milestone 5: Learning closure
 
@@ -800,7 +860,7 @@ The platform MVP is complete only when:
 
 Before implementation begins, the team must confirm:
 
-- the selected Native-Agent provider and its observable run metadata;
+- the exact OpenAI Agents SDK version and observable run metadata;
 - the exact public defect used by the vertical slice;
 - the repository paths allowed for Milestone 0;
 - the task and code-graph adapter available in the development environment;
@@ -812,3 +872,6 @@ Before implementation begins, the team must confirm:
 
 If any of these facts is unknown, record a named blocker. Do not silently fill
 the gap from chat history.
+
+The documentation and Plane alignment receipt must be complete, and the Owner
+must explicitly resume development, before Milestone 0 starts.

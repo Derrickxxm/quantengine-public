@@ -1,6 +1,7 @@
 # Evidence-Controlled AI Software Delivery Architecture
 
-Status: target architecture with a runnable public Golden Path
+Status: target architecture with a runnable public Golden Path and one
+identity-bound OpenAI Agents SDK 0.22.0 vertical slice on the development branch
 
 Reference implementation: QuantEngine public-safe synthetic runtime
 
@@ -142,12 +143,16 @@ Use this when separation of producer and certifier is required.
 
 ### Runtime compatibility
 
-The contracts are runtime-agnostic. An implementation may use the OpenAI Agents
-SDK, another Agent runtime, or a native coding Agent, but it must expose the
-same observable boundaries: specialist instructions, tools, ownership or
-handoffs, guardrails and approvals, resumable state, traces, and eval inputs.
-These boundaries correspond to the runtime capabilities described in the
-[OpenAI Agents SDK guide](https://developers.openai.com/api/docs/guides/agents).
+The contracts remain runtime-agnostic, but the Owner-approved MVP implementation
+uses OpenAI Agents SDK Python as its single Agent runtime dependency. It reuses
+SDK Agent execution, Agent-as-tool, handoffs, SQLite sessions, serializable run
+state, approvals, and tracing instead of rebuilding those mechanisms.
+
+Repository-owned code remains deterministic and narrow: task/source/context
+identity, role transitions, cross-run handoff receipts, evidence admission,
+independent Quality, and Release authority. A second overlapping orchestration
+framework is outside MVP scope. These SDK capabilities are described in the
+[OpenAI Agents SDK repository](https://github.com/openai/openai-agents-python).
 
 Model or provider selection is part of the run identity. Changing it may require
 re-evaluation, but it does not change which system owns task state, evidence, or
@@ -355,14 +360,14 @@ final authority that relies on its own result.
 
 | Current system capability | Public equivalent | Status | Required proof |
 | --- | --- | --- | --- |
-| LDA Control Plane | `public-control-plane` | planned | state transitions, routing, handoff receipts |
-| `lda-agent-sdk` | `public-agent-sdk` | planned | versioned requests, results, fingerprints |
-| Architecture Agent | `public-architecture-agent` | Skill implemented; runtime planned | revision-bound graph and impact packet |
-| Test / Quality Lab Agent | `public-test-agent` | Skill implemented; runtime planned | red tests, negative cases, eval plan |
-| Development Agent | `public-development-agent` | Skill implemented; runtime planned | bounded patch and scope receipt |
-| Ops Agent | `public-ops-agent` | Skill implemented; runtime planned | CI, package, readback, rollback receipt |
-| Quality Shield | `public-quality-shield` | deterministic Golden Path slice | runtime-bound verdict and negative tests |
-| Release Controller | `public-release-controller` | deterministic Golden Path slice | authority derivation and fail-closed tests |
+| LDA Control Plane | thin `public-control-plane` | MVP slice implemented | SQLite task/source/context state, evidence-gated transitions, idempotency, restart and cross-run receipts |
+| Agent runtime | OpenAI Agents SDK Python adapter | MVP slice implemented; pinned to 0.22.0 | bounded Agent graph, durable identity envelope, resume, approvals and local trace proof |
+| Architecture Agent | `public-architecture-agent` | Skill plus SDK Agent-as-tool slice implemented | revision-bound graph and impact packet |
+| Test / Quality Lab Agent | `public-test-agent` | two identity-bound Test runs implemented in the slice | authored red oracle, negative cases and independent verification |
+| Development Agent | `public-development-agent` | bounded runtime slice implemented | approved-path patch manifest and scope receipt |
+| Ops Agent | `public-ops-agent` | bounded runtime slice implemented | CI/package/readback evidence with zero deployment authority |
+| Quality Shield | `public-quality-shield` | independent SDK run plus deterministic gate implemented | exact runtime-bound verdict and attack tests |
+| Release Controller | `public-release-controller` | deterministic evidence controller implemented | exact type/digest/producer topology and zero-authority slice verdict |
 | QCS | `public-qcs` | deterministic Golden Path slice | advisory risk manifest and evidence-gap receipt |
 | S3 / WORM evidence | `public-evidence-store` | planned | digest, retention, immutability receipt |
 | Understand Anything | `public-code-graph` | planned | source-bound graph and freshness receipt |

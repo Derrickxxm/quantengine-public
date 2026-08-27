@@ -137,7 +137,7 @@ def seal_artifact(
 
 
 def verify_artifact(artifact: dict[str, Any]) -> list[str]:
-    """Verify shape, closed values, upstream identities, and self digest."""
+    """Verify shape, ownership, required topology, and self digest."""
     if not isinstance(artifact, dict):
         return ["artifact_not_object"]
 
@@ -157,6 +157,8 @@ def verify_artifact(artifact: dict[str, Any]) -> list[str]:
     upstream = artifact.get("upstream")
     if not isinstance(upstream, list) or any(not _valid_upstream(item) for item in upstream):
         errors.append("invalid_upstream")
+    else:
+        errors.extend(_artifact_semantic_errors(artifact, upstream))
     if not _valid_authority(artifact.get("authority")):
         errors.append("invalid_authority")
     elif not _valid_authority_semantics(
@@ -177,7 +179,7 @@ def verify_artifact(artifact: dict[str, Any]) -> list[str]:
 
 
 def verify_artifact_chain(artifacts: list[dict[str, Any]]) -> list[str]:
-    """Verify producer ownership and that every upstream digest already exists."""
+    """Verify artifact contracts and that every upstream digest/type is bound."""
     if not isinstance(artifacts, list):
         return ["artifact_chain_not_list"]
 
@@ -186,21 +188,21 @@ def verify_artifact_chain(artifacts: list[dict[str, Any]]) -> list[str]:
     for artifact in artifacts:
         artifact_errors = verify_artifact(artifact)
         if artifact_errors:
-            errors.extend(f"invalid_artifact:{error}" for error in artifact_errors)
+            errors.extend(artifact_errors)
+        if not isinstance(artifact, dict):
             continue
-
-        artifact_type = artifact["artifact_type"]
-        producer = artifact["producer"]
-        allowed_producers = ARTIFACT_PRODUCERS.get(artifact_type)
-        if allowed_producers is None:
-            errors.append(f"unknown_artifact_type:{artifact_type}")
-        elif producer not in allowed_producers:
-            errors.append(f"producer_mismatch:{artifact_type}:{producer}")
-
-        digest = artifact["artifact_digest"]
+        artifact_type = artifact.get("artifact_type")
+        digest = artifact.get("artifact_digest")
+        upstream = artifact.get("upstream")
+        if not isinstance(artifact_type, str) or not _SHA256_RE.fullmatch(str(digest)):
+            continue
         if digest in known_artifacts:
             errors.append(f"duplicate_artifact_digest:{digest}")
-        for edge in artifact["upstream"]:
+        if not isinstance(upstream, list):
+            continue
+        for edge in upstream:
+            if not _valid_upstream(edge):
+                continue
             upstream_type = known_artifacts.get(edge["artifact_digest"])
             if upstream_type is None:
                 errors.append(
@@ -212,7 +214,38 @@ def verify_artifact_chain(artifacts: list[dict[str, Any]]) -> list[str]:
                     f"{artifact_type}:{edge['artifact_type']}:{upstream_type}:"
                     f"{edge['artifact_digest']}"
                 )
+        if artifact_errors:
+            continue
         known_artifacts[digest] = artifact_type
+    return errors
+
+
+def _artifact_semantic_errors(
+    artifact: dict[str, Any], upstream: list[dict[str, Any]]
+) -> list[str]:
+    """Apply producer and causal-topology rules without resolving digests."""
+    artifact_type = artifact.get("artifact_type")
+    producer = artifact.get("producer")
+    errors: list[str] = []
+
+    allowed_producers = ARTIFACT_PRODUCERS.get(artifact_type)
+    if allowed_producers is None:
+        errors.append(f"unknown_artifact_type:{artifact_type}")
+    elif producer not in allowed_producers:
+        errors.append(f"producer_mismatch:{artifact_type}:{producer}")
+
+    upstream_types = [item.get("artifact_type") for item in upstream]
+    if artifact_type == "public_delivery.quality_verdict":
+        if upstream_types.count("public_delivery.runtime_evidence") != 1:
+            errors.append("quality_requires_exactly_one_runtime_evidence")
+    elif artifact_type == "public_delivery.release_verdict":
+        required = {
+            "public_delivery.quality_verdict",
+            "public_delivery.runtime_evidence",
+        }
+        if len(upstream) != len(required) or set(upstream_types) != required:
+            errors.append("release_requires_quality_and_runtime_evidence")
+
     return errors
 
 
