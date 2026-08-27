@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the DEC-0018 local OpenAI-compatible Phase 2 simulation."""
+"""Run the DEC-0019 hardened local OpenAI-compatible Phase 2 simulation."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ def _source_snapshot(root: Path) -> tuple[str, str]:
             "source_path": SOURCE_PATH,
             "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
             "dirty": False,
-            "owner_decision": "DEC-0018",
+            "owner_decision": "DEC-0019",
             "track": "qwen-local-simulation",
         }
     )
@@ -95,9 +95,9 @@ async def _run(base_url: str) -> dict[str, object]:
 
 def _blocked(exc: Exception) -> dict[str, object]:
     body: dict[str, object] = {
-        "schema_version": "quantengine_public.qwen_phase2_simulation.receipt.v1",
+        "schema_version": "quantengine_public.qwen_phase2_simulation.receipt.v2",
         "execution_mode": "local_simulation",
-        "owner_decision": "DEC-0018",
+        "owner_decision": "DEC-0019",
         "provider": {
             "kind": "ollama-openai-compatible",
             "model": LOCAL_SIMULATION_MODEL,

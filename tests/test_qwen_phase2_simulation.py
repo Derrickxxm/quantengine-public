@@ -18,12 +18,91 @@ from quantengine_public.agent_platform.qwen_phase2_simulation import (
     LocalSimulationConfig,
     LocalSimulationError,
     LocalModelSimulationExecutor,
+    SimulationHandoffReceipt,
+    SimulationRoleReceipt,
     SimulationStageReceipt,
     build_simulation_receipt,
 )
 
 
-def stage(name: str, predecessor: str) -> SimulationStageReceipt:
+def _identity_rows(
+    name: str,
+    predecessor: str,
+    run_identity: str,
+    endpoint_identity: str,
+) -> tuple[tuple[SimulationRoleReceipt, ...], tuple[SimulationHandoffReceipt, ...]]:
+    identity_predecessor = content_digest(
+        {
+            "run_identity": run_identity,
+            "stage": name,
+            "predecessor_receipt_digest": predecessor,
+            "kind": "identity-lineage",
+        }
+    )
+    roles: list[SimulationRoleReceipt] = []
+    handoffs: list[SimulationHandoffReceipt] = []
+    role_names = {
+        "architecture": ("architecture",),
+        "readonly_tool": ("architecture",),
+        "handoff": ("test",),
+        "development_loop": ("architecture", "test", "development", "quality"),
+    }[name]
+    sequence = 0
+    prior_role: str | None = "architecture" if name == "handoff" else None
+    prior_agent = "1" * 64 if name == "handoff" else None
+    for role in role_names:
+        agent_identity = str((sequence + 2) % 10) * 64
+        if prior_role is not None:
+            kind = "sdk" if name == "handoff" else "ordered"
+            handoff = SimulationHandoffReceipt(
+                run_identity=run_identity,
+                endpoint_identity_digest=endpoint_identity,
+                stage=name,
+                handoff_kind=kind,
+                sequence=sequence,
+                from_role=prior_role,
+                to_role=role,
+                producer_agent_identity=prior_agent or "1" * 64,
+                consumer_agent_identity=agent_identity,
+                predecessor_identity_receipt_digest=identity_predecessor,
+                packet_digest="3" * 64,
+                accepted=True,
+            )
+            handoffs.append(handoff)
+            identity_predecessor = handoff.receipt_digest
+            sequence += 1
+        role_receipt = SimulationRoleReceipt(
+            run_identity=run_identity,
+            endpoint_identity_digest=endpoint_identity,
+            stage=name,
+            role=role,
+            sequence=sequence,
+            agent_graph_identity=agent_identity,
+            predecessor_identity_receipt_digest=identity_predecessor,
+            input_digest="4" * 64,
+            output_digest="5" * 64,
+            verdict="PASS",
+        )
+        roles.append(role_receipt)
+        identity_predecessor = role_receipt.receipt_digest
+        sequence += 1
+        prior_role = role
+        prior_agent = agent_identity
+    return tuple(roles), tuple(handoffs)
+
+
+def stage(
+    name: str,
+    predecessor: str,
+    run_identity: str,
+    endpoint_identity: str,
+) -> SimulationStageReceipt:
+    role_receipts, handoff_receipts = _identity_rows(
+        name,
+        predecessor,
+        run_identity,
+        endpoint_identity,
+    )
     return SimulationStageReceipt(
         stage=name,
         status="PASS",
@@ -31,6 +110,10 @@ def stage(name: str, predecessor: str) -> SimulationStageReceipt:
         predecessor_receipt_digest=predecessor,
         agent_graph_identity="d" * 64,
         output_digest="a" * 64,
+        run_identity=run_identity,
+        endpoint_identity_digest=endpoint_identity,
+        role_receipts=role_receipts,
+        handoff_receipts=handoff_receipts,
         requests=1,
         input_tokens=100,
         output_tokens=20,
@@ -41,17 +124,31 @@ def stage(name: str, predecessor: str) -> SimulationStageReceipt:
     )
 
 
-def stages(source_identity: str = "b" * 64) -> tuple[SimulationStageReceipt, ...]:
+def stages(
+    source_identity: str = "b" * 64,
+    endpoint_identity: str = "6" * 64,
+) -> tuple[SimulationStageReceipt, ...]:
+    run_identity = content_digest(
+        {
+            "source_identity": source_identity,
+            "owner_decision": "DEC-0019",
+            "track": "qwen-local-simulation",
+            "provider": "ollama-openai-compatible",
+            "model": LOCAL_SIMULATION_MODEL,
+            "endpoint_identity_digest": endpoint_identity,
+        }
+    )
     predecessor = content_digest(
         {
             "source_identity": source_identity,
-            "owner_decision": "DEC-0018",
+            "run_identity": run_identity,
+            "owner_decision": "DEC-0019",
             "track": "qwen-local-simulation",
         }
     )
     rows = []
     for name in SIMULATION_STAGES:
-        row = stage(name, predecessor)
+        row = stage(name, predecessor, run_identity, endpoint_identity)
         rows.append(row)
         predecessor = row.receipt_digest
     return tuple(rows)
@@ -62,7 +159,7 @@ def test_config_is_exact_qwen_and_loopback_only() -> None:
 
     assert config.model == LOCAL_SIMULATION_MODEL == "qwen3.8:27b-mxfp8"
     assert config.provider == "ollama-openai-compatible"
-    assert config.owner_decision == "DEC-0018"
+    assert config.owner_decision == "DEC-0019"
     for url in (
         "http://0.0.0.0:11434/v1",
         "https://127.0.0.1:11434/v1",
@@ -95,6 +192,7 @@ def test_executor_uses_concrete_qwen_model_without_openai_key(
 def test_public_receipt_cannot_claim_luna_hosting_cost_or_authority() -> None:
     receipt = build_simulation_receipt(
         source_identity="b" * 64,
+        endpoint_identity_digest="6" * 64,
         stages=stages(),
     )
     serialized = str(receipt).lower()
@@ -123,24 +221,30 @@ def test_public_receipt_cannot_claim_luna_hosting_cost_or_authority() -> None:
 def test_receipt_requires_exact_topology_and_stage_metrics() -> None:
     rows = stages()
     with pytest.raises(LocalSimulationError, match="simulation_stage_topology_invalid"):
-        build_simulation_receipt(source_identity="b" * 64, stages=rows[:-1])
+        build_simulation_receipt(
+            source_identity="b" * 64,
+            endpoint_identity_digest="6" * 64,
+            stages=rows[:-1],
+        )
     with pytest.raises(LocalSimulationError, match="simulation_stage_topology_invalid"):
         build_simulation_receipt(
             source_identity="b" * 64,
+            endpoint_identity_digest="6" * 64,
             stages=(rows[1], rows[0], rows[2], rows[3]),
         )
-    with pytest.raises(LocalSimulationError, match="simulation_stage_lineage_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_identity_lineage_invalid"):
         build_simulation_receipt(
             source_identity="b" * 64,
+            endpoint_identity_digest="6" * 64,
             stages=(rows[0], replace(rows[1], predecessor_receipt_digest="e" * 64), rows[2], rows[3]),
         )
     with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
         replace(rows[0], requests=0)
-    with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_identity_topology_invalid"):
         replace(rows[1], tool_call_count=0)
-    with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_identity_topology_invalid"):
         replace(rows[2], handoff_count=0)
-    with pytest.raises(LocalSimulationError, match="simulation_stage_receipt_invalid"):
+    with pytest.raises(LocalSimulationError, match="simulation_stage_identity_topology_invalid"):
         replace(rows[3], role_count=3)
 
 

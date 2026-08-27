@@ -189,6 +189,7 @@ def test_usage_above_configured_output_limit_blocks() -> None:
 
 def test_model_discovery_and_whole_run_share_bounded_deadlines() -> None:
     executor = _executor(
+        request_timeout_seconds=0.01,
         model_discovery_timeout_seconds=0.01,
         total_timeout_seconds=0.02,
     )
