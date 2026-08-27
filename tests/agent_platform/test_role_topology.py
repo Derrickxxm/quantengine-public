@@ -16,6 +16,17 @@ ZERO_AUTHORITY = {
     "paper_allowed": False,
     "real_allowed": False,
 }
+EXPECTED_HEADS = {
+    stage: "c" * 40
+    for stage in (
+        "architecture",
+        "test_author",
+        "development",
+        "test_verify",
+        "ops",
+        "quality",
+    )
+}
 EXPECTED_CONTEXTS = {
     stage: "b" * 64
     for stage in (
@@ -47,6 +58,8 @@ def _receipt(
         model=model,
         source_identity="a" * 64,
         context_digest="b" * 64,
+        execution_head_before="c" * 40,
+        execution_head_after="c" * 40,
         input_digest=input_digest,
         output_digest=output_digit * 64,
         changed_paths=changed_paths,
@@ -120,6 +133,7 @@ def test_corrected_native_role_topology_is_admitted() -> None:
         initial_input_digest="0" * 64,
         expected_qwen_model="qwen2.7-coder-local",
         expected_context_digests=EXPECTED_CONTEXTS,
+        expected_execution_heads=EXPECTED_HEADS,
     )
 
     assert verdict.status == "PASS"
@@ -159,6 +173,7 @@ def test_wrong_model_or_runtime_is_rejected(
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
             expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
         )
 
 
@@ -173,6 +188,7 @@ def test_handoff_digest_and_authority_fail_closed() -> None:
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
             expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
         )
 
     receipts = list(_topology())
@@ -188,6 +204,7 @@ def test_handoff_digest_and_authority_fail_closed() -> None:
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
             expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
         )
 
 
@@ -202,6 +219,7 @@ def test_role_filesystem_ownership_is_enforced() -> None:
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
             expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
         )
 
     receipts = list(_topology())
@@ -214,6 +232,7 @@ def test_role_filesystem_ownership_is_enforced() -> None:
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
             expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
         )
 
 
@@ -229,4 +248,25 @@ def test_each_stage_is_bound_to_its_accepted_context_digest() -> None:
             initial_input_digest="0" * 64,
             expected_qwen_model="qwen2.7-coder-local",
             expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
+        )
+
+
+def test_each_stage_is_bound_to_its_expected_execution_head() -> None:
+    receipts = list(_topology())
+    receipts[2] = replace(
+        receipts[2],
+        execution_head_before="d" * 40,
+        execution_head_after="d" * 40,
+    )
+
+    with pytest.raises(RoleTopologyError, match="execution head mismatch: development"):
+        validate_native_role_topology(
+            receipts,
+            expected_task_id="TASKSYS-1327",
+            expected_source_identity="a" * 64,
+            initial_input_digest="0" * 64,
+            expected_qwen_model="qwen2.7-coder-local",
+            expected_context_digests=EXPECTED_CONTEXTS,
+            expected_execution_heads=EXPECTED_HEADS,
         )
