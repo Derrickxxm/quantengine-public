@@ -1,4 +1,4 @@
-"""Canonical public fixtures for the DEC-0032 OGSM V2 red suite.
+"""Canonical public fixtures for the DEC-0037 OGSM V2 red suite.
 
 These fixtures deliberately have no dependency on the implementation module.
 They describe the public contract that M2 must admit or reject.
@@ -81,14 +81,14 @@ def objective_contract_payload(
                 "statement": "A released verdict consumes only current, admissible evidence.",
             }
         ],
-        "strategies": strategies or [
+        "strategies": strategies if strategies is not None else [
             {
                 "strategy_id": "strategy-bind-revisions",
                 "statement": "Bind every downstream decision to one accepted contract digest.",
                 "supports_goal_ids": ["goal-release-correctness"],
             }
         ],
-        "measures": measures or [
+        "measures": measures if measures is not None else [
             {
                 "measure_id": "measure-stale-rejection",
                 "kind": "SAFETY",
@@ -110,7 +110,11 @@ def objective_contract_payload(
         },
         "assumptions": ["The Owner accepts consequential objective changes explicitly."],
         "non_goals": ["Automatic objective acceptance", "production authority"],
-        "capacity_constraints": capacity_constraints or {"max_active_task_lineages": 1},
+        "capacity_constraints": (
+            capacity_constraints
+            if capacity_constraints is not None
+            else {"max_active_task_lineages": 1}
+        ),
         "review_receipt_digest": review["review_receipt_digest"],
     }
     return {**body, "contract_digest": content_digest(body)}
@@ -127,7 +131,7 @@ def measure_verdict_payload(
         "schema_version": "public_delivery.measure_verdict.v1",
         "objective_contract_digest": contract["contract_digest"],
         "measure_id": "measure-stale-rejection",
-        "evidence_refs": evidence_digests or ["a" * 64],
+        "evidence_refs": ["a" * 64] if evidence_digests is None else evidence_digests,
         "observed_value": observed_value,
         "verdict": verdict,
         "evaluator": "quality-shield",

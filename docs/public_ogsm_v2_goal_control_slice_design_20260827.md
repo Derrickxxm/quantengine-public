@@ -4,7 +4,7 @@ Date: 2026-08-27
 
 Status: `OWNER_APPROVED_DESIGN_BASELINE_READY_FOR_M1`
 
-Decision: DEC-0032
+Decision: DEC-0037
 
 Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 `320d6b21714a168214811faada3970c9ab241b89`.
@@ -12,13 +12,14 @@ Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 Acceptance boundary: PR and main CI accepted DEC-0031. The pre-existing
 `TASKSYS-1137` inventory-classification failure is unrelated and remains open.
 The local Qwen CI lane was configuration-skipped, so it is not evidence of a
-local Qwen pass. DEC-0032 may rely on the accepted public topology contract;
+local Qwen pass. DEC-0037 may rely on the accepted public topology contract;
 it must not upgrade either retained condition into a stronger claim.
 
 Decision-numbering note: commits `f281ddd` and `53c25d4` use `DEC-0032` in
-their subjects, but their changes harden the DEC-0031 role-topology authority
-contract merged by PR #12. DEC-0032 in this document refers only to the public
-OGSM V2 goal-control slice. Published history is not rewritten.
+their subjects, and the first M1 test commit also reused that identifier. The
+authoritative project registry already assigns DEC-0032 to the DEC-0031 remote
+delivery, so this document and all continuing OGSM V2 work use DEC-0037.
+Published history is retained as historical, non-authoritative evidence.
 
 ## 1. Problem
 
@@ -346,7 +347,7 @@ counted as evidence that the positive path executed.
 
 ### M0 — freeze design (`COMPLETE`)
 
-- accept this design and record DEC-0032;
+- accept this design and record DEC-0037;
 - record DEC-0031 acceptance and its retained verification boundaries;
 - identify the exact public task and Owner fixture.
 

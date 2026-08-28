@@ -1,4 +1,4 @@
-"""DEC-0032 M1: red tests for public OGSM V2 goal control.
+"""DEC-0037 M1: red tests for public OGSM V2 goal control.
 
 The production module intentionally does not exist in M1. Each test names one
 required fail-closed behavior so M2 can add the smallest possible contract and
@@ -7,6 +7,7 @@ validator without inventing workflow orchestration.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from importlib import import_module
 
 import pytest
@@ -27,9 +28,30 @@ def accepted_contract(api):
     return api.ObjectiveContract.from_dict(objective_contract_payload())
 
 
+@contextmanager
+def expect_block(api, code: str):
+    """Require both the typed validation error and its inspectable block receipt."""
+    with pytest.raises(api.OgsmValidationError, match=code) as captured:
+        yield
+    error = captured.value
+    assert error.code == code
+    assert isinstance(error.receipt, dict)
+    assert error.receipt["schema_version"] == "public_delivery.ogsm_block_receipt.v1"
+    assert error.receipt["blocked"] is True
+    assert error.receipt["code"] == code
+
+
+def test_accepts_canonical_owner_accepted_contract_and_review():
+    api = ogsm_api()
+    contract = accepted_contract(api)
+    review = api.ObjectiveReviewReceipt.from_dict(objective_review_payload())
+
+    api.validate_objective_contract(contract, review)
+
+
 def test_rejects_objective_contract_without_owner_acceptance():
     api = ogsm_api()
-    with pytest.raises(api.OgsmValidationError, match="objective_not_accepted"):
+    with expect_block(api, "objective_not_accepted"):
         api.validate_objective_contract(
             api.ObjectiveContract.from_dict(objective_contract_payload(status="PROPOSED")),
             api.ObjectiveReviewReceipt.from_dict(objective_review_payload()),
@@ -44,7 +66,7 @@ def test_rejects_in_place_objective_change_without_new_revision_and_parent_diges
             objective="Replace release evidence with a different outcome without a revision."
         )
     )
-    with pytest.raises(api.OgsmValidationError, match="objective_change_requires_new_revision"):
+    with expect_block(api, "objective_change_requires_new_revision"):
         api.validate_objective_change(previous, changed, invalidated_dependencies=())
 
 
@@ -59,7 +81,7 @@ def test_rejects_strategy_that_references_a_missing_goal():
             }
         ]
     )
-    with pytest.raises(api.OgsmValidationError, match="strategy_goal_reference_invalid"):
+    with expect_block(api, "strategy_goal_reference_invalid"):
         api.ObjectiveContract.from_dict(payload)
 
 
@@ -71,15 +93,15 @@ def test_rejects_measure_without_required_evidence_or_decision_metadata(missing_
     api = ogsm_api()
     measure = objective_contract_payload()["measures"][0]
     measure.pop(missing_field)
-    with pytest.raises(api.OgsmValidationError, match="measure_metadata_required"):
+    with expect_block(api, "measure_metadata_required"):
         api.ObjectiveContract.from_dict(objective_contract_payload(measures=[measure]))
 
 
 def test_rejects_objective_review_missing_a_required_pass_or_containing_blocked_verdict():
     api = ogsm_api()
-    with pytest.raises(api.OgsmValidationError, match="objective_review_incomplete"):
+    with expect_block(api, "objective_review_incomplete"):
         api.ObjectiveReviewReceipt.from_dict(objective_review_payload(omit_pass=1))
-    with pytest.raises(api.OgsmValidationError, match="objective_review_blocked"):
+    with expect_block(api, "objective_review_blocked"):
         api.validate_objective_contract(
             accepted_contract(api),
             api.ObjectiveReviewReceipt.from_dict(objective_review_payload(blocked=True)),
@@ -92,7 +114,7 @@ def test_rejects_task_bound_to_a_superseded_objective_contract():
     current = api.ObjectiveContract.from_dict(
         objective_contract_payload(revision=2, parent_digest=old.contract_digest)
     )
-    with pytest.raises(api.OgsmValidationError, match="objective_contract_stale"):
+    with expect_block(api, "objective_contract_stale"):
         api.validate_downstream_binding(
             accepted_contract=current,
             task_objective_digest=old.contract_digest,
@@ -105,7 +127,7 @@ def test_rejects_task_bound_to_a_superseded_objective_contract():
 def test_rejects_run_or_handoff_bound_to_a_different_objective_contract_digest():
     api = ogsm_api()
     contract = accepted_contract(api)
-    with pytest.raises(api.OgsmValidationError, match="objective_binding_mismatch"):
+    with expect_block(api, "objective_binding_mismatch"):
         api.validate_downstream_binding(
             accepted_contract=contract,
             task_objective_digest=contract.contract_digest,
@@ -119,7 +141,7 @@ def test_rejects_pass_measure_verdict_that_consumes_excluded_evidence():
     api = ogsm_api()
     contract = accepted_contract(api)
     verdict = api.MeasureVerdict.from_dict(measure_verdict_payload(contract.to_dict()))
-    with pytest.raises(api.OgsmValidationError, match="excluded_evidence_cannot_pass"):
+    with expect_block(api, "excluded_evidence_cannot_pass"):
         api.validate_measure_verdict(
             contract,
             verdict,
@@ -127,24 +149,35 @@ def test_rejects_pass_measure_verdict_that_consumes_excluded_evidence():
         )
 
 
+def test_empty_evidence_fixture_preserves_explicit_empty_list():
+    payload = measure_verdict_payload(
+        objective_contract_payload(),
+        evidence_digests=[],
+        observed_value="0",
+    )
+
+    assert payload["evidence_refs"] == []
+
+
 def test_rejects_missing_evidence_represented_as_zero_or_pass():
+    payload = measure_verdict_payload(
+        objective_contract_payload(),
+        evidence_digests=[],
+        observed_value="0",
+    )
+    assert payload["evidence_refs"] == []
+
     api = ogsm_api()
     contract = accepted_contract(api)
-    verdict = api.MeasureVerdict.from_dict(
-        measure_verdict_payload(
-            contract.to_dict(),
-            evidence_digests=[],
-            observed_value="0",
-        )
-    )
-    with pytest.raises(api.OgsmValidationError, match="missing_evidence_requires_gap"):
+    verdict = api.MeasureVerdict.from_dict(payload)
+    with expect_block(api, "missing_evidence_requires_gap"):
         api.validate_measure_verdict(contract, verdict, evidence_classifications={})
 
 
 def test_rejects_proposed_chat_idea_from_entering_approved_scope():
     api = ogsm_api()
     proposed = api.ObjectiveContract.from_dict(objective_contract_payload(status="PROPOSED"))
-    with pytest.raises(api.OgsmValidationError, match="objective_not_accepted"):
+    with expect_block(api, "objective_not_accepted"):
         api.validate_downstream_binding(
             accepted_contract=proposed,
             task_objective_digest=proposed.contract_digest,
@@ -171,14 +204,14 @@ def test_rejects_accepted_change_that_omits_invalidation_of_dependent_work():
         owner="Owner",
         accepted_at="2026-08-28T00:00:00Z",
     )
-    with pytest.raises(api.OgsmValidationError, match="objective_change_invalidation_required"):
+    with expect_block(api, "objective_change_invalidation_required"):
         api.validate_objective_change(old, current, change_receipt=receipt)
 
 
 def test_rejects_adopt_aar_that_omits_a_retained_failure_or_regression_receipt():
     api = ogsm_api()
     contract = accepted_contract(api)
-    with pytest.raises(api.OgsmValidationError, match="aar_retained_failure_required"):
+    with expect_block(api, "aar_retained_failure_required"):
         api.validate_aar(
             {
                 "schema_version": "public_delivery.aar.v2",
@@ -195,7 +228,7 @@ def test_rejects_adopt_aar_that_omits_a_retained_failure_or_regression_receipt()
 def test_rejects_release_verdict_derived_from_another_objective_revision():
     api = ogsm_api()
     contract = accepted_contract(api)
-    with pytest.raises(api.OgsmValidationError, match="objective_binding_mismatch"):
+    with expect_block(api, "objective_binding_mismatch"):
         api.validate_downstream_binding(
             accepted_contract=contract,
             task_objective_digest=contract.contract_digest,
@@ -208,5 +241,5 @@ def test_rejects_release_verdict_derived_from_another_objective_revision():
 def test_rejects_capacity_overrun_without_an_accepted_change_receipt():
     api = ogsm_api()
     contract = accepted_contract(api)
-    with pytest.raises(api.OgsmValidationError, match="capacity_constraint_exceeded"):
+    with expect_block(api, "capacity_constraint_exceeded"):
         api.validate_wip(contract, active_task_lineages=2, accepted_change_receipt=None)
