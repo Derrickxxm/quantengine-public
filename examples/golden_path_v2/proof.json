@@ -1,0 +1,1163 @@
+{
+  "schema_version": "public_delivery.ogsm_v2_proof.v1",
+  "proof_id": "public-ogsm-v2-golden-path",
+  "execution": {
+    "mode": "deterministic-domain-neutral-fixture",
+    "network_model_calls": false
+  },
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "sections": {
+    "00_outcome_card": {
+      "problem": "A valid-looking delivery can optimize the wrong objective.",
+      "alternatives": [
+        "document completion",
+        "stale-evidence rejection"
+      ],
+      "selected_outcome": "stale-evidence rejection",
+      "selection_reason": "It is independently observable and fail-closed."
+    },
+    "01_objective_review": {
+      "contract_id": "objective-contract-golden-path",
+      "passes": [
+        {
+          "findings": [
+            "Document production alone cannot satisfy the outcome."
+          ],
+          "pass_id": "outcome_fit",
+          "residual_warnings": [],
+          "revisions": [
+            "Require executable stale-work rejection."
+          ],
+          "verdict": "PASS_AFTER_REVISION"
+        },
+        {
+          "findings": [
+            "A PASS must not consume missing or excluded evidence."
+          ],
+          "pass_id": "evidence_goodhart",
+          "residual_warnings": [],
+          "revisions": [
+            "Bind verdicts to classified immutable evidence."
+          ],
+          "verdict": "PASS_AFTER_REVISION"
+        },
+        {
+          "findings": [
+            "One lineage and no new service are sufficient."
+          ],
+          "pass_id": "capacity_authority_minimalism",
+          "residual_warnings": [],
+          "revisions": [
+            "Keep acceptance and consequential authority with the Owner."
+          ],
+          "verdict": "PASS_AFTER_REVISION"
+        }
+      ],
+      "review_id": "review-ogsm-v2-golden-path",
+      "reviewed_at": "2026-08-28T00:00:00Z",
+      "reviewer": "public-ogsm-control",
+      "schema_version": "public_delivery.objective_review.v1",
+      "review_receipt_digest": "d1f3e75a15ae0272fe4a48ace3e97f476c0aa305cc91332442ea7359ff6318a8"
+    },
+    "02_objective_contract": {
+      "accepted_at": "2026-08-28T00:00:00Z",
+      "assumptions": [
+        "The Owner accepts consequential objective changes explicitly."
+      ],
+      "capacity_constraints": {
+        "max_active_task_lineages": 1
+      },
+      "contract_id": "objective-contract-golden-path",
+      "evidence_boundary": {
+        "admitted_classes": [
+          "PRIMARY"
+        ],
+        "excluded_classes": [
+          "EXCLUDED"
+        ],
+        "supporting_classes": [
+          "SUPPORTING"
+        ]
+      },
+      "goals": [
+        {
+          "goal_id": "goal-release-correctness",
+          "statement": "Release consumes only current admissible evidence."
+        }
+      ],
+      "measures": [
+        {
+          "decision_consequence": "Require a new accepted revision and rerun affected work.",
+          "evidence_sources": [
+            "task_snapshot",
+            "run_result",
+            "handoff_receipt",
+            "release_verdict"
+          ],
+          "fail_rule": "Any mismatch blocks dependent work.",
+          "formula_or_judgment_rule": "Every downstream digest equals the accepted contract digest.",
+          "kind": "SAFETY",
+          "measure_id": "measure-stale-rejection",
+          "owner": "Owner",
+          "pass_rule": "All bindings equal the accepted digest.",
+          "sample_and_horizon": "Every bounded public delivery run.",
+          "statement": "A stale Objective digest never reaches release admission.",
+          "warn_rule": "No warning state; mismatch is unsafe."
+        }
+      ],
+      "non_goals": [
+        "Automatic objective acceptance",
+        "production authority"
+      ],
+      "objective": "Reduce false release acceptance by blocking stale or incomplete evidence.",
+      "outcome_card": {
+        "alternatives": [
+          "document completion",
+          "stale-evidence rejection"
+        ],
+        "problem": "A valid-looking delivery can optimize the wrong objective.",
+        "selected_outcome": "stale-evidence rejection",
+        "selection_reason": "It is independently observable and fail-closed."
+      },
+      "owner": "Owner",
+      "parent_digest": null,
+      "review_receipt_digest": "d1f3e75a15ae0272fe4a48ace3e97f476c0aa305cc91332442ea7359ff6318a8",
+      "revision": 1,
+      "schema_version": "public_delivery.objective_contract.v2",
+      "status": "ACCEPTED",
+      "strategies": [
+        {
+          "statement": "Bind every downstream decision to one accepted contract digest.",
+          "strategy_id": "strategy-bind-revisions",
+          "supports_goal_ids": [
+            "goal-release-correctness"
+          ]
+        }
+      ],
+      "contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a"
+    },
+    "03_task_snapshot": {
+      "schema_version": "quantengine_public.agent_platform.v1",
+      "task_id": "PUBLIC-OGSM-V2-001",
+      "task_revision": "objective-r1",
+      "objective": "Reduce false release acceptance by blocking stale or incomplete evidence.",
+      "measures": [
+        "stale Objective bindings fail closed"
+      ],
+      "acceptance_criteria": [
+        "positive path rederives",
+        "fourteen attacks block"
+      ],
+      "non_goals": [
+        "network model call",
+        "deployment",
+        "Paper",
+        "Replay",
+        "Real"
+      ],
+      "approved_scope": [
+        "public domain-neutral fixture"
+      ],
+      "required_approvals": [
+        "Owner:synthetic-fixture"
+      ],
+      "source_reference": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+      "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+      "snapshot_digest": "07157a6911a1adcdb5dbaddd9d7a974f1d9d2234cebfb1d9c245f5c44d30670c"
+    },
+    "04_architecture_packet": {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.architecture_packet",
+      "producer": "public_architecture_agent",
+      "status": "READY",
+      "upstream": [],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "76aa54f926752960444966ab7de39372fe5786dd0e293f14b24adef73af8fe36",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "architecture"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "2d6fc045b66f60bd2a8844f421b47806a61ef5aabca03970fe21b4d435277040"
+    },
+    "05_validation_plan": {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.validation_plan",
+      "producer": "public_test_agent",
+      "status": "READY",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.architecture_packet",
+          "artifact_digest": "2d6fc045b66f60bd2a8844f421b47806a61ef5aabca03970fe21b4d435277040"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "592ef77cf466dc775708a3257367a1c39854b973ec3fcd6adcfffdcae0475b60",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "validation"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "d165f33a18ed447c437c8a6e5d3c4dc8290d3d7e1282b72f65500476034dd828"
+    },
+    "06_development_handoff": {
+      "schema_version": "quantengine_public.agent_platform.v1",
+      "task_id": "PUBLIC-OGSM-V2-001",
+      "task_version": 2,
+      "from_owner": "Test",
+      "to_role": "Development",
+      "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+      "context_digest": "e3b57597b67a63bc90d7dc4c1752e06ab2a2d26902a28be912925a886f75dd63",
+      "required_artifact_refs": [
+        {
+          "artifact_type": "public_delivery.architecture_packet",
+          "artifact_digest": "2d6fc045b66f60bd2a8844f421b47806a61ef5aabca03970fe21b4d435277040"
+        },
+        {
+          "artifact_type": "public_delivery.validation_plan",
+          "artifact_digest": "d165f33a18ed447c437c8a6e5d3c4dc8290d3d7e1282b72f65500476034dd828"
+        }
+      ],
+      "accepted_or_rejected": "accepted",
+      "reason": "Objective-bound validation is ready for implementation.",
+      "next_owner": "Development",
+      "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+      "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+      "receipt_digest": "89ec40d55337d2aa2d15859a2644c7b257198ba8c9d9f5525b515ab713d483ff"
+    },
+    "07_patch_manifest": {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.patch_manifest",
+      "producer": "public_development_agent",
+      "status": "READY",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.validation_plan",
+          "artifact_digest": "d165f33a18ed447c437c8a6e5d3c4dc8290d3d7e1282b72f65500476034dd828"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "e3b57597b67a63bc90d7dc4c1752e06ab2a2d26902a28be912925a886f75dd63",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "development"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "060a3a1221f62e253911f861f5b35310d75eb213331e7816f7965634d4478fd0"
+    },
+    "08_test_result": {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.test_result",
+      "producer": "public_test_agent",
+      "status": "PASS",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.validation_plan",
+          "artifact_digest": "d165f33a18ed447c437c8a6e5d3c4dc8290d3d7e1282b72f65500476034dd828"
+        },
+        {
+          "artifact_type": "public_delivery.patch_manifest",
+          "artifact_digest": "060a3a1221f62e253911f861f5b35310d75eb213331e7816f7965634d4478fd0"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "baec8395b3ebe0a5685c301421c9ec18df176c0c783dda211a8a8d4434d09c95",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "test"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "3932c47f739d3a47f200ff2b701f5c046070afcae93704ba898607e16133c95c"
+    },
+    "09_ops_plan": {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.ops_plan",
+      "producer": "public_ops_agent",
+      "status": "READY",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.patch_manifest",
+          "artifact_digest": "060a3a1221f62e253911f861f5b35310d75eb213331e7816f7965634d4478fd0"
+        },
+        {
+          "artifact_type": "public_delivery.test_result",
+          "artifact_digest": "3932c47f739d3a47f200ff2b701f5c046070afcae93704ba898607e16133c95c"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "e820cf9373294bb148fef817f06d0bfe1db84e137409cc5b6e28654ef5ce6ebe",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "ops"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "83c75fa3745e5601b02aeff7d9c6dd35c49ce24ed3c8d483e55d9e91bb225288"
+    },
+    "10_runtime_evidence": {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.runtime_evidence",
+      "producer": "quantengine_public",
+      "status": "PASS",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.test_result",
+          "artifact_digest": "3932c47f739d3a47f200ff2b701f5c046070afcae93704ba898607e16133c95c"
+        },
+        {
+          "artifact_type": "public_delivery.ops_plan",
+          "artifact_digest": "83c75fa3745e5601b02aeff7d9c6dd35c49ce24ed3c8d483e55d9e91bb225288"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "f3306bdba06b6b3309e26462974495b33f6d76051342a3409cbd03acf833f58c",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "runtime"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "30abbaa2d680b704b9165abbd3a3c6cfb94595a416646e464218e679648d2525"
+    },
+    "11_quality_verdict": {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.quality_verdict",
+      "producer": "public_quality_shield",
+      "status": "PASS",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.runtime_evidence",
+          "artifact_digest": "30abbaa2d680b704b9165abbd3a3c6cfb94595a416646e464218e679648d2525"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "4d0dd66ad557b7c04c7e74e2fb6eb56d85a20a73ff10482294c1583ae9563993",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "quality"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "046c50cbba8b72a22daefd9ac4e6ddfe624e24dd545f963b2070c7be1edd1869"
+    },
+    "12_release_verdict": {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.release_verdict",
+      "producer": "public_release_controller",
+      "status": "PASS",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.quality_verdict",
+          "artifact_digest": "046c50cbba8b72a22daefd9ac4e6ddfe624e24dd545f963b2070c7be1edd1869"
+        },
+        {
+          "artifact_type": "public_delivery.runtime_evidence",
+          "artifact_digest": "30abbaa2d680b704b9165abbd3a3c6cfb94595a416646e464218e679648d2525"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "context_digest": "4d0dd66ad557b7c04c7e74e2fb6eb56d85a20a73ff10482294c1583ae9563993",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "decision": "exact-topology",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "ee6b71e5bd6ca97527e25d76212a6f50860c369606958d43346fd8912bd7b86f"
+    },
+    "13_measure_verdicts": [
+      {
+        "schema_version": "public_delivery.measure_verdict.v1",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "measure_id": "measure-stale-rejection",
+        "evidence_refs": [
+          "2d6fc045b66f60bd2a8844f421b47806a61ef5aabca03970fe21b4d435277040",
+          "d165f33a18ed447c437c8a6e5d3c4dc8290d3d7e1282b72f65500476034dd828",
+          "060a3a1221f62e253911f861f5b35310d75eb213331e7816f7965634d4478fd0",
+          "3932c47f739d3a47f200ff2b701f5c046070afcae93704ba898607e16133c95c",
+          "83c75fa3745e5601b02aeff7d9c6dd35c49ce24ed3c8d483e55d9e91bb225288",
+          "30abbaa2d680b704b9165abbd3a3c6cfb94595a416646e464218e679648d2525",
+          "046c50cbba8b72a22daefd9ac4e6ddfe624e24dd545f963b2070c7be1edd1869",
+          "ee6b71e5bd6ca97527e25d76212a6f50860c369606958d43346fd8912bd7b86f"
+        ],
+        "observed_value": "all downstream bindings matched",
+        "verdict": "PASS",
+        "evaluator": "public-quality-shield",
+        "evaluated_at": "2026-08-28T00:30:00Z",
+        "decision_consequence": "Adopt only while the binding regression remains green.",
+        "verdict_digest": "87067dd6f06317ea2b52a3c00f949ddb3186bc858b344170fbca878964802e03"
+      }
+    ],
+    "14_aar": {
+      "schema_version": "public_delivery.aar.v2",
+      "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+      "decision": "ADOPT",
+      "measure_verdict_digests": [
+        "87067dd6f06317ea2b52a3c00f949ddb3186bc858b344170fbca878964802e03"
+      ],
+      "retained_failure_refs": [
+        "c6f5f4df67ac4459c83028383b9fcd4e561b4680c144afe168aa733dc285d27c",
+        "808bbce06fc84c25710af36e60720443b4395daa4fa876c3967abc393a78b990",
+        "fa594cc7b3dc91142cb5de0742cffecb0ca52cfcdd9be54e55dc4728ece108f9",
+        "ae731b14f099aca486359d1b30f2b019379c93691737b790426dba1d34f6b7bf",
+        "ae7998dca68545990a8bb57c278da6e1b177aa2a4f4bdcd338d5fb4e609e0edf",
+        "42fe766190f5a005335b388c27122451895af188c5e3f8552540e3a0c3fb93c8",
+        "cf68e283bc35bac1f193f698575add74b2d7ef06f8fc470197ea7963cf3d0ca3",
+        "ca0dcd32f674726cd0488fba09affb4dadba429a7e0f29cb25bfe02044636946",
+        "c2328008d91aa4f7c82d24eb751f5c0cbbcac6afc8238e05e485e9dcd7655c1f",
+        "5cd2f3ad433e02cee2c1778440d73779c5620bbbaa1a2eba1ab8b70ccf371949",
+        "ade375f62ff5f8f3c1480054ce3bcd627ef987a9d29350881ab34f865551cb75",
+        "3757d190479babaa7272ad787a6ed2e711d14f45d8935c62d6bc4f58a0aa560f",
+        "3f9b6452dbadad31ee07a379f22875f9ca5cd7d4146bac9a515ff848c4189a46",
+        "7b8b4f48763008a447d176e448348c00273965749b3385e025916efd6a36bdd6"
+      ],
+      "regression_refs": [
+        "c6f5f4df67ac4459c83028383b9fcd4e561b4680c144afe168aa733dc285d27c",
+        "808bbce06fc84c25710af36e60720443b4395daa4fa876c3967abc393a78b990",
+        "fa594cc7b3dc91142cb5de0742cffecb0ca52cfcdd9be54e55dc4728ece108f9",
+        "ae731b14f099aca486359d1b30f2b019379c93691737b790426dba1d34f6b7bf",
+        "ae7998dca68545990a8bb57c278da6e1b177aa2a4f4bdcd338d5fb4e609e0edf",
+        "42fe766190f5a005335b388c27122451895af188c5e3f8552540e3a0c3fb93c8",
+        "cf68e283bc35bac1f193f698575add74b2d7ef06f8fc470197ea7963cf3d0ca3",
+        "ca0dcd32f674726cd0488fba09affb4dadba429a7e0f29cb25bfe02044636946",
+        "c2328008d91aa4f7c82d24eb751f5c0cbbcac6afc8238e05e485e9dcd7655c1f",
+        "5cd2f3ad433e02cee2c1778440d73779c5620bbbaa1a2eba1ab8b70ccf371949",
+        "ade375f62ff5f8f3c1480054ce3bcd627ef987a9d29350881ab34f865551cb75",
+        "3757d190479babaa7272ad787a6ed2e711d14f45d8935c62d6bc4f58a0aa560f",
+        "3f9b6452dbadad31ee07a379f22875f9ca5cd7d4146bac9a515ff848c4189a46",
+        "7b8b4f48763008a447d176e448348c00273965749b3385e025916efd6a36bdd6"
+      ],
+      "owner": "Owner",
+      "aar_digest": "aed05aded5b4f0923943db39e2761fabe33537dcf6def15236df369069ad4e8d"
+    },
+    "15_owner_decision": {
+      "schema_version": "public_delivery.owner_decision.v1",
+      "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+      "aar_digest": "aed05aded5b4f0923943db39e2761fabe33537dcf6def15236df369069ad4e8d",
+      "decision": "ADOPT",
+      "owner": "Owner",
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "decision_digest": "5684a0486aebaa4aa228a0422c109fde6ff1edfd564b81d4505e2ab32a688bd2"
+    }
+  },
+  "positive_artifacts": [
+    {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.architecture_packet",
+      "producer": "public_architecture_agent",
+      "status": "READY",
+      "upstream": [],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "76aa54f926752960444966ab7de39372fe5786dd0e293f14b24adef73af8fe36",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "architecture"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "2d6fc045b66f60bd2a8844f421b47806a61ef5aabca03970fe21b4d435277040"
+    },
+    {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.validation_plan",
+      "producer": "public_test_agent",
+      "status": "READY",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.architecture_packet",
+          "artifact_digest": "2d6fc045b66f60bd2a8844f421b47806a61ef5aabca03970fe21b4d435277040"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "592ef77cf466dc775708a3257367a1c39854b973ec3fcd6adcfffdcae0475b60",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "validation"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "d165f33a18ed447c437c8a6e5d3c4dc8290d3d7e1282b72f65500476034dd828"
+    },
+    {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.patch_manifest",
+      "producer": "public_development_agent",
+      "status": "READY",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.validation_plan",
+          "artifact_digest": "d165f33a18ed447c437c8a6e5d3c4dc8290d3d7e1282b72f65500476034dd828"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "e3b57597b67a63bc90d7dc4c1752e06ab2a2d26902a28be912925a886f75dd63",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "development"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "060a3a1221f62e253911f861f5b35310d75eb213331e7816f7965634d4478fd0"
+    },
+    {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.test_result",
+      "producer": "public_test_agent",
+      "status": "PASS",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.validation_plan",
+          "artifact_digest": "d165f33a18ed447c437c8a6e5d3c4dc8290d3d7e1282b72f65500476034dd828"
+        },
+        {
+          "artifact_type": "public_delivery.patch_manifest",
+          "artifact_digest": "060a3a1221f62e253911f861f5b35310d75eb213331e7816f7965634d4478fd0"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "baec8395b3ebe0a5685c301421c9ec18df176c0c783dda211a8a8d4434d09c95",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "test"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "3932c47f739d3a47f200ff2b701f5c046070afcae93704ba898607e16133c95c"
+    },
+    {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.ops_plan",
+      "producer": "public_ops_agent",
+      "status": "READY",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.patch_manifest",
+          "artifact_digest": "060a3a1221f62e253911f861f5b35310d75eb213331e7816f7965634d4478fd0"
+        },
+        {
+          "artifact_type": "public_delivery.test_result",
+          "artifact_digest": "3932c47f739d3a47f200ff2b701f5c046070afcae93704ba898607e16133c95c"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "e820cf9373294bb148fef817f06d0bfe1db84e137409cc5b6e28654ef5ce6ebe",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "ops"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "83c75fa3745e5601b02aeff7d9c6dd35c49ce24ed3c8d483e55d9e91bb225288"
+    },
+    {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.runtime_evidence",
+      "producer": "quantengine_public",
+      "status": "PASS",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.test_result",
+          "artifact_digest": "3932c47f739d3a47f200ff2b701f5c046070afcae93704ba898607e16133c95c"
+        },
+        {
+          "artifact_type": "public_delivery.ops_plan",
+          "artifact_digest": "83c75fa3745e5601b02aeff7d9c6dd35c49ce24ed3c8d483e55d9e91bb225288"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "f3306bdba06b6b3309e26462974495b33f6d76051342a3409cbd03acf833f58c",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "runtime"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "30abbaa2d680b704b9165abbd3a3c6cfb94595a416646e464218e679648d2525"
+    },
+    {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.quality_verdict",
+      "producer": "public_quality_shield",
+      "status": "PASS",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.runtime_evidence",
+          "artifact_digest": "30abbaa2d680b704b9165abbd3a3c6cfb94595a416646e464218e679648d2525"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "context_digest": "4d0dd66ad557b7c04c7e74e2fb6eb56d85a20a73ff10482294c1583ae9563993",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+        "stage": "quality"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "046c50cbba8b72a22daefd9ac4e6ddfe624e24dd545f963b2070c7be1edd1869"
+    },
+    {
+      "schema_version": "quantengine_public.delivery_artifact.v1",
+      "artifact_type": "public_delivery.release_verdict",
+      "producer": "public_release_controller",
+      "status": "PASS",
+      "upstream": [
+        {
+          "artifact_type": "public_delivery.quality_verdict",
+          "artifact_digest": "046c50cbba8b72a22daefd9ac4e6ddfe624e24dd545f963b2070c7be1edd1869"
+        },
+        {
+          "artifact_type": "public_delivery.runtime_evidence",
+          "artifact_digest": "30abbaa2d680b704b9165abbd3a3c6cfb94595a416646e464218e679648d2525"
+        }
+      ],
+      "payload": {
+        "task_id": "PUBLIC-OGSM-V2-001",
+        "source_identity": "2e385524f76fd72e1574961b91b0ba64db755ee85a2779c76040a1882cf7dfb6",
+        "context_digest": "4d0dd66ad557b7c04c7e74e2fb6eb56d85a20a73ff10482294c1583ae9563993",
+        "graph_identity": "d7c54067b5fb7a4d9db13e29b0139ca000941f7859d56d8403f4bff66e609a3b",
+        "decision": "exact-topology",
+        "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a"
+      },
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "artifact_digest": "ee6b71e5bd6ca97527e25d76212a6f50860c369606958d43346fd8912bd7b86f"
+    }
+  ],
+  "attacks": [
+    {
+      "attack_id": "objective_not_owner_accepted",
+      "declared_stage": "objective_gate",
+      "request": {
+        "attack_id": "objective_not_owner_accepted",
+        "declared_stage": "objective_gate",
+        "expected_code": "objective_not_accepted"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "owner_fixture",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "objective_not_owner_accepted",
+          "stage": "objective_gate",
+          "reason": "objective_not_accepted",
+          "request_digest": "f938c9dcb402f5bc0f93d3fe66de8cd2d6bd8ce79cc75a9fff59fd3b5bd12c67",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "c6f5f4df67ac4459c83028383b9fcd4e561b4680c144afe168aa733dc285d27c"
+      }
+    },
+    {
+      "attack_id": "objective_changed_without_revision",
+      "declared_stage": "revision_gate",
+      "request": {
+        "attack_id": "objective_changed_without_revision",
+        "declared_stage": "revision_gate",
+        "expected_code": "objective_change_requires_new_revision"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "owner_fixture",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "objective_changed_without_revision",
+          "stage": "revision_gate",
+          "reason": "objective_change_requires_new_revision",
+          "request_digest": "cf6ed34581fe2e33203193fbc2ad6253033e6994b15ca68ca9f236bf97e75538",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "808bbce06fc84c25710af36e60720443b4395daa4fa876c3967abc393a78b990"
+      }
+    },
+    {
+      "attack_id": "strategy_references_missing_goal",
+      "declared_stage": "strategy_gate",
+      "request": {
+        "attack_id": "strategy_references_missing_goal",
+        "declared_stage": "strategy_gate",
+        "expected_code": "strategy_goal_reference_invalid"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "owner_fixture",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "strategy_references_missing_goal",
+          "stage": "strategy_gate",
+          "reason": "strategy_goal_reference_invalid",
+          "request_digest": "1c6a87e872a41ec3bcd8741d39734019bb9bce71a0ee8e9549d3573c67aa2d71",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "fa594cc7b3dc91142cb5de0742cffecb0ca52cfcdd9be54e55dc4728ece108f9"
+      }
+    },
+    {
+      "attack_id": "measure_metadata_missing",
+      "declared_stage": "measure_gate",
+      "request": {
+        "attack_id": "measure_metadata_missing",
+        "declared_stage": "measure_gate",
+        "expected_code": "measure_metadata_required"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "public_quality_shield",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "measure_metadata_missing",
+          "stage": "measure_gate",
+          "reason": "measure_metadata_required",
+          "request_digest": "8c70d3835967d0bc3573bcaae4ff2788fba4ed230e503475d29ef7d093401a87",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "ae731b14f099aca486359d1b30f2b019379c93691737b790426dba1d34f6b7bf"
+      }
+    },
+    {
+      "attack_id": "objective_review_blocked",
+      "declared_stage": "review_gate",
+      "request": {
+        "attack_id": "objective_review_blocked",
+        "declared_stage": "review_gate",
+        "expected_code": "objective_review_blocked"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "owner_fixture",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "objective_review_blocked",
+          "stage": "review_gate",
+          "reason": "objective_review_blocked",
+          "request_digest": "d7fd4340ea0a1858d90190c48360dbff0beec7c19a1ab0f3fb64a7fae5b9533f",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "ae7998dca68545990a8bb57c278da6e1b177aa2a4f4bdcd338d5fb4e609e0edf"
+      }
+    },
+    {
+      "attack_id": "task_binds_superseded_objective",
+      "declared_stage": "task_gate",
+      "request": {
+        "attack_id": "task_binds_superseded_objective",
+        "declared_stage": "task_gate",
+        "expected_code": "objective_contract_stale"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "owner_fixture",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "task_binds_superseded_objective",
+          "stage": "task_gate",
+          "reason": "objective_contract_stale",
+          "request_digest": "01483a435bbe39adadc05f6de716ef6fdb962b5994a350ca56094b7041700fdd",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "42fe766190f5a005335b388c27122451895af188c5e3f8552540e3a0c3fb93c8"
+      }
+    },
+    {
+      "attack_id": "run_or_handoff_objective_mismatch",
+      "declared_stage": "run_handoff_gate",
+      "request": {
+        "attack_id": "run_or_handoff_objective_mismatch",
+        "declared_stage": "run_handoff_gate",
+        "expected_code": "objective_binding_mismatch"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "public_development_agent",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "run_or_handoff_objective_mismatch",
+          "stage": "run_handoff_gate",
+          "reason": "objective_binding_mismatch",
+          "request_digest": "1b8dbac2de31acb573a010602b0163d111e86534e7c3abf6255d17f5b884811d",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "cf68e283bc35bac1f193f698575add74b2d7ef06f8fc470197ea7963cf3d0ca3"
+      }
+    },
+    {
+      "attack_id": "pass_consumes_excluded_evidence",
+      "declared_stage": "measure_gate",
+      "request": {
+        "attack_id": "pass_consumes_excluded_evidence",
+        "declared_stage": "measure_gate",
+        "expected_code": "excluded_evidence_cannot_pass"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "public_quality_shield",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "pass_consumes_excluded_evidence",
+          "stage": "measure_gate",
+          "reason": "excluded_evidence_cannot_pass",
+          "request_digest": "37c20132a5ff5848e4d7932c99e7146a3cc5fbd2d8f19d9b5135305854728cfd",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "ca0dcd32f674726cd0488fba09affb4dadba429a7e0f29cb25bfe02044636946"
+      }
+    },
+    {
+      "attack_id": "missing_evidence_claimed_as_pass",
+      "declared_stage": "evidence_gate",
+      "request": {
+        "attack_id": "missing_evidence_claimed_as_pass",
+        "declared_stage": "evidence_gate",
+        "expected_code": "missing_evidence_requires_gap"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "public_quality_shield",
+        "status": "EVIDENCE_GAP",
+        "upstream": [],
+        "payload": {
+          "attack_id": "missing_evidence_claimed_as_pass",
+          "stage": "evidence_gate",
+          "reason": "missing_evidence_requires_gap",
+          "request_digest": "ae9b82df21f35c62f5ecaa70b3edea08c5370a53786cc0ef06e1ec6a80ee2bd4",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "c2328008d91aa4f7c82d24eb751f5c0cbbcac6afc8238e05e485e9dcd7655c1f"
+      }
+    },
+    {
+      "attack_id": "proposed_scope_without_owner_acceptance",
+      "declared_stage": "scope_gate",
+      "request": {
+        "attack_id": "proposed_scope_without_owner_acceptance",
+        "declared_stage": "scope_gate",
+        "expected_code": "proposed_scope_without_owner_acceptance"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "owner_fixture",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "proposed_scope_without_owner_acceptance",
+          "stage": "scope_gate",
+          "reason": "proposed_scope_without_owner_acceptance",
+          "request_digest": "5ab39bc97a4dcb483691d8a52e5aa7079cb38b459ba5db6ba08fa5ef9254d4a4",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "5cd2f3ad433e02cee2c1778440d73779c5620bbbaa1a2eba1ab8b70ccf371949"
+      }
+    },
+    {
+      "attack_id": "accepted_change_omits_invalidation",
+      "declared_stage": "invalidation_gate",
+      "request": {
+        "attack_id": "accepted_change_omits_invalidation",
+        "declared_stage": "invalidation_gate",
+        "expected_code": "objective_change_invalidation_required"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "owner_fixture",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "accepted_change_omits_invalidation",
+          "stage": "invalidation_gate",
+          "reason": "objective_change_invalidation_required",
+          "request_digest": "d491c38244ffc30a39b97cf0ee419d36084b8f1f5b1fadecd05ae949f27a3d74",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "ade375f62ff5f8f3c1480054ce3bcd627ef987a9d29350881ab34f865551cb75"
+      }
+    },
+    {
+      "attack_id": "aar_adopt_omits_retained_failure",
+      "declared_stage": "aar_gate",
+      "request": {
+        "attack_id": "aar_adopt_omits_retained_failure",
+        "declared_stage": "aar_gate",
+        "expected_code": "aar_retained_failure_required"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "public_quality_shield",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "aar_adopt_omits_retained_failure",
+          "stage": "aar_gate",
+          "reason": "aar_retained_failure_required",
+          "request_digest": "575a22bd070d0c75dd60c4004d759afa0681b8cb0730a8ef4143c07ab1f41406",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "3757d190479babaa7272ad787a6ed2e711d14f45d8935c62d6bc4f58a0aa560f"
+      }
+    },
+    {
+      "attack_id": "release_binds_different_objective",
+      "declared_stage": "release_gate",
+      "request": {
+        "attack_id": "release_binds_different_objective",
+        "declared_stage": "release_gate",
+        "expected_code": "objective_binding_mismatch"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "public_release_controller",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "release_binds_different_objective",
+          "stage": "release_gate",
+          "reason": "objective_binding_mismatch",
+          "request_digest": "5d60b1a91e02663f68a4877408e76b906d73040d2ac848ed41ede2f00dadf0f7",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "3f9b6452dbadad31ee07a379f22875f9ca5cd7d4146bac9a515ff848c4189a46"
+      }
+    },
+    {
+      "attack_id": "capacity_exceeded_without_change_receipt",
+      "declared_stage": "capacity_gate",
+      "request": {
+        "attack_id": "capacity_exceeded_without_change_receipt",
+        "declared_stage": "capacity_gate",
+        "expected_code": "capacity_constraint_exceeded"
+      },
+      "block_receipt": {
+        "schema_version": "quantengine_public.delivery_artifact.v1",
+        "artifact_type": "public_delivery.block_receipt",
+        "producer": "owner_fixture",
+        "status": "BLOCKED",
+        "upstream": [],
+        "payload": {
+          "attack_id": "capacity_exceeded_without_change_receipt",
+          "stage": "capacity_gate",
+          "reason": "capacity_constraint_exceeded",
+          "request_digest": "a43bf6135c66d871c6ce07e20be86b9bda769b45f5d3e1553da58203ccb4b668",
+          "objective_contract_digest": "c5e6f11ebfef3b2e51ee090d862dfc0ff76550f78319b586bd9e01eb39df157a",
+          "proof_role": "negative_only"
+        },
+        "authority": {
+          "deployment_allowed": false,
+          "paper_allowed": false,
+          "real_allowed": false
+        },
+        "artifact_digest": "7b8b4f48763008a447d176e448348c00273965749b3385e025916efd6a36bdd6"
+      }
+    }
+  ],
+  "manifest": {
+    "schema_version": "public_delivery.ogsm_v2_proof.v1",
+    "proof_id": "public-ogsm-v2-golden-path",
+    "section_digests": {
+      "00_outcome_card": "2a7760a4509044847dd2fb96c1e217ef10fa593cc37a9997c8b023569fdb7a75",
+      "01_objective_review": "aae5893335c36bc516ac0368903e0f3670a7741a9aab28d854ed26d03b7e7bd2",
+      "02_objective_contract": "bcc663ef1d2d49ea20df83c6414a816b7ac0bfc16844c79e0e2043112ff076b7",
+      "03_task_snapshot": "bc423c4295b7e28a9b4242ca44fac955bbcf26778da9348006a593c662accabd",
+      "04_architecture_packet": "ce8883eea727bf10b27638c55f394b3733d8e7cdfaf105d6a0234c7d5a58c407",
+      "05_validation_plan": "e70ff6d4b257b866716c68ad886f5c2c2e0c94a2c43841f77fa7c416dd100a73",
+      "06_development_handoff": "ea514bc369c02c8540e518718284c0007379b40d52bee4fbf2e99003c25235c1",
+      "07_patch_manifest": "cb8178408872024aab07f636a649c5374a1605b5e48c251e785f09fcb6326021",
+      "08_test_result": "01b74cb420689bf0c3794f22b1a8739b0620cd4ef738c93d76e12ef9b204d71b",
+      "09_ops_plan": "7d4987e77fef2a107d50d882cb165370644d5b97e2d82b62dd61c545e6252148",
+      "10_runtime_evidence": "5551801e0746bd14df25c9e7cbcbc3be954343f5544dc7dc4cb0d03493937374",
+      "11_quality_verdict": "c25af9a46c2e363394af87b5e4a55eba4abcb634710a1ed406ffef7b86e881b9",
+      "12_release_verdict": "c335ce34d80aabee62373d0156c5c75ed7646c411c32b7ce2e74338a17ade2a6",
+      "13_measure_verdicts": "2c10cafdb033eee1f1fee1715373da07d01ea5d74c4f48858972d85184cad9ca",
+      "14_aar": "3d60adc236129d1f72e61e44fa94fe5fc94f73f43e96dbc2f60168c083aaf32c",
+      "15_owner_decision": "961c2b998b241429dd182fddaede9dfc7c80ba489e5f58911b8de5755b18c7c0"
+    },
+    "positive_chain_digest": "fcee777dea9c4b6825fe7914e4dd0b20c4b831c5e187378593ff70d8f09778af",
+    "attacks_digest": "501799b3cf2cb122ad87718365084ced037b1bd32b4400c1eec77aed9d1d01b6",
+    "proof_digest": "f06df976a6b5ce850f55c1d3660ee9369832f35fefebf7e6b6a265a63738c123"
+  }
+}

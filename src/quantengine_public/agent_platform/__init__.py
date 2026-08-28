@@ -106,9 +106,18 @@ from .ogsm_v2 import (
     validate_objective_contract,
     validate_wip,
 )
+from .ogsm_v2_proof import (
+    ATTACK_IDS,
+    PROOF_SCHEMA as OGSM_V2_PROOF_SCHEMA,
+    PROOF_SECTIONS as OGSM_V2_PROOF_SECTIONS,
+    PublicOgsmV2ProofError,
+    build_public_ogsm_v2_proof,
+    verify_public_ogsm_v2_proof,
+)
 
 __all__ = [
     "AgentsSdkRuntime",
+    "ATTACK_IDS",
     "ArtifactRef",
     "ContextSnapshot",
     "EvidenceAdmission",
@@ -140,6 +149,8 @@ __all__ = [
     "ObjectiveContract",
     "ObjectiveReviewReceipt",
     "OgsmValidationError",
+    "OGSM_V2_PROOF_SCHEMA",
+    "OGSM_V2_PROOF_SECTIONS",
     "Phase2HandoffReceipt",
     "RoleReceipt",
     "NativeRoleReceipt",
@@ -166,6 +177,7 @@ __all__ = [
     "PROOF_FILES",
     "PROOF_SCHEMA",
     "PublicProofError",
+    "PublicOgsmV2ProofError",
     "ReleaseTopologyError",
     "SliceArtifact",
     "VerticalSliceError",
@@ -178,6 +190,7 @@ __all__ = [
     "generate_public_proof",
     "preflight_hosted_canary",
     "authorize_stage",
+    "build_public_ogsm_v2_proof",
     "derive_development_loop_receipt",
     "derive_handoff_receipt",
     "estimate_cost_microusd",
@@ -193,5 +206,6 @@ __all__ = [
     "validate_objective_contract",
     "validate_wip",
     "verify_learning_closure",
+    "verify_public_ogsm_v2_proof",
     "verify_public_proof",
 ]

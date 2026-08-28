@@ -191,6 +191,7 @@ def derive_release(
     evidence: Sequence[SliceArtifact | Mapping[str, Any]],
     quality_producer: str = "public_quality_shield",
     graph_identity: str | None = None,
+    objective_contract_digest: str | None = None,
 ) -> dict[str, Any]:
     """Derive a zero-runtime-authority release verdict from exact evidence.
 
@@ -206,6 +207,8 @@ def derive_release(
     for item in items:
         if item.task_id != task_id or item.source_identity != source_identity:
             raise ReleaseTopologyError("release_identity_mismatch")
+        if objective_contract_digest is not None and item.objective_contract_digest != objective_contract_digest:
+            raise ReleaseTopologyError("release_objective_contract_mismatch")
         if item.artifact_digest in by_digest:
             raise ReleaseTopologyError("duplicate_artifact_digest")
         by_digest[item.artifact_digest] = item
@@ -262,18 +265,21 @@ def derive_release(
         ):
             raise ReleaseTopologyError("runtime_upstream_mismatch")
 
+    release_payload = {
+        "task_id": task_id,
+        "source_identity": source_identity,
+        "context_digest": quality.context_digest,
+        "graph_identity": quality.graph_identity,
+        "decision": "exact-topology",
+    }
+    if objective_contract_digest is not None:
+        release_payload["objective_contract_digest"] = objective_contract_digest
     return seal_artifact(
         artifact_type="public_delivery.release_verdict",
         producer="public_release_controller",
         status="PASS",
         upstream=[quality.ref().to_dict(), runtime.ref().to_dict()],
-        payload={
-            "task_id": task_id,
-            "source_identity": source_identity,
-            "context_digest": quality.context_digest,
-            "graph_identity": quality.graph_identity,
-            "decision": "exact-topology",
-        },
+        payload=release_payload,
         authority=dict(_ZERO_AUTHORITY),
     )
 
@@ -595,7 +601,13 @@ class VerticalSliceRunner:
                 transition = self._transition(state, "QUALITY_REVIEWED", next_owner="Quality", reason="independent quality consumes exact runtime evidence", key="quality", evidence_refs=(quality.ref(),), context_digest=context.context_digest)
                 self._handoff(from_owner="Quality", to_role="Release Controller", task_version=transition.version, context=context, refs=tuple(refs + [quality.ref()]), prior_state=state)
             elif state.state == "QUALITY_REVIEWED":
-                release = derive_release(task_id=self.task.task_id, source_identity=self.source.identity_digest, graph_identity=self.graph.identity_digest, evidence=self._evidence())
+                release = derive_release(
+                    task_id=self.task.task_id,
+                    source_identity=self.source.identity_digest,
+                    graph_identity=self.graph.identity_digest,
+                    evidence=self._evidence(),
+                    objective_contract_digest=self.task.objective_contract_digest,
+                )
                 self._save_release(release)
                 release_ref = ArtifactRef(release["artifact_type"], release["artifact_digest"])
                 self._transition(
@@ -619,7 +631,13 @@ class VerticalSliceRunner:
             release = self._release()
         if release is None and state.state == "RELEASE_DECIDED":
             try:
-                release = derive_release(task_id=self.task.task_id, source_identity=self.source.identity_digest, graph_identity=self.graph.identity_digest, evidence=self._evidence())
+                release = derive_release(
+                    task_id=self.task.task_id,
+                    source_identity=self.source.identity_digest,
+                    graph_identity=self.graph.identity_digest,
+                    evidence=self._evidence(),
+                    objective_contract_digest=self.task.objective_contract_digest,
+                )
             except ReleaseTopologyError:
                 release = None
         return VerticalSliceResult(self.task, self.source, self.graph, state, tuple(self._evidence()), tuple(self._handoffs()), tuple(self._runs()), release)
