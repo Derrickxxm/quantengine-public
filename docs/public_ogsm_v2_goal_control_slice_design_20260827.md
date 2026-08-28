@@ -2,12 +2,23 @@
 
 Date: 2026-08-27
 
-Status: `OWNER_APPROVED_DESIGN_BASELINE_IMPLEMENTATION_DEFERRED`
+Status: `OWNER_APPROVED_DESIGN_BASELINE_READY_FOR_M1`
 
 Decision: DEC-0032
 
-Dependency: complete and accept DEC-0031 role-topology slice before integrating
-this design into the runnable Golden Path.
+Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
+`320d6b21714a168214811faada3970c9ab241b89`.
+
+Acceptance boundary: PR and main CI accepted DEC-0031. The pre-existing
+`TASKSYS-1137` inventory-classification failure is unrelated and remains open.
+The Qwen Studio CI lane was configuration-skipped, so it is not evidence of a
+Qwen Studio pass. DEC-0032 may rely on the accepted public topology contract;
+it must not upgrade either retained condition into a stronger claim.
+
+Decision-numbering note: commits `f281ddd` and `53c25d4` use `DEC-0032` in
+their subjects, but their changes harden the DEC-0031 role-topology authority
+contract merged by PR #12. DEC-0032 in this document refers only to the public
+OGSM V2 goal-control slice. Published history is not rewritten.
 
 ## 1. Problem
 
@@ -333,10 +344,10 @@ counted as evidence that the positive path executed.
 
 ## 10. Implementation Sequence
 
-### M0 — freeze design
+### M0 — freeze design (`COMPLETE`)
 
 - accept this design and record DEC-0032;
-- keep implementation blocked on DEC-0031 acceptance;
+- record DEC-0031 acceptance and its retained verification boundaries;
 - identify the exact public task and Owner fixture.
 
 Exit: approved scope and dependency are explicit.
@@ -443,8 +454,8 @@ The public OGSM V2 slice is complete only when:
 
 ## 13. Current Decision
 
-`ADOPT_DESIGN / DEFER_IMPLEMENTATION_UNTIL_DEC_0031_ACCEPTED`
+`ADOPT_DESIGN / BEGIN_M1_FROM_ACCEPTED_DEC_0031_MAIN`
 
-Next action after DEC-0031 acceptance: create M1 red tests on a fresh exact-main
-worktree. Until then this document is a handoff-ready design, not a completed
-public capability.
+Next action: create M1 red tests from exact main commit
+`320d6b21714a168214811faada3970c9ab241b89` in a fresh worktree. This document
+remains an approved implementation design, not a completed public capability.
