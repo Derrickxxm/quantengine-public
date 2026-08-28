@@ -6,14 +6,39 @@
 
 *Current English architecture: accepted goals enter through OGSM V2 and Plane; bounded Architecture, Test, Development, and Ops roles operate through explicit handoffs; Git, revision-bound context, end-to-end fingerprints, runtime evidence, independent Quality, and deterministic Release keep the delivery chain traceable and fail closed.*
 
-QuantEngine is the first runnable reference implementation of a broader idea:
-let AI retain its ability to reason, while goals, state, dependencies,
-permissions, validation, and evidence remain deterministic and inspectable.
+## What This Repository Demonstrates
 
-This is not a framework for adding more Agents to every task. It is a software
-delivery control architecture for preventing long-running AI-assisted work from
-drifting away from the accepted objective, current code, quality bar, runtime,
-or evidence.
+This repository answers one practical question:
+
+> How can AI help deliver software without quietly changing the accepted goal,
+> implementation scope, quality bar, evidence, or release authority?
+
+The answer is not “add more Agents.” It is to keep model reasoning inside clear
+responsibility boundaries and keep control facts outside the model:
+
+- specialist Agents own bounded Architecture, Test, Development, and Ops work;
+- Skills preserve judgment-heavy operating methods and stop conditions;
+- small tools perform repeatable reads, hashes, state writes, and gates;
+- exact task, source, context, model, artifact, and runtime identities remain
+  connected through verifiable fingerprints;
+- independent Quality evaluates admitted evidence, and a deterministic Release
+  controller derives only the authority that evidence supports.
+
+QuantEngine is the first runnable reference scenario. It provides a high-risk
+financial setting in which identity, replay, reconciliation, and authority
+cannot be treated as approximate. The architecture is broader than trading.
+
+## Review It in Three Minutes
+
+1. Read the architecture above from accepted objective to bounded authority.
+2. Inspect the [14-artifact Golden Path](examples/golden_path/evidence/) and its
+   [request-bound negative cases](examples/golden_path/negative/).
+3. Open the [Native-Agent public proof](docs/evidence/native_agent_public_proof_receipt_20260826.json)
+   and the [current role topology](docs/native_role_topology_dec0031.md).
+4. Check the [CI workflow](.github/workflows/ci.yml), [public safety scan](scripts/public_safety_scan.py),
+   and [release history](https://github.com/Derrickxxm/quantengine-public/releases).
+5. Read the [public boundary](#public-boundary) before interpreting any runtime
+   or authority claim.
 
 ## The Core Idea
 
