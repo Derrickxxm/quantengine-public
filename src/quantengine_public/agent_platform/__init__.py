@@ -92,6 +92,19 @@ from .role_topology import (
     derive_native_role_release,
     validate_native_role_topology,
 )
+from .ogsm_v2 import (
+    MeasureVerdict,
+    ObjectiveChangeReceipt,
+    ObjectiveContract,
+    ObjectiveReviewReceipt,
+    OgsmValidationError,
+    validate_aar,
+    validate_downstream_binding,
+    validate_measure_verdict,
+    validate_objective_change,
+    validate_objective_contract,
+    validate_wip,
+)
 
 __all__ = [
     "AgentsSdkRuntime",
@@ -120,7 +133,12 @@ __all__ = [
     "DurableRunClaim",
     "LocalSourceLookup",
     "MODEL_ID",
+    "MeasureVerdict",
     "OWNER_DECISION",
+    "ObjectiveChangeReceipt",
+    "ObjectiveContract",
+    "ObjectiveReviewReceipt",
+    "OgsmValidationError",
     "Phase2HandoffReceipt",
     "RoleReceipt",
     "NativeRoleReceipt",
@@ -165,7 +183,13 @@ __all__ = [
     "evaluate_stage",
     "replay_historical_release_attacks",
     "validate_handoff_receipt",
+    "validate_aar",
+    "validate_downstream_binding",
+    "validate_measure_verdict",
     "validate_native_role_topology",
+    "validate_objective_change",
+    "validate_objective_contract",
+    "validate_wip",
     "verify_learning_closure",
     "verify_public_proof",
 ]

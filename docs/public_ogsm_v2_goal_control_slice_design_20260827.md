@@ -2,9 +2,11 @@
 
 Date: 2026-08-27
 
-Status: `OWNER_APPROVED_DESIGN_BASELINE_READY_FOR_M1`
+Status: `M2_IMPLEMENTED_LOCAL_ACCEPTANCE_PASS`
 
-Decision: DEC-0037
+Design and M1 decision: DEC-0037
+
+M2 implementation decision: DEC-0038
 
 Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 `320d6b21714a168214811faada3970c9ab241b89`.
@@ -353,7 +355,7 @@ counted as evidence that the positive path executed.
 
 Exit: approved scope and dependency are explicit.
 
-### M1 — red contract tests
+### M1 — red contract tests (`COMPLETE`)
 
 - add v2 schema fixtures and failing validator tests;
 - preserve v1 compatibility tests;
@@ -361,7 +363,7 @@ Exit: approved scope and dependency are explicit.
 
 Exit: tests fail for the intended missing behavior without source changes.
 
-### M2 — minimum contracts and validator
+### M2 — minimum contracts and validator (`COMPLETE_LOCAL`)
 
 - implement the v2 dataclasses/schemas and canonical digests;
 - implement structure, reference, evidence-class, revision, and binding checks;
@@ -455,8 +457,11 @@ The public OGSM V2 slice is complete only when:
 
 ## 13. Current Decision
 
-`ADOPT_DESIGN / BEGIN_M1_FROM_ACCEPTED_DEC_0031_MAIN`
+`M2_LOCAL_ACCEPTANCE_COMPLETE / WAIT_FOR_M3_AUTHORIZATION`
 
-Next action: create M1 red tests from exact main commit
-`320d6b21714a168214811faada3970c9ab241b89` in a fresh worktree. This document
-remains an approved implementation design, not a completed public capability.
+M1 and M2 are implemented locally on the DEC-0038 branch. The deterministic
+contract surface, canonical digests, typed block receipts, revision and
+invalidation checks, evidence admission, AAR admission, and WIP validation pass
+the target and full local suites. No M3 Skill, M4 Thin Control integration, M5
+Golden Path V2, M6 publication, push, PR, merge, release, or deployment is
+claimed. The full OGSM V2 capability remains incomplete.
