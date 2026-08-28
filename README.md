@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml/badge.svg)](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml)
 
-![Native-Agent system architecture](docs/assets/native_agent_system_architecture.png)
+![Evidence-controlled Native-Agent software delivery architecture](docs/assets/evidence_controlled_ai_delivery_architecture.svg)
 
-*The complete system context: business intent enters through Plane and the Agent control plane; specialist Architecture, Development, Test, Quality, and Ops roles work within bounded responsibilities; fingerprints, gates, receipts, Paper/Real environments, and immutable evidence preserve traceability and release authority.*
+*Current English architecture: accepted goals enter through OGSM V2 and Plane; bounded Architecture, Test, Development, and Ops roles operate through explicit handoffs; Git, revision-bound context, end-to-end fingerprints, runtime evidence, independent Quality, and deterministic Release keep the delivery chain traceable and fail closed.*
 
 QuantEngine is the first runnable reference implementation of a broader idea:
 let AI retain its ability to reason, while goals, state, dependencies,
