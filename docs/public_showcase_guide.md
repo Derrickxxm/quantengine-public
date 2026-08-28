@@ -99,8 +99,11 @@ python -m venv .venv
 ```
 
 The harness is deterministic and synthetic. It does not dispatch external
-Agents. The four Skills under [`skills/`](../skills/) preserve the operating
-methods that a Native-Agent runtime must follow.
+Agents. The four Golden Path v1 role Skills under [`skills/`](../skills/)
+preserve the operating methods that a Native-Agent runtime must follow. The
+proposal-only [`public-ogsm-control`](../skills/public-ogsm-control/SKILL.md)
+Skill adds the local OGSM V2 outcome, review, revision, and AAR method without
+accepting an Objective or granting execution or release authority.
 
 For the complete architecture, see
 [`docs/multi_agent_public_architecture.md`](multi_agent_public_architecture.md).

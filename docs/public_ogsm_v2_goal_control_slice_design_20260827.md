@@ -2,11 +2,13 @@
 
 Date: 2026-08-27
 
-Status: `M2_IMPLEMENTED_LOCAL_ACCEPTANCE_PASS`
+Status: `M3_IMPLEMENTED_LOCAL_ACCEPTANCE_PASS`
 
 Design and M1 decision: DEC-0037
 
 M2 implementation decision: DEC-0038
+
+M3 Skill decision: DEC-0039
 
 Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 `320d6b21714a168214811faada3970c9ab241b89`.
@@ -371,7 +373,7 @@ Exit: tests fail for the intended missing behavior without source changes.
 
 Exit: M1 tests pass and v1 remains unchanged.
 
-### M3 — public OGSM Skill
+### M3 — public OGSM Skill (`COMPLETE_LOCAL`)
 
 - publish the domain-neutral design/review/AAR procedure;
 - provide one Owner acceptance packet template;
@@ -457,11 +459,13 @@ The public OGSM V2 slice is complete only when:
 
 ## 13. Current Decision
 
-`M2_LOCAL_ACCEPTANCE_COMPLETE / WAIT_FOR_M3_AUTHORIZATION`
+`M3_LOCAL_ACCEPTANCE_COMPLETE / WAIT_FOR_M4_AUTHORIZATION`
 
-M1 and M2 are implemented locally on the DEC-0038 branch. The deterministic
-contract surface, canonical digests, typed block receipts, revision and
-invalidation checks, evidence admission, AAR admission, and WIP validation pass
-the target and full local suites. No M3 Skill, M4 Thin Control integration, M5
-Golden Path V2, M6 publication, push, PR, merge, release, or deployment is
-claimed. The full OGSM V2 capability remains incomplete.
+M1 through M3 are implemented locally through the DEC-0039 branch. The
+deterministic contract surface and the proposal-only `public-ogsm-control`
+Skill pass their target and full local suites. The Skill prepares Outcome
+Cards, three-pass reviews, Owner acceptance packets, revisions, and AARs while
+retaining zero acceptance, execution, Quality, release, or deployment
+authority. No M4 Thin Control integration, M5 Golden Path V2, M6 publication,
+push, PR, merge, release, or deployment is claimed. The full OGSM V2 capability
+remains incomplete.

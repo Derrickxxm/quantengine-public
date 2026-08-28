@@ -1,0 +1,169 @@
+{
+  "schema_version": "public_delivery.owner_acceptance_packet.v1",
+  "template": true,
+  "template_notice": "Synthetic example only; replace task, source, evidence, timestamps, and proposal content before Owner review.",
+  "packet_status": "PROPOSED",
+  "prepared_for": "Owner",
+  "task_lineage": {
+    "task_id": "PUBLIC-OGSM-TEMPLATE",
+    "task_revision": "1",
+    "repository": "example/public-delivery",
+    "source_commit": "0000000000000000000000000000000000000000",
+    "source_tree_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "objective_review": {
+    "schema_version": "public_delivery.objective_review.v1",
+    "review_id": "review-ogsm-v2-template",
+    "contract_id": "objective-contract-template",
+    "passes": [
+      {
+        "pass_id": "outcome_fit",
+        "verdict": "PASS_AFTER_REVISION",
+        "findings": [
+          "Document completion alone would not prove the intended outcome."
+        ],
+        "revisions": [
+          "Require stale-work rejection as an observable safety result."
+        ],
+        "residual_warnings": []
+      },
+      {
+        "pass_id": "evidence_goodhart",
+        "verdict": "PASS_AFTER_REVISION",
+        "findings": [
+          "A PASS could be forged by consuming stale or excluded evidence."
+        ],
+        "revisions": [
+          "Classify every evidence reference before Measure admission."
+        ],
+        "residual_warnings": []
+      },
+      {
+        "pass_id": "capacity_authority_minimalism",
+        "verdict": "PASS_AFTER_REVISION",
+        "findings": [
+          "The proposal must not create a service or accept itself."
+        ],
+        "revisions": [
+          "Keep one task lineage and preserve explicit Owner acceptance."
+        ],
+        "residual_warnings": []
+      }
+    ],
+    "reviewer": "public-ogsm-control",
+    "reviewed_at": "2026-08-28T00:00:00Z",
+    "review_receipt_digest": "bd87fc52cb06bfa00abd89375d85124bf6ff3bd23e569f8b16bbbded3d9dc161"
+  },
+  "objective_contract_proposal": {
+    "schema_version": "public_delivery.objective_contract.v2",
+    "contract_id": "objective-contract-template",
+    "revision": 1,
+    "parent_digest": null,
+    "status": "PROPOSED",
+    "owner": "Owner",
+    "accepted_at": null,
+    "outcome_card": {
+      "problem": "A valid-looking delivery can optimize a stale or incomplete objective.",
+      "alternatives": [
+        "Count completed delivery artifacts",
+        "Reject stale or inadmissible evidence before promotion"
+      ],
+      "selected_outcome": "Reject stale or inadmissible evidence before promotion",
+      "selection_reason": "The result is independently observable and cannot pass through document production alone."
+    },
+    "objective": "Reduce false release acceptance by blocking stale or inadmissible evidence.",
+    "goals": [
+      {
+        "goal_id": "goal-release-correctness",
+        "statement": "A release decision consumes only current, admitted evidence."
+      }
+    ],
+    "strategies": [
+      {
+        "strategy_id": "strategy-bind-objective-revision",
+        "statement": "Bind downstream decisions to one accepted Objective Contract digest.",
+        "supports_goal_ids": [
+          "goal-release-correctness"
+        ]
+      }
+    ],
+    "measures": [
+      {
+        "measure_id": "measure-stale-rejection",
+        "kind": "SAFETY",
+        "statement": "No stale Objective Contract digest reaches release admission.",
+        "formula_or_judgment_rule": "Every downstream Objective digest equals the accepted contract digest.",
+        "evidence_sources": [
+          "task_snapshot",
+          "run_result",
+          "handoff_receipt",
+          "release_verdict"
+        ],
+        "sample_and_horizon": "Every bounded public delivery run.",
+        "pass_rule": "All downstream bindings equal the accepted digest.",
+        "warn_rule": "No warning state; a mismatch is unsafe.",
+        "fail_rule": "Any mismatch blocks dependent work.",
+        "decision_consequence": "Prepare a new revision and rerun invalidated work.",
+        "owner": "Owner"
+      }
+    ],
+    "evidence_boundary": {
+      "admitted_classes": [
+        "PRIMARY"
+      ],
+      "supporting_classes": [
+        "SUPPORTING"
+      ],
+      "excluded_classes": [
+        "EXCLUDED"
+      ]
+    },
+    "assumptions": [
+      "The Owner accepts consequential Objective changes explicitly."
+    ],
+    "non_goals": [
+      "Automatic Objective acceptance",
+      "Release or deployment authority"
+    ],
+    "capacity_constraints": {
+      "max_active_task_lineages": 1
+    },
+    "review_receipt_digest": "bd87fc52cb06bfa00abd89375d85124bf6ff3bd23e569f8b16bbbded3d9dc161",
+    "contract_digest": "cb216a78bed7267ef4e497c521a90f72a77b306ef1578183c68d8370cac2eb84"
+  },
+  "owner_decision": {
+    "status": "PENDING",
+    "accepted_contract_digest": null,
+    "decided_at": null,
+    "rationale": null
+  },
+  "evidence_inventory": [
+    {
+      "evidence_ref": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "classification": "PRIMARY",
+      "source": "deterministic validation result",
+      "observed_at": "2026-08-28T00:00:00Z",
+      "limitations": []
+    },
+    {
+      "evidence_ref": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "classification": "EXCLUDED",
+      "source": "unverified narrative assertion",
+      "observed_at": "2026-08-28T00:00:00Z",
+      "limitations": [
+        "Not independently observed or bound to the current task lineage."
+      ]
+    }
+  ],
+  "unresolved_blockers": [],
+  "requested_owner_action": "ACCEPT_REVISE_OR_REJECT",
+  "authority": {
+    "objective_acceptance": false,
+    "scope_mutation": false,
+    "execution": false,
+    "quality_approval": false,
+    "release": false,
+    "deployment": false
+  },
+  "packet_digest": "23ce29b0af0dbc5ce816252016811ab1ae4b799c09f941e2b9d51cb464200529"
+}
