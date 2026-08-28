@@ -4,16 +4,42 @@
 
 ![Evidence-controlled Native-Agent software delivery architecture](docs/assets/evidence_controlled_ai_delivery_architecture.svg)
 
-*Current English architecture: accepted goals enter through OGSM V2 and Plane; bounded Architecture, Test, Development, and Ops roles operate through explicit handoffs; Git, revision-bound context, end-to-end fingerprints, runtime evidence, independent Quality, and deterministic Release keep the delivery chain traceable and fail closed.*
+*System architecture and public reference boundary: accepted goals enter through OGSM V2 and Plane; bounded Architecture, Test, Development, and Ops roles operate through explicit handoffs; Git, revision-bound context, end-to-end fingerprints, runtime evidence, independent Quality, and deterministic Release keep the delivery chain traceable and fail closed. The implementation table below distinguishes runnable proof from experimental and planned adapters.*
 
-QuantEngine is the first runnable reference implementation of a broader idea:
-let AI retain its ability to reason, while goals, state, dependencies,
-permissions, validation, and evidence remain deterministic and inspectable.
+## What This Repository Demonstrates
 
-This is not a framework for adding more Agents to every task. It is a software
-delivery control architecture for preventing long-running AI-assisted work from
-drifting away from the accepted objective, current code, quality bar, runtime,
-or evidence.
+This repository answers one practical question:
+
+> How can AI help deliver software without quietly changing the accepted goal,
+> implementation scope, quality bar, evidence, or release authority?
+
+The answer is not “add more Agents.” It is to keep model reasoning inside clear
+responsibility boundaries and keep control facts outside the model:
+
+- specialist Agents own bounded Architecture, Test, Development, and Ops work;
+- Skills preserve judgment-heavy operating methods and stop conditions;
+- small tools perform repeatable reads, hashes, state writes, and gates;
+- exact task, source, context, model, artifact, and runtime identities remain
+  connected through verifiable fingerprints;
+- independent Quality evaluates admitted evidence, and a deterministic Release
+  controller derives only the authority that evidence supports.
+
+QuantEngine is the first runnable reference scenario. It provides a high-risk
+financial setting in which identity, replay, reconciliation, and authority
+cannot be treated as approximate. The architecture is broader than trading.
+
+## Review It in Three Minutes
+
+1. Read the architecture above from accepted objective to bounded authority.
+2. Inspect the [14-artifact Golden Path](examples/golden_path/evidence/) and its
+   [request-bound negative cases](examples/golden_path/negative/).
+3. Open the [Native-Agent proof runner](scripts/native_agent_public_proof.py),
+   its [adversarial verifier tests](tests/agent_platform/test_public_proof.py),
+   and the [current role topology](docs/native_role_topology_dec0031.md).
+4. Check the [CI workflow](.github/workflows/ci.yml), [public safety scan](scripts/public_safety_scan.py),
+   and [release history](https://github.com/Derrickxxm/quantengine-public/releases).
+5. Read the [public boundary](#public-boundary) before interpreting any runtime
+   or authority claim.
 
 ## The Core Idea
 
@@ -23,13 +49,34 @@ Skill                 -> preserve the operating method and stop conditions
 Small Tool / CLI      -> read or write one deterministic fact, action, or gate
 Plane / Git           -> own accepted goals, task state, decisions, and source
 Evidence / Eval       -> prove what happened and whether the behavior was good
-Human / Release Gate  -> approve decisions that must not be inferred
+Independent Quality  -> judge the admitted evidence without certifying itself
+Release Controller   -> mechanically derive only evidence-supported authority
+Owner                -> approve business and risk decisions that cannot be inferred
 ```
 
 Chat memory is never the control plane. Every task must be recoverable from
 authoritative state and content-addressed evidence.
 
-## Current Implementation Decision
+## What Is Actually Implemented
+
+| Capability | What runs now | Where to verify it | Explicit boundary |
+| --- | --- | --- | --- |
+| Delivery contracts | A 14-artifact Golden Path plus request-bound negative paths | [`golden_path.py`](src/quantengine_public/delivery/golden_path.py), [positive evidence](examples/golden_path/evidence/), [negative evidence](examples/golden_path/negative/) | Deterministic regression harness; it does not call an external Agent |
+| Native role topology | Architecture, Test author, Development, Test verify, Ops, and independent Quality receipts are admitted in one declared order | [`role_topology.py`](src/quantengine_public/agent_platform/role_topology.py), [topology tests](tests/agent_platform/test_role_topology.py), [DEC-0031](docs/native_role_topology_dec0031.md) | Recorded provider canaries plus a retained topology oracle; not one uninterrupted production run |
+| SDK control proof | Six OpenAI Agents SDK roles, identity-bound handoffs, deterministic Release, and retained attack replay run in CI | [proof runner](scripts/native_agent_public_proof.py), [verifier tests](tests/agent_platform/test_public_proof.py), [CI](.github/workflows/ci.yml) | Uses a local `ScriptedModel`; it proves SDK and control integration, not hosted-model quality |
+| Local-model experiment | A bounded OpenAI-compatible Qwen simulation and 24/24 repeatability run | [local receipt](docs/evidence/qwen_phase2_local_simulation_receipt_20260827.json), [acceptance summary](docs/evidence/qwen_phase2_overnight_acceptance_20260827.json) | Local Qwen only; no Hosted Luna, hosted-cost, write, Release, deployment, Replay, Paper, or Real claim |
+| Hosted-model path | A digest-bound preflight and dry-run receipt remain fail closed | [`hosted_phase2.py`](src/quantengine_public/agent_platform/hosted_phase2.py), [runner tests](tests/test_hosted_phase2_runner.py) | No hosted request, token spend, tool, handoff, write, trace, or release authority is enabled by the dry run |
+| QuantEngine reference | Synthetic admission, Paper, Replay, reconciliation, stress, recovery, and bounded release evidence | [60-second walkthrough](docs/START_HERE.md), [showcase evidence](examples/showcase/), [boundary tests](tests/test_demo_v2.py) | Demonstrates control semantics; it does not expose production code or prove trading alpha |
+
+The table is the claim boundary. A design document may describe a larger target,
+but a capability is presented as implemented only when this repository contains
+code, tests, inspectable evidence, and an explicit statement of what it cannot
+authorize.
+
+<details>
+<summary>Detailed implementation history, exact model lanes, and safety boundaries</summary>
+
+### Current Native Execution Decision
 
 TASKSYS-1329 / DEC-0031 is the current native execution topology:
 
@@ -108,6 +155,8 @@ three adversarial suites passed. That repeatability evidence remains local
 Qwen evidence and grants no Hosted Luna, hosted-cost, write, Release,
 deployment, Replay, Paper, or Real claim.
 
+</details>
+
 ## The Delivery Control Loop
 
 ```mermaid
@@ -117,9 +166,10 @@ flowchart LR
     Context --> Agents["Specialist Agents<br/>Architecture, Test, Development, Ops"]
     Agents --> Tools["Small deterministic tools<br/>read, test, hash, record, gate"]
     Tools --> Evidence["Trace + evidence + evals<br/>what happened, proof, quality"]
-    Evidence --> Gate["Independent gate<br/>accept, revise, block, escalate"]
-    Gate --> Owner
-    Gate --> Learn["Learning flywheel<br/>failure to regression to promotion"]
+    Evidence --> Quality["Independent Quality<br/>accept, revise, block, escalate"]
+    Quality --> Release["Deterministic Release<br/>derive bounded authority"]
+    Release --> Owner
+    Quality --> Learn["Learning flywheel<br/>failure to regression to promotion"]
     Learn --> Goal
 ```
 
@@ -137,7 +187,8 @@ not replace specialist judgment and cannot turn missing evidence into PASS.
 | Trace | what the Agent and tools actually did | release authority |
 | Evidence | facts supporting a result | behavioral quality by itself |
 | Eval | whether Agent behavior and output met the declared standard | production permission |
-| Independent Gate | evidence admission and bounded verdict | creating the evidence it certifies |
+| Independent Quality | evidence admission and bounded verdict | creating the evidence it certifies or granting runtime authority |
+| Release Controller | mechanically derived, evidence-supported authority | reinterpreting missing evidence or replacing Owner approval |
 | Owner | non-delegable business and risk decisions | fabricated technical evidence |
 
 ## When A Separate Agent Is Justified
@@ -251,13 +302,14 @@ The current synthetic result is:
 
 - runtime verdict: `PASS`;
 - package id: `58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011`;
-- Paper authority after independent release control: `true`;
+- synthetic Paper authority inside the committed reference artifact: `true`;
 - Real authority: `false`;
 - final synthetic equity: `9985.7`.
 
 The reference scenario tests package tampering, missing input coverage, economic
 state mismatch, reconciliation, stress, and recovery. It does not prove trading
-alpha or expose a profitable strategy.
+alpha, expose a profitable strategy, or grant permission to deploy or operate a
+real Paper or Real environment.
 
 Start with:
 
