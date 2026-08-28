@@ -1,6 +1,6 @@
 # Evidence-Controlled AI Software Delivery
 
-[![CI](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml/badge.svg)](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml)
+[![CI](https://github.com/Derrickxxm/evidence-controlled-ai-delivery/actions/workflows/ci.yml/badge.svg)](https://github.com/Derrickxxm/evidence-controlled-ai-delivery/actions/workflows/ci.yml)
 
 ![Evidence-controlled Native-Agent software delivery architecture](docs/assets/evidence_controlled_ai_delivery_architecture.svg)
 
@@ -37,7 +37,7 @@ cannot be treated as approximate. The architecture is broader than trading.
    its [adversarial verifier tests](tests/agent_platform/test_public_proof.py),
    and the [current role topology](docs/native_role_topology_dec0031.md).
 4. Check the [CI workflow](.github/workflows/ci.yml), [public safety scan](scripts/public_safety_scan.py),
-   and [release history](https://github.com/Derrickxxm/quantengine-public/releases).
+   and [release history](https://github.com/Derrickxxm/evidence-controlled-ai-delivery/releases).
 5. Read the [public boundary](#public-boundary) before interpreting any runtime
    or authority claim.
 
