@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1100" viewBox="0 0 1900 1100" role="img" aria-labelledby="title desc">
+  <title id="title">Evidence-Controlled Native-Agent Software Delivery Architecture</title>
+  <desc id="desc">An English system architecture showing intent and goal control, bounded specialist Agents, deterministic tools, end-to-end fingerprints, runtime verification, independent quality, deterministic release, immutable evidence, and a learning flywheel.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#111c31"/></linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#38bdf8"/></marker>
+    <style>
+      .title { font: 700 32px Arial, Helvetica, sans-serif; fill: #f8fafc; }
+      .subtitle { font: 400 17px Arial, Helvetica, sans-serif; fill: #cbd5e1; }
+      .lane { fill: #101b2e; stroke: #334155; stroke-width: 2; rx: 18; }
+      .laneTitle { font: 700 18px Arial, Helvetica, sans-serif; fill: #94a3b8; letter-spacing: 1px; }
+      .node { fill: #1e293b; stroke-width: 2.5; rx: 12; }
+      .control { stroke: #f59e0b; }
+      .agent { stroke: #38bdf8; }
+      .proof { stroke: #4ade80; }
+      .boundary { fill: #3b1d2d; stroke: #fb7185; }
+      .nodeTitle { font: 700 19px Arial, Helvetica, sans-serif; fill: #f8fafc; text-anchor: middle; }
+      .nodeText { font: 400 15px Arial, Helvetica, sans-serif; fill: #cbd5e1; text-anchor: middle; }
+      .edge { fill: none; stroke: #94a3b8; stroke-width: 2.2; marker-end: url(#arrow); }
+      .edgeBlue { fill: none; stroke: #38bdf8; stroke-width: 2.4; marker-end: url(#arrowBlue); }
+      .dash { stroke-dasharray: 8 7; }
+      .edgeLabel { font: 600 14px Arial, Helvetica, sans-serif; fill: #bfdbfe; text-anchor: middle; }
+      .note { font: 600 14px Arial, Helvetica, sans-serif; fill: #a7f3d0; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1900" height="1100" fill="url(#bg)"/>
+  <text x="48" y="52" class="title">Evidence-Controlled Native-Agent Software Delivery</text>
+  <text x="48" y="82" class="subtitle">AI keeps the reasoning work. Deterministic contracts keep goals, context, evidence, quality, and authority from drifting.</text>
+
+  <rect x="35" y="110" width="1830" height="190" class="lane"/>
+  <text x="58" y="142" class="laneTitle">1  INTENT, CURRENT CONTEXT, AND CONTROL</text>
+  <rect x="65" y="165" width="235" height="100" class="node control"/>
+  <text x="182" y="202" class="nodeTitle">Owner / Business Lead</text><text x="182" y="229" class="nodeText">outcome, constraints</text><text x="182" y="250" class="nodeText">non-delegable approval</text>
+  <rect x="355" y="165" width="235" height="100" class="node control"/>
+  <text x="472" y="202" class="nodeTitle">OGSM V2 + Plane</text><text x="472" y="229" class="nodeText">objective, measures</text><text x="472" y="250" class="nodeText">task state and decisions</text>
+  <rect x="650" y="155" width="285" height="120" class="node control"/>
+  <text x="792" y="195" class="nodeTitle">Agent Control Plane</text><text x="792" y="224" class="nodeText">bounded context, routes</text><text x="792" y="247" class="nodeText">permissions, evidence index</text>
+  <rect x="1010" y="165" width="240" height="100" class="node proof"/>
+  <text x="1130" y="202" class="nodeTitle">Git + CI</text><text x="1130" y="229" class="nodeText">source and review</text><text x="1130" y="250" class="nodeText">identity</text>
+  <rect x="1305" y="165" width="255" height="100" class="node proof"/>
+  <text x="1432" y="202" class="nodeTitle">Revision-Bound Graph</text><text x="1432" y="229" class="nodeText">current architecture</text><text x="1432" y="250" class="nodeText">and dependencies</text>
+  <rect x="1610" y="165" width="220" height="100" class="node proof"/>
+  <text x="1720" y="202" class="nodeTitle">Evidence Index</text><text x="1720" y="229" class="nodeText">current blockers</text><text x="1720" y="250" class="nodeText">and admitted facts</text>
+  <path d="M300 215 H355" class="edge"/><path d="M590 215 H650" class="edge"/>
+  <path d="M1010 200 H950 Q935 200 935 215" class="edge"/><path d="M1305 225 H950 Q935 225 935 225" class="edge"/><path d="M1610 250 H950 Q935 250 935 240" class="edge"/>
+
+  <rect x="35" y="330" width="1830" height="390" class="lane"/>
+  <text x="58" y="362" class="laneTitle">2  BOUNDED NATIVE-AGENT DELIVERY</text>
+  <rect x="75" y="405" width="260" height="105" class="node agent"/>
+  <text x="205" y="444" class="nodeTitle">Architecture Agent</text><text x="205" y="472" class="nodeText">impact, risk, scope</text><text x="205" y="493" class="nodeText">read-only architecture view</text>
+  <rect x="75" y="555" width="260" height="105" class="node agent"/>
+  <text x="205" y="594" class="nodeTitle">Test Agent</text><text x="205" y="622" class="nodeText">validation space first</text><text x="205" y="643" class="nodeText">negative and regression cases</text>
+  <rect x="440" y="475" width="275" height="115" class="node agent"/>
+  <text x="577" y="516" class="nodeTitle">Development Agent</text><text x="577" y="545" class="nodeText">bounded implementation</text><text x="577" y="568" class="nodeText">declared paths only</text>
+  <rect x="820" y="475" width="275" height="115" class="node agent"/>
+  <text x="957" y="516" class="nodeTitle">Independent Test Verification</text><text x="957" y="545" class="nodeText">accepted tests and contracts</text><text x="957" y="568" class="nodeText">no implementation edits</text>
+  <rect x="1200" y="475" width="245" height="115" class="node agent"/>
+  <text x="1322" y="516" class="nodeTitle">Ops Agent</text><text x="1322" y="545" class="nodeText">CI/CD, readback</text><text x="1322" y="568" class="nodeText">rollback preparation</text>
+  <rect x="1515" y="392" width="300" height="82" class="node agent"/>
+  <text x="1665" y="425" class="nodeTitle">Skills</text><text x="1665" y="451" class="nodeText">method, stop, escalation, handoff</text>
+  <rect x="1515" y="490" width="300" height="82" class="node agent"/>
+  <text x="1665" y="523" class="nodeTitle">Small Deterministic Tools</text><text x="1665" y="549" class="nodeText">read, test, hash, record, gate</text>
+  <rect x="1515" y="588" width="300" height="96" class="node proof"/>
+  <text x="1665" y="620" class="nodeTitle">End-to-End Fingerprints</text><text x="1665" y="646" class="nodeText">task -> source -> context -> model</text><text x="1665" y="667" class="nodeText">artifact -> runtime -> verdict</text>
+  <path d="M792 275 V380 Q792 390 770 390 H205 V405" class="edgeBlue"/>
+  <path d="M792 275 V380 Q792 390 760 390 H360 Q335 390 335 555" class="edgeBlue"/>
+  <path d="M335 457 H385 Q405 457 405 500 Q405 532 440 532" class="edgeBlue"/><text x="386" y="445" class="edgeLabel">scope handoff</text>
+  <path d="M335 607 H385 Q405 607 405 565 Q405 532 440 532" class="edgeBlue"/><text x="387" y="632" class="edgeLabel">test contract</text>
+  <path d="M715 532 H820" class="edgeBlue"/><text x="767" y="519" class="edgeLabel">implementation receipt</text>
+  <path d="M1095 532 H1200" class="edgeBlue"/><text x="1148" y="519" class="edgeLabel">verified evidence</text>
+  <path d="M1515 433 H1480 Q1458 433 1458 495" class="edge dash"/><path d="M1515 531 H1445" class="edge dash"/><path d="M1515 636 H1465 Q1445 636 1445 575" class="edge dash"/>
+  <text x="1480" y="705" class="note">A mismatched identity or missing handoff stops the chain.</text>
+
+  <rect x="35" y="750" width="1830" height="305" class="lane"/>
+  <text x="58" y="782" class="laneTitle">3  RUNTIME VERIFICATION, INDEPENDENT QUALITY, AND AUTHORITY</text>
+  <rect x="70" y="825" width="255" height="105" class="node proof"/>
+  <text x="197" y="864" class="nodeTitle">Runtime Verification</text><text x="197" y="892" class="nodeText">readback, replay</text><text x="197" y="913" class="nodeText">reconciliation</text>
+  <rect x="390" y="825" width="205" height="105" class="node proof"/>
+  <text x="492" y="864" class="nodeTitle">QCS Risk Checks</text><text x="492" y="892" class="nodeText">risk evidence</text><text x="492" y="913" class="nodeText">advisory only</text>
+  <rect x="660" y="815" width="275" height="125" class="node proof"/>
+  <text x="797" y="854" class="nodeTitle">Independent Quality Shield</text><text x="797" y="883" class="nodeText">admits the closed evidence set</text><text x="797" y="906" class="nodeText">returns a bounded verdict</text>
+  <rect x="1000" y="815" width="285" height="125" class="node control"/>
+  <text x="1142" y="854" class="nodeTitle">Deterministic Release</text><text x="1142" y="883" class="nodeText">authority is mechanically derived</text><text x="1142" y="906" class="nodeText">never inferred by an Agent</text>
+  <rect x="1350" y="805" width="300" height="145" class="node boundary"/>
+  <text x="1500" y="846" class="nodeTitle">Public Reference Boundary</text><text x="1500" y="878" class="nodeText">runnable control evidence</text><text x="1500" y="901" class="nodeText">zero deployment, Paper</text><text x="1500" y="924" class="nodeText">or Real authority</text>
+  <rect x="1690" y="805" width="135" height="145" class="node proof"/>
+  <text x="1757" y="846" class="nodeTitle">Learning</text><text x="1757" y="878" class="nodeText">failure</text><text x="1757" y="901" class="nodeText">eval + repair</text><text x="1757" y="924" class="nodeText">regression</text>
+  <path d="M1322 590 V745 Q1322 775 1270 775 H197 V825" class="edgeBlue"/>
+  <path d="M325 877 H390" class="edge"/><path d="M595 877 H660" class="edge"/><path d="M935 877 H1000" class="edge"/><path d="M1285 877 H1350" class="edge"/><path d="M1650 877 H1690" class="edge"/>
+  <path d="M1757 805 V745 Q1757 730 1735 730 H510 Q472 730 472 265" class="edge dash"/><text x="1095" y="742" class="edgeLabel">failures improve objectives, Skills, tools, tests, and gates</text>
+  <path d="M1130 265 V315 Q1130 330 1140 330 H1322 V475" class="edge dash"/><text x="1215" y="318" class="edgeLabel">source identity</text>
+  <path d="M797 940 V1000 H1720 V950" class="edge dash"/><text x="1260" y="989" class="edgeLabel">immutable receipts, manifests, traces, evals, and decisions</text>
+  <text x="50" y="1080" class="subtitle">Current public implementation: a bounded six-role topology and executable evidence chain. Production deployment and trading authority remain outside the public reference.</text>
+</svg>
