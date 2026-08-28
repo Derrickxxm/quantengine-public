@@ -39,6 +39,7 @@ def build_context_snapshot(
         graph_identity=graph.identity_digest if graph else None,
         skill_identity=skill_identity,
         tool_policy_identity=tool_policy_identity,
+        objective_contract_digest=task.objective_contract_digest,
         upstream_artifact_refs=tuple(upstream_artifact_refs),
         selected_context_refs=tuple(selected_context_refs),
     )
@@ -58,6 +59,8 @@ def validate_context(
         raise StaleContextError("task_revision_mismatch")
     if context.source_identity != source.identity_digest:
         raise StaleContextError("source_revision_mismatch")
+    if task.objective_contract_digest is not None and context.objective_contract_digest != task.objective_contract_digest:
+        raise StaleContextError("objective_contract_digest_mismatch")
     role = expected_role if expected_role is not None else context.role
     if context.role != role:
         raise StaleContextError("role_mismatch")

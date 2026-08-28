@@ -25,6 +25,7 @@ from .contracts import (
     TaskSnapshot,
     content_digest,
     validate_handoff_receipt,
+    validate_run_binding,
 )
 from .control_state import ControlStateError, ControlStateStore, TaskState, Transition
 from quantengine_public.delivery.identity import (
@@ -104,6 +105,10 @@ class SliceArtifact:
         return self.raw["payload"].get("graph_identity")
 
     @property
+    def objective_contract_digest(self) -> str | None:
+        return self.raw["payload"].get("objective_contract_digest")
+
+    @property
     def artifact_type(self) -> str:
         return self.raw["artifact_type"]
 
@@ -139,13 +144,21 @@ class SliceArtifact:
         return ArtifactRef(ref["artifact_type"], ref["artifact_digest"])
 
     @classmethod
-    def create(cls, *, task_id: str, source_identity: str, context_digest: str, graph_identity: str, artifact_type: str, producer: str, status: str, upstream: Iterable[ArtifactRef] = (), payload: Mapping[str, Any] | None = None) -> "SliceArtifact":
+    def create(cls, *, task_id: str, source_identity: str, context_digest: str, graph_identity: str, artifact_type: str, producer: str, status: str, upstream: Iterable[ArtifactRef] = (), payload: Mapping[str, Any] | None = None, objective_contract_digest: str | None = None) -> "SliceArtifact":
+        identity_payload = {
+            "task_id": task_id,
+            "source_identity": source_identity,
+            "context_digest": context_digest,
+            "graph_identity": graph_identity,
+        }
+        if objective_contract_digest is not None:
+            identity_payload["objective_contract_digest"] = objective_contract_digest
         artifact = seal_artifact(
             artifact_type=_canonical_type(artifact_type),
             producer=producer,
             status=status,
             upstream=[ArtifactRef(_canonical_type(ref.artifact_type), ref.artifact_digest).to_dict() for ref in upstream],
-            payload={**dict(payload or {}), "task_id": task_id, "source_identity": source_identity, "context_digest": context_digest, "graph_identity": graph_identity},
+            payload={**dict(payload or {}), **identity_payload},
             authority=dict(_ZERO_AUTHORITY),
         )
         return cls(artifact)
@@ -178,6 +191,7 @@ def derive_release(
     evidence: Sequence[SliceArtifact | Mapping[str, Any]],
     quality_producer: str = "public_quality_shield",
     graph_identity: str | None = None,
+    objective_contract_digest: str | None = None,
 ) -> dict[str, Any]:
     """Derive a zero-runtime-authority release verdict from exact evidence.
 
@@ -193,6 +207,8 @@ def derive_release(
     for item in items:
         if item.task_id != task_id or item.source_identity != source_identity:
             raise ReleaseTopologyError("release_identity_mismatch")
+        if objective_contract_digest is not None and item.objective_contract_digest != objective_contract_digest:
+            raise ReleaseTopologyError("release_objective_contract_mismatch")
         if item.artifact_digest in by_digest:
             raise ReleaseTopologyError("duplicate_artifact_digest")
         by_digest[item.artifact_digest] = item
@@ -249,18 +265,21 @@ def derive_release(
         ):
             raise ReleaseTopologyError("runtime_upstream_mismatch")
 
+    release_payload = {
+        "task_id": task_id,
+        "source_identity": source_identity,
+        "context_digest": quality.context_digest,
+        "graph_identity": quality.graph_identity,
+        "decision": "exact-topology",
+    }
+    if objective_contract_digest is not None:
+        release_payload["objective_contract_digest"] = objective_contract_digest
     return seal_artifact(
         artifact_type="public_delivery.release_verdict",
         producer="public_release_controller",
         status="PASS",
         upstream=[quality.ref().to_dict(), runtime.ref().to_dict()],
-        payload={
-            "task_id": task_id,
-            "source_identity": source_identity,
-            "context_digest": quality.context_digest,
-            "graph_identity": quality.graph_identity,
-            "decision": "exact-topology",
-        },
+        payload=release_payload,
         authority=dict(_ZERO_AUTHORITY),
     )
 
@@ -315,7 +334,7 @@ class VerticalSliceRunner:
         values = []
         for row in rows:
             data = json.loads(row[0])
-            values.append(RunResult(**{key: data[key] for key in ("run_id", "status", "stop_reason", "result_digest", "tool_call_refs", "requested_next_action", "role") if key in data}))
+            values.append(RunResult(**{key: data[key] for key in ("run_id", "status", "stop_reason", "result_digest", "tool_call_refs", "requested_next_action", "role", "objective_contract_digest") if key in data}))
         return values
 
     def _save_artifact(self, artifact: SliceArtifact) -> None:
@@ -347,6 +366,7 @@ class VerticalSliceRunner:
             status=result.status,
             result_digest=result.result_digest,
             role=result.role,
+            objective_contract_digest=result.objective_contract_digest,
         )
         self._db.execute("INSERT OR IGNORE INTO vertical_runs VALUES (?, ?)", (result.run_id, json.dumps(result.to_dict(), sort_keys=True)))
         self._db.commit()
@@ -420,7 +440,9 @@ class VerticalSliceRunner:
             upstream_artifact_refs=context.upstream_artifact_refs,
             timeout_policy="bounded-local-scripted",
             idempotency_key=run_id,
+            objective_contract_digest=self.task.objective_contract_digest,
         )
+        validate_run_binding(request, task=self.task, context=context)
         result = await runtime.run(agent, json.dumps(request.to_dict(), sort_keys=True), run_config={"tracing_disabled": True})
         model.assert_complete()
         if role == "Architecture":
@@ -434,7 +456,9 @@ class VerticalSliceRunner:
             tool_call_refs=(),
             requested_next_action=None,
             role=role,
+            objective_contract_digest=self.task.objective_contract_digest,
         )
+        validate_run_binding(request, task=self.task, context=context, result=sealed)
         self._save_run(sealed, context_digest=context.context_digest)
         return sealed
 
@@ -450,6 +474,7 @@ class VerticalSliceRunner:
             status=status,
             upstream=tuple(upstream),
             payload={"stage": artifact_type, **dict(payload or {})},
+            objective_contract_digest=self.task.objective_contract_digest,
         )
         self._save_artifact(artifact)
         return artifact
@@ -473,6 +498,7 @@ class VerticalSliceRunner:
             reason="identity-bound stage complete",
             next_owner=to_role,
             graph_identity=self.graph.identity_digest,
+            objective_contract_digest=self.task.objective_contract_digest,
         )
         if receipt.graph_identity != context.graph_identity:
             raise VerticalSliceError("handoff_graph_mismatch")
@@ -502,6 +528,7 @@ class VerticalSliceRunner:
             next_owner=next_owner,
             evidence_refs=tuple(evidence_refs),
             context_digest=context_digest,
+            objective_contract_digest=self.task.objective_contract_digest,
         )
 
     async def run(self, stop_after: str | None = None) -> VerticalSliceResult:
@@ -574,7 +601,13 @@ class VerticalSliceRunner:
                 transition = self._transition(state, "QUALITY_REVIEWED", next_owner="Quality", reason="independent quality consumes exact runtime evidence", key="quality", evidence_refs=(quality.ref(),), context_digest=context.context_digest)
                 self._handoff(from_owner="Quality", to_role="Release Controller", task_version=transition.version, context=context, refs=tuple(refs + [quality.ref()]), prior_state=state)
             elif state.state == "QUALITY_REVIEWED":
-                release = derive_release(task_id=self.task.task_id, source_identity=self.source.identity_digest, graph_identity=self.graph.identity_digest, evidence=self._evidence())
+                release = derive_release(
+                    task_id=self.task.task_id,
+                    source_identity=self.source.identity_digest,
+                    graph_identity=self.graph.identity_digest,
+                    evidence=self._evidence(),
+                    objective_contract_digest=self.task.objective_contract_digest,
+                )
                 self._save_release(release)
                 release_ref = ArtifactRef(release["artifact_type"], release["artifact_digest"])
                 self._transition(
@@ -598,7 +631,13 @@ class VerticalSliceRunner:
             release = self._release()
         if release is None and state.state == "RELEASE_DECIDED":
             try:
-                release = derive_release(task_id=self.task.task_id, source_identity=self.source.identity_digest, graph_identity=self.graph.identity_digest, evidence=self._evidence())
+                release = derive_release(
+                    task_id=self.task.task_id,
+                    source_identity=self.source.identity_digest,
+                    graph_identity=self.graph.identity_digest,
+                    evidence=self._evidence(),
+                    objective_contract_digest=self.task.objective_contract_digest,
+                )
             except ReleaseTopologyError:
                 release = None
         return VerticalSliceResult(self.task, self.source, self.graph, state, tuple(self._evidence()), tuple(self._handoffs()), tuple(self._runs()), release)

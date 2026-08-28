@@ -176,6 +176,48 @@ flowchart LR
 The control plane coordinates identity, state, routing, and evidence. It does
 not replace specialist judgment and cannot turn missing evidence into PASS.
 
+## Public OGSM V2: Objective-Bound Golden Path
+
+Golden Path v1 remains the original 14-artifact, request-bound delivery
+harness. Golden Path V2 is a separate, domain-neutral extension: it starts only
+after an Owner has accepted an Objective Contract, carries that contract's
+digest through delivery, evaluates declared Measures, records the AAR and
+Owner decision, and fails closed when an accepted revision makes dependent
+work stale. V1 remains unchanged and reproducible; V2 does not upgrade or
+reinterpret v1 evidence.
+
+```mermaid
+flowchart LR
+    Accepted["Accepted Objective Contract"] --> Digest["Objective Contract digest"]
+    Digest --> Delivery["Task / context / run / handoff / evidence"]
+    Delivery --> Verdicts["Measure verdicts + AAR"]
+    Verdicts --> Decision["Owner decision"]
+    Decision -->|continue or stop| Accepted
+    Accepted --> Revision["Accepted revision"]
+    Revision --> Invalidate["Invalidate dependent work"]
+    Invalidate --> Delivery
+```
+
+The committed local [V2 proof](examples/golden_path_v2/proof.json) contains
+16 logical sections, eight positive delivery artifacts, and 14 typed attacks. Its
+independently recomputed proof digest is
+`f06df976a6b5ce850f55c1d3660ee9369832f35fefebf7e6b6a265a63738c123`.
+Its execution mode is `deterministic-domain-neutral-fixture`; it made no
+network model call and every authority field is false.
+
+| Presentation boundary | Current evidence |
+| --- | --- |
+| Local deterministic proof and tests | PASS through M5; M6A documents that evidence |
+| Remote CI | M6B PASS on [PR run 33140279809](https://github.com/Derrickxxm/evidence-controlled-ai-delivery/actions/runs/33140279809), Python 3.11 and 3.14 |
+| Push, pull request, and public branch | M6B COMPLETE on PR #17 at reviewed head `c0da831e8cd05faf7386157879129c759e4dc95c` |
+| Merge, tag, and GitHub Release | M6C Owner-authorized for the `v0.6.0` release candidate; exact-head CI and post-merge readback remain mandatory |
+| Deployment or runtime authority | zero authority; no network model, deployment, or QuantEngine Research, Paper, Replay, or Real action |
+
+M6B proves the reviewed PR head and its merge with then-current main. M6C may
+publish `v0.6.0` only after the final release-candidate head passes the same
+checks and the merged main identity is read back. A repository tag or GitHub
+Release never converts this synthetic proof into production runtime authority.
+
 ## Responsibility Boundaries
 
 | Layer | Owns | Must not own |

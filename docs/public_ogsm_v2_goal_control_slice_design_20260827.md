@@ -2,9 +2,23 @@
 
 Date: 2026-08-27
 
-Status: `OWNER_APPROVED_DESIGN_BASELINE_READY_FOR_M1`
+Status: `M6C_RELEASE_CANDIDATE`
 
-Decision: DEC-0032
+Design and M1 decision: DEC-0037
+
+M2 implementation decision: DEC-0038
+
+M3 Skill decision: DEC-0039
+
+M4 Thin Control decision: DEC-0040
+
+M5 proof decision: DEC-0041
+
+M6A presentation decision: DEC-0042
+
+M6B remote-delivery decision: DEC-0043
+
+M6C release decision: DEC-0044
 
 Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 `320d6b21714a168214811faada3970c9ab241b89`.
@@ -12,13 +26,14 @@ Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 Acceptance boundary: PR and main CI accepted DEC-0031. The pre-existing
 `TASKSYS-1137` inventory-classification failure is unrelated and remains open.
 The local Qwen CI lane was configuration-skipped, so it is not evidence of a
-local Qwen pass. DEC-0032 may rely on the accepted public topology contract;
+local Qwen pass. DEC-0037 may rely on the accepted public topology contract;
 it must not upgrade either retained condition into a stronger claim.
 
 Decision-numbering note: commits `f281ddd` and `53c25d4` use `DEC-0032` in
-their subjects, but their changes harden the DEC-0031 role-topology authority
-contract merged by PR #12. DEC-0032 in this document refers only to the public
-OGSM V2 goal-control slice. Published history is not rewritten.
+their subjects, and the first M1 test commit also reused that identifier. The
+authoritative project registry already assigns DEC-0032 to the DEC-0031 remote
+delivery, so this document and all continuing OGSM V2 work use DEC-0037.
+Published history is retained as historical, non-authoritative evidence.
 
 ## 1. Problem
 
@@ -346,13 +361,13 @@ counted as evidence that the positive path executed.
 
 ### M0 — freeze design (`COMPLETE`)
 
-- accept this design and record DEC-0032;
+- accept this design and record DEC-0037;
 - record DEC-0031 acceptance and its retained verification boundaries;
 - identify the exact public task and Owner fixture.
 
 Exit: approved scope and dependency are explicit.
 
-### M1 — red contract tests
+### M1 — red contract tests (`COMPLETE`)
 
 - add v2 schema fixtures and failing validator tests;
 - preserve v1 compatibility tests;
@@ -360,7 +375,7 @@ Exit: approved scope and dependency are explicit.
 
 Exit: tests fail for the intended missing behavior without source changes.
 
-### M2 — minimum contracts and validator
+### M2 — minimum contracts and validator (`COMPLETE_LOCAL`)
 
 - implement the v2 dataclasses/schemas and canonical digests;
 - implement structure, reference, evidence-class, revision, and binding checks;
@@ -368,7 +383,7 @@ Exit: tests fail for the intended missing behavior without source changes.
 
 Exit: M1 tests pass and v1 remains unchanged.
 
-### M3 — public OGSM Skill
+### M3 — public OGSM Skill (`COMPLETE_LOCAL`)
 
 - publish the domain-neutral design/review/AAR procedure;
 - provide one Owner acceptance packet template;
@@ -377,7 +392,7 @@ Exit: M1 tests pass and v1 remains unchanged.
 Exit: a fresh Agent can prepare a complete proposed packet without changing
 accepted state.
 
-### M4 — Thin Control binding and invalidation
+### M4 — Thin Control binding and invalidation (`COMPLETE_LOCAL`)
 
 - add Objective Contract digest to the existing state identities;
 - reject stale runs and handoffs;
@@ -385,7 +400,7 @@ accepted state.
 
 Exit: accepted revision change blocks old dependent work before execution.
 
-### M5 — Golden Path V2 and adversarial proof
+### M5 — Golden Path V2 and adversarial proof (`COMPLETE_LOCAL`)
 
 - add one positive domain-neutral path;
 - execute all required attacks;
@@ -393,11 +408,33 @@ Exit: accepted revision change blocks old dependent work before execution.
 
 Exit: positive path passes; every attack blocks at the declared stage.
 
-### M6 — public presentation and release decision
+### M6A — local public presentation (`COMPLETE_LOCAL`)
 
 - update architecture docs and README with the control-loop diagram;
-- publish evidence assets only after CI and independent review;
 - label v1 versus v2 and all unexecuted boundaries.
+
+Exit: local documentation-contract tests, full suites, safety scan, and control
+review pass without making a remote-delivery claim.
+
+### M6B — push, pull request, and remote CI (`COMPLETE_REMOTE`)
+
+- push the reviewed branch and open the bounded pull request;
+- reproduce the proof in Remote CI and review its exact source identity;
+- do not merge, tag, or publish a Release.
+
+Exit: exact pull-request head and Remote CI evidence are inspectable.
+
+The admitted M6B pull-request run is
+[`33140279809`](https://github.com/Derrickxxm/evidence-controlled-ai-delivery/actions/runs/33140279809).
+It binds PR head `c0da831e8cd05faf7386157879129c759e4dc95c` and passes
+Python 3.11 and 3.14, 274 tests per lane, public safety, and the 84 percent
+coverage gate.
+
+### M6C — merge, tag, and Release (`OWNER_AUTHORIZED_RELEASE_GATE`)
+
+- independently review the admitted M6B evidence;
+- merge, tag, and publish only under a separate Owner decision;
+- retain zero deployment and runtime authority.
 
 Exit: commit -> CI -> tag -> Release proof is publicly inspectable.
 
@@ -454,8 +491,21 @@ The public OGSM V2 slice is complete only when:
 
 ## 13. Current Decision
 
-`ADOPT_DESIGN / BEGIN_M1_FROM_ACCEPTED_DEC_0031_MAIN`
+`M6C_RELEASE_CANDIDATE / REQUIRE_EXACT_HEAD_CI_AND_POST_MERGE_READBACK`
 
-Next action: create M1 red tests from exact main commit
-`320d6b21714a168214811faada3970c9ab241b89` in a fresh worktree. This document
-remains an approved implementation design, not a completed public capability.
+M1 through M5 are implemented locally. M4 binds the accepted Objective
+Contract digest through task, context, run, handoff, evidence, and verdict
+identities, and an accepted revision invalidates dependent work without
+rewriting history. M5 adds the side-by-side domain-neutral Golden Path V2 with
+16 logical sections and 14 typed attacks. The committed proof is
+[`examples/golden_path_v2/proof.json`](../examples/golden_path_v2/proof.json),
+with independently recomputed proof digest
+`f06df976a6b5ce850f55c1d3660ee9369832f35fefebf7e6b6a265a63738c123`.
+
+M6A documents that local evidence and retains zero authority. M6B Remote CI is
+complete through run `33140279809` on the reviewed PR head. DEC-0044 authorizes
+the `v0.6.0` M6C release gate, but acceptance still requires the final
+release-candidate head to pass both Python lanes and public safety, followed by
+exact merged-main readback before tag and GitHub Release creation. No network model
+call, deployment, or QuantEngine Research, Paper, Replay, or Real action
+is authorized or claimed.
