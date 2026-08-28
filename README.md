@@ -4,7 +4,7 @@
 
 ![Evidence-controlled Native-Agent software delivery architecture](docs/assets/evidence_controlled_ai_delivery_architecture.svg)
 
-*Current English architecture: accepted goals enter through OGSM V2 and Plane; bounded Architecture, Test, Development, and Ops roles operate through explicit handoffs; Git, revision-bound context, end-to-end fingerprints, runtime evidence, independent Quality, and deterministic Release keep the delivery chain traceable and fail closed.*
+*System architecture and public reference boundary: accepted goals enter through OGSM V2 and Plane; bounded Architecture, Test, Development, and Ops roles operate through explicit handoffs; Git, revision-bound context, end-to-end fingerprints, runtime evidence, independent Quality, and deterministic Release keep the delivery chain traceable and fail closed. The implementation table below distinguishes runnable proof from experimental and planned adapters.*
 
 ## What This Repository Demonstrates
 
@@ -49,7 +49,9 @@ Skill                 -> preserve the operating method and stop conditions
 Small Tool / CLI      -> read or write one deterministic fact, action, or gate
 Plane / Git           -> own accepted goals, task state, decisions, and source
 Evidence / Eval       -> prove what happened and whether the behavior was good
-Human / Release Gate  -> approve decisions that must not be inferred
+Independent Quality  -> judge the admitted evidence without certifying itself
+Release Controller   -> mechanically derive only evidence-supported authority
+Owner                -> approve business and risk decisions that cannot be inferred
 ```
 
 Chat memory is never the control plane. Every task must be recoverable from
@@ -164,9 +166,10 @@ flowchart LR
     Context --> Agents["Specialist Agents<br/>Architecture, Test, Development, Ops"]
     Agents --> Tools["Small deterministic tools<br/>read, test, hash, record, gate"]
     Tools --> Evidence["Trace + evidence + evals<br/>what happened, proof, quality"]
-    Evidence --> Gate["Independent gate<br/>accept, revise, block, escalate"]
-    Gate --> Owner
-    Gate --> Learn["Learning flywheel<br/>failure to regression to promotion"]
+    Evidence --> Quality["Independent Quality<br/>accept, revise, block, escalate"]
+    Quality --> Release["Deterministic Release<br/>derive bounded authority"]
+    Release --> Owner
+    Quality --> Learn["Learning flywheel<br/>failure to regression to promotion"]
     Learn --> Goal
 ```
 
@@ -184,7 +187,8 @@ not replace specialist judgment and cannot turn missing evidence into PASS.
 | Trace | what the Agent and tools actually did | release authority |
 | Evidence | facts supporting a result | behavioral quality by itself |
 | Eval | whether Agent behavior and output met the declared standard | production permission |
-| Independent Gate | evidence admission and bounded verdict | creating the evidence it certifies |
+| Independent Quality | evidence admission and bounded verdict | creating the evidence it certifies or granting runtime authority |
+| Release Controller | mechanically derived, evidence-supported authority | reinterpreting missing evidence or replacing Owner approval |
 | Owner | non-delegable business and risk decisions | fabricated technical evidence |
 
 ## When A Separate Agent Is Justified
@@ -298,13 +302,14 @@ The current synthetic result is:
 
 - runtime verdict: `PASS`;
 - package id: `58f7123d64497761288c70a5f07a8ef6bce88f84eedd15e83b58600303fc0011`;
-- Paper authority after independent release control: `true`;
+- synthetic Paper authority inside the committed reference artifact: `true`;
 - Real authority: `false`;
 - final synthetic equity: `9985.7`.
 
 The reference scenario tests package tampering, missing input coverage, economic
 state mismatch, reconciliation, stress, and recovery. It does not prove trading
-alpha or expose a profitable strategy.
+alpha, expose a profitable strategy, or grant permission to deploy or operate a
+real Paper or Real environment.
 
 Start with:
 
