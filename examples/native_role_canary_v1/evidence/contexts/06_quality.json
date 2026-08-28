@@ -1,0 +1,7 @@
+{
+  "schema_version": "public_delivery.native_canary_context.v1",
+  "stage": "quality",
+  "accepted_goal": "Evaluate the admitted public evidence without implementation or release authority.",
+  "allowed_changes": [],
+  "evidence_scope": "retrospective public summary"
+}

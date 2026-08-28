@@ -2,7 +2,8 @@
 
 Plane: TASKSYS-1329
 
-Status: implemented on isolated local branches; review-ready; not pushed
+Status: published on public `main` by PR #12; topology merge
+`320d6b21714a168214811faada3970c9ab241b89`; included in `v0.6.0`
 
 ## Accepted flow
 
@@ -54,12 +55,39 @@ each provider lane and exposed two real contract defects. The retained
 deterministic topology test is the single-chain regression oracle; this document
 does not relabel separate canaries as one uninterrupted live run.
 
-## Boundaries
+## Public attestation
 
-This work authorizes isolated local implementation, tests, bounded canaries,
-documentation, Plane/AI Memory alignment, and local commits. It does not
-authorize push, PR, merge, publication, deployment, persistent services,
-QuantEngine Replay/Paper/Real, or knowledge-graph rebuild.
+The repository now retains a sanitized
+[native-role canary bundle](../examples/native_role_canary_v1/) and an
+[offline verifier](../src/quantengine_public/agent_platform/native_canary.py).
+The bundle binds the accepted request, source identity, per-stage context and
+output bytes, exact historical execution HEADs, model, changed paths, six role
+receipts, and zero authority. The repository owner signs the canonical
+manifest with a public SSH signing identity; CI independently verifies the
+pinned signer file, signature, every artifact digest, and the six-stage
+topology:
+
+```bash
+quantengine-public verify-native-canary \
+  --bundle-dir examples/native_role_canary_v1
+```
+
+This is a retrospective operator attestation over the separate canaries
+described above. It proves who published the exact evidence bundle and whether
+those bytes satisfy the public topology contract. It is not provider-signed
+evidence, one uninterrupted six-stage native run, or an independently
+replayable provider execution. See the
+[attestation design and claim boundary](native_role_canary_attestation_v1.md).
+
+## Historical authorization boundary
+
+During execution, DEC-0031 authorized isolated local implementation, tests,
+bounded canaries, documentation, Plane/AI Memory alignment, and local commits.
+It did not authorize push, PR, merge, publication, deployment, persistent
+services, QuantEngine Replay/Paper/Real, or knowledge-graph rebuild. The later
+Owner-approved PR and release changed the publication state; they did not
+expand runtime authority. The published topology and attestation still grant
+no deployment, Replay, Paper, or Real authority.
 
 TASKSYS-1327 remains the completed strict-schema Qwen slice. TASKSYS-1328
 remains historical evidence of the superseded all-Qwen SDK handoff failure.

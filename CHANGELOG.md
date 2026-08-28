@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Published a sanitized, owner-signed DEC-0031 native-role canary bundle that
+  binds fourteen evidence artifacts to the accepted six-stage topology.
+- Added an offline fail-closed verifier for the pinned owner trust root, SSH
+  signature, artifact bytes, handoff chain, changed-path scope, and zero
+  deployment/Paper/Real authority.
+- Kept the claim boundary explicit: this is retrospective operator attestation
+  over separate canaries, not provider-signed evidence, one continuous native
+  run, or independently replayable provider execution.
+
 ## 0.5.2
 
 - Added the fail-closed Phase 2 hosted-model preflight and a zero-network CI

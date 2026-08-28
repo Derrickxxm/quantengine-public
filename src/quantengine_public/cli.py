@@ -51,6 +51,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     demo_v2 = subparsers.add_parser("demo-v2", help="Run the QuantEngine Public v2 Paper/replay demo.")
     demo_v2.add_argument("--artifact-dir", type=Path, default=Path("artifacts/demo-v2"))
+
+    native_canary = subparsers.add_parser(
+        "verify-native-canary",
+        help="Verify the owner-attested DEC-0031 native canary bundle.",
+    )
+    native_canary.add_argument("--bundle-dir", required=True, type=Path)
     return parser
 
 
@@ -106,6 +112,30 @@ def main(argv: list[str] | None = None) -> int:
         result = run_demo_v2(args.artifact_dir)
         print(json.dumps(result["release_verdict"], indent=2, sort_keys=True))
         return 0 if result["release_verdict"]["verdict"] == "PASS" else 1
+
+    if args.command == "verify-native-canary":
+        from quantengine_public.agent_platform.native_canary import (
+            NativeCanaryError,
+            verify_native_canary_bundle,
+        )
+
+        try:
+            result = verify_native_canary_bundle(args.bundle_dir)
+        except NativeCanaryError as exc:
+            print(
+                json.dumps(
+                    {
+                        "schema_version": "public_delivery.native_role_canary_verification.v1",
+                        "status": "FAIL_CLOSED",
+                        "reason": str(exc),
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 1
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
 
     parser.print_help()
     return 0

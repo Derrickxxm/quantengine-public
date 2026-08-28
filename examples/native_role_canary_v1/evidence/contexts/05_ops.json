@@ -1,0 +1,7 @@
+{
+  "schema_version": "public_delivery.native_canary_context.v1",
+  "stage": "ops",
+  "accepted_goal": "Record mutation-free delivery evidence with zero runtime authority.",
+  "allowed_changes": [],
+  "evidence_scope": "retrospective public summary"
+}

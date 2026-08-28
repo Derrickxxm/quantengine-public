@@ -1,0 +1,9 @@
+{
+  "schema_version": "public_delivery.native_canary_context.v1",
+  "stage": "development",
+  "accepted_goal": "Bind every admitted native role receipt to its accepted stage context.",
+  "allowed_changes": [
+    "src/quantengine_public/agent_platform/role_topology.py"
+  ],
+  "evidence_scope": "retrospective public summary"
+}

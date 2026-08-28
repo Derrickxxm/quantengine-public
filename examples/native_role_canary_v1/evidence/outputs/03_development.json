@@ -1,0 +1,14 @@
+{
+  "schema_version": "public_delivery.native_canary_stage_record.v1",
+  "stage": "development",
+  "runtime": "qwen-code-cli-operator-local",
+  "model": "qwen3.8:27b-mxfp8",
+  "status": "PASS",
+  "execution_head": "f9ddb74697caf89e7f602109759c40ce97179cde",
+  "changed_paths": [
+    "src/quantengine_public/agent_platform/role_topology.py"
+  ],
+  "recorded_result": "The implementation bound each stage to the accepted context map.",
+  "public_reference": "8602a5943f9b8b9af13432148300005b65da4209",
+  "provider_signed": false
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "public_delivery.native_canary_request.v1",
+  "task_id": "TASKSYS-1329",
+  "objective": "Record the accepted native role topology and its separated provider canaries without granting runtime authority.",
+  "accepted_stages": [
+    "architecture",
+    "test_author",
+    "development",
+    "test_verify",
+    "ops",
+    "quality"
+  ],
+  "continuous_run_claimed": false,
+  "provider_signature_claimed": false
+}

@@ -96,6 +96,10 @@ def test_ci_proves_supported_python_and_quality_contracts() -> None:
         "python scripts/native_agent_public_proof.py --artifact-dir artifacts/native-agent-public-proof"
         in commands
     )
+    assert (
+        "quantengine-public verify-native-canary --bundle-dir examples/native_role_canary_v1"
+        in commands
+    )
 
 
 def test_ci_top_level_toolchain_is_explicitly_constrained() -> None:

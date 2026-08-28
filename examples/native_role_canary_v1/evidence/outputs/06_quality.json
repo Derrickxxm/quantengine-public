@@ -1,0 +1,12 @@
+{
+  "schema_version": "public_delivery.native_canary_stage_record.v1",
+  "stage": "quality",
+  "runtime": "quality-shield.observe_delivery",
+  "model": null,
+  "status": "PASS",
+  "execution_head": "53c25d40a686e83f46bd42a194272a60f53b3adf",
+  "changed_paths": [],
+  "recorded_result": "Quality Shield recorded an advisory-only PASS over the admitted evidence.",
+  "public_reference": "docs/native_role_topology_dec0031.md",
+  "provider_signed": false
+}
