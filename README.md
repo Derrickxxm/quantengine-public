@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml/badge.svg)](https://github.com/Derrickxxm/quantengine-public/actions/workflows/ci.yml)
 
+![Native-Agent system architecture](docs/assets/native_agent_system_architecture.png)
+
+*The complete system context: business intent enters through Plane and the Agent control plane; specialist Architecture, Development, Test, Quality, and Ops roles work within bounded responsibilities; fingerprints, gates, receipts, Paper/Real environments, and immutable evidence preserve traceability and release authority.*
+
 QuantEngine is the first runnable reference implementation of a broader idea:
 let AI retain its ability to reason, while goals, state, dependencies,
 permissions, validation, and evidence remain deterministic and inspectable.
