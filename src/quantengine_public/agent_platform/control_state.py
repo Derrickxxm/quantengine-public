@@ -11,6 +11,7 @@ from quantengine_public.delivery.identity import verify_artifact, verify_artifac
 
 from .context import StaleContextError
 from .contracts import ArtifactRef, HandoffReceipt, SourceIdentity, TaskSnapshot, content_digest
+from .ogsm_v2 import ObjectiveChangeReceipt, ObjectiveContract, validate_objective_change
 
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
 
@@ -69,6 +70,7 @@ class TaskState:
     version: int
     owner: str
     source_identity: str
+    objective_contract_digest: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,6 +86,7 @@ class Transition:
     source_identity: str
     transition_digest: str
     evidence_refs: tuple[ArtifactRef, ...] = ()
+    objective_contract_digest: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,6 +99,18 @@ class AdmittedArtifact:
     source_identity: str
     context_digest: str
     graph_identity: str
+    objective_contract_digest: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ObjectiveRevision:
+    task_id: str
+    version: int
+    previous_contract_digest: str
+    new_contract_digest: str
+    receipt_digest: str
+    invalidated_dependencies: tuple[str, ...]
+    reusable_evidence: tuple[str, ...]
 
 
 class ControlStateStore:
@@ -109,20 +124,22 @@ class ControlStateStore:
             """
             CREATE TABLE IF NOT EXISTS tasks (
                 task_id TEXT PRIMARY KEY, snapshot_json TEXT NOT NULL, state TEXT NOT NULL,
-                version INTEGER NOT NULL, owner TEXT NOT NULL, source_identity TEXT NOT NULL
+                version INTEGER NOT NULL, owner TEXT NOT NULL, source_identity TEXT NOT NULL,
+                objective_contract_digest TEXT
             );
             CREATE TABLE IF NOT EXISTS transitions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, task_id TEXT NOT NULL REFERENCES tasks(task_id),
                 idempotency_key TEXT NOT NULL, from_state TEXT NOT NULL, next_state TEXT NOT NULL,
                 version INTEGER NOT NULL, owner TEXT NOT NULL, next_owner TEXT NOT NULL, reason TEXT NOT NULL,
                 source_identity TEXT NOT NULL, transition_digest TEXT NOT NULL,
-                evidence_refs_json TEXT NOT NULL DEFAULT '[]', UNIQUE(task_id, idempotency_key)
+                evidence_refs_json TEXT NOT NULL DEFAULT '[]', objective_contract_digest TEXT,
+                UNIQUE(task_id, idempotency_key)
             );
             CREATE TABLE IF NOT EXISTS artifacts (
                 artifact_digest TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES tasks(task_id),
                 artifact_type TEXT NOT NULL, status TEXT NOT NULL, producer TEXT NOT NULL,
                 source_identity TEXT NOT NULL, context_digest TEXT NOT NULL, graph_identity TEXT NOT NULL,
-                artifact_json TEXT NOT NULL
+                artifact_json TEXT NOT NULL, objective_contract_digest TEXT
             );
             CREATE TABLE IF NOT EXISTS handoffs (
                 receipt_digest TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES tasks(task_id),
@@ -130,11 +147,13 @@ class ControlStateStore:
                 source_identity TEXT NOT NULL, context_digest TEXT NOT NULL,
                 graph_identity TEXT NOT NULL DEFAULT '',
                 required_artifact_refs_json TEXT NOT NULL, accepted_or_rejected TEXT NOT NULL,
-                reason TEXT NOT NULL, next_owner TEXT NOT NULL, accepted INTEGER NOT NULL DEFAULT 0
+                reason TEXT NOT NULL, next_owner TEXT NOT NULL, accepted INTEGER NOT NULL DEFAULT 0,
+                objective_contract_digest TEXT
             );
             CREATE TABLE IF NOT EXISTS runs (
                 run_id TEXT PRIMARY KEY, task_id TEXT, task_version INTEGER, source_identity TEXT,
-                context_digest TEXT, status TEXT, payload_json TEXT NOT NULL DEFAULT '{}'
+                context_digest TEXT, status TEXT, objective_contract_digest TEXT,
+                payload_json TEXT NOT NULL DEFAULT '{}'
             );
             CREATE TABLE IF NOT EXISTS tool_calls (
                 call_id TEXT PRIMARY KEY, run_id TEXT NOT NULL, tool_id TEXT, status TEXT,
@@ -144,6 +163,17 @@ class ControlStateStore:
                 approval_id TEXT PRIMARY KEY, task_id TEXT, run_id TEXT, owner TEXT, status TEXT,
                 payload_json TEXT NOT NULL DEFAULT '{}'
             );
+            CREATE TABLE IF NOT EXISTS objective_revisions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                receipt_digest TEXT NOT NULL UNIQUE,
+                task_id TEXT NOT NULL REFERENCES tasks(task_id),
+                version INTEGER NOT NULL,
+                previous_contract_digest TEXT NOT NULL,
+                new_contract_digest TEXT NOT NULL,
+                invalidated_dependencies_json TEXT NOT NULL,
+                reusable_evidence_json TEXT NOT NULL,
+                receipt_json TEXT NOT NULL
+            );
             """
         )
         columns = {row[1] for row in self._db.execute("PRAGMA table_info(transitions)")}
@@ -152,6 +182,10 @@ class ControlStateStore:
         handoff_columns = {row[1] for row in self._db.execute("PRAGMA table_info(handoffs)")}
         if "graph_identity" not in handoff_columns:
             self._db.execute("ALTER TABLE handoffs ADD COLUMN graph_identity TEXT NOT NULL DEFAULT ''")
+        for table in ("tasks", "transitions", "artifacts", "handoffs", "runs"):
+            table_columns = {row[1] for row in self._db.execute(f"PRAGMA table_info({table})")}
+            if "objective_contract_digest" not in table_columns:
+                self._db.execute(f"ALTER TABLE {table} ADD COLUMN objective_contract_digest TEXT")
         self._db.commit()
 
     def close(self) -> None:
@@ -162,8 +196,9 @@ class ControlStateStore:
             raise StaleContextError("source_identity_mismatch")
         try:
             self._db.execute(
-                "INSERT INTO tasks VALUES (?, ?, 'DRAFT', 0, ?, ?)",
-                (task.task_id, json.dumps(task.to_dict(), sort_keys=True), owner, source.identity_digest),
+                "INSERT INTO tasks (task_id,snapshot_json,state,version,owner,source_identity,objective_contract_digest) VALUES (?, ?, 'DRAFT', 0, ?, ?, ?)",
+                (task.task_id, json.dumps(task.to_dict(), sort_keys=True), owner, source.identity_digest,
+                 task.objective_contract_digest),
             )
             self._db.commit()
         except sqlite3.IntegrityError as exc:
@@ -172,7 +207,7 @@ class ControlStateStore:
 
     def get_task(self, task_id: str) -> TaskState:
         row = self._db.execute(
-            "SELECT task_id,state,version,owner,source_identity FROM tasks WHERE task_id = ?", (task_id,)
+            "SELECT task_id,state,version,owner,source_identity,objective_contract_digest FROM tasks WHERE task_id = ?", (task_id,)
         ).fetchone()
         if row is None:
             raise ControlStateError(f"task_not_found:{task_id}")
@@ -183,6 +218,7 @@ class ControlStateStore:
         owner: str, source: SourceIdentity, reason: str, idempotency_key: str, next_owner: str,
         evidence_refs: Iterable[ArtifactRef | Mapping[str, str] | str] = (),
         context_digest: str | None = None,
+        objective_contract_digest: str | None = None,
     ) -> Transition:
         if next_state not in TRANSITIONS.get(expected_state, frozenset()):
             raise InvalidTransitionError(f"invalid_transition:{expected_state}->{next_state}")
@@ -192,6 +228,7 @@ class ControlStateStore:
                 raise ControlStateError(f"task_not_found:{task_id}")
             if row["source_identity"] != source.identity_digest:
                 raise StaleContextError("source_identity_mismatch")
+            self._check_objective_binding(row, objective_contract_digest)
             refs = self._resolve_refs(evidence_refs)
             prior = self._db.execute(
                 "SELECT * FROM transitions WHERE task_id = ? AND idempotency_key = ?", (task_id, idempotency_key)
@@ -204,6 +241,7 @@ class ControlStateStore:
                     and prior["version"] == expected_version + 1 and prior["owner"] == owner
                     and prior["next_owner"] == next_owner and prior["reason"] == reason
                     and prior["source_identity"] == source.identity_digest
+                    and prior["objective_contract_digest"] == objective_contract_digest
                     and self._decode_refs(prior["evidence_refs_json"]) == refs
                 )
                 if not same:
@@ -222,8 +260,11 @@ class ControlStateStore:
                 "reason": reason, "source_identity": source.identity_digest,
                 "evidence_refs": [ref.to_dict() for ref in refs],
             }
+            if objective_contract_digest is not None:
+                body["objective_contract_digest"] = objective_contract_digest
             fields = {**body, "transition_digest": content_digest(body),
-                      "evidence_refs_json": json.dumps(body["evidence_refs"], sort_keys=True)}
+                      "evidence_refs_json": json.dumps(body["evidence_refs"], sort_keys=True),
+                      "objective_contract_digest": objective_contract_digest}
             updated = self._db.execute(
                 "UPDATE tasks SET state = ?, version = ?, owner = ? WHERE task_id = ? AND version = ?",
                 (next_state, version, next_owner, task_id, expected_version),
@@ -231,7 +272,7 @@ class ControlStateStore:
             if updated.rowcount != 1:
                 raise ConcurrentTransitionError("cas_rowcount_mismatch")
             self._db.execute(
-                "INSERT INTO transitions (task_id,idempotency_key,from_state,next_state,version,owner,next_owner,reason,source_identity,transition_digest,evidence_refs_json) VALUES (:task_id,:idempotency_key,:from_state,:next_state,:version,:owner,:next_owner,:reason,:source_identity,:transition_digest,:evidence_refs_json)",
+                "INSERT INTO transitions (task_id,idempotency_key,from_state,next_state,version,owner,next_owner,reason,source_identity,transition_digest,evidence_refs_json,objective_contract_digest) VALUES (:task_id,:idempotency_key,:from_state,:next_state,:version,:owner,:next_owner,:reason,:source_identity,:transition_digest,:evidence_refs_json,:objective_contract_digest)",
                 fields,
             )
             return Transition(
@@ -239,11 +280,83 @@ class ControlStateStore:
                 next_state=next_state, version=version, owner=owner, next_owner=next_owner,
                 reason=reason, source_identity=source.identity_digest,
                 transition_digest=fields["transition_digest"], evidence_refs=refs,
+                objective_contract_digest=objective_contract_digest,
             )
 
     def list_transitions(self, task_id: str) -> list[Transition]:
         rows = self._db.execute("SELECT * FROM transitions WHERE task_id = ? ORDER BY id", (task_id,)).fetchall()
         return [self._transition_from_row(row) for row in rows]
+
+    def revise_objective(
+        self,
+        *,
+        task: TaskSnapshot,
+        source: SourceIdentity,
+        expected_version: int,
+        previous_contract: ObjectiveContract,
+        changed_contract: ObjectiveContract,
+        change_receipt: ObjectiveChangeReceipt,
+    ) -> ObjectiveRevision:
+        """Atomically retain the change receipt and invalidate the current lineage."""
+        validate_objective_change(previous_contract, changed_contract, change_receipt=change_receipt)
+        if task.objective_contract_digest != changed_contract.contract_digest:
+            raise StaleContextError("objective_contract_digest_mismatch")
+        if task.source_reference != source.identity_digest:
+            raise StaleContextError("source_identity_mismatch")
+        with self._db:
+            current = self._db.execute("SELECT * FROM tasks WHERE task_id = ?", (task.task_id,)).fetchone()
+            if current is None:
+                raise ControlStateError(f"task_not_found:{task.task_id}")
+            existing = self._db.execute(
+                "SELECT * FROM objective_revisions WHERE receipt_digest = ?", (change_receipt.receipt_digest,)
+            ).fetchone()
+            if existing is not None:
+                if (
+                    existing["task_id"] != task.task_id
+                    or json.loads(existing["receipt_json"]) != change_receipt.to_dict()
+                ):
+                    raise ControlStateError("objective_revision_receipt_collision")
+                return self._objective_revision_from_row(existing)
+            if current["version"] != expected_version:
+                raise ConcurrentTransitionError("objective_revision_version_stale")
+            if current["source_identity"] != source.identity_digest:
+                raise StaleContextError("source_identity_mismatch")
+            if current["objective_contract_digest"] != previous_contract.contract_digest:
+                raise StaleContextError("objective_contract_digest_mismatch")
+            if current["owner"] != change_receipt.owner:
+                raise ControlStateError("objective_revision_owner_mismatch")
+            version = expected_version + 1
+            values = (
+                change_receipt.receipt_digest,
+                task.task_id,
+                version,
+                previous_contract.contract_digest,
+                changed_contract.contract_digest,
+                json.dumps(list(change_receipt.invalidated_dependencies), sort_keys=True),
+                json.dumps(list(change_receipt.reusable_evidence), sort_keys=True),
+                json.dumps(change_receipt.to_dict(), sort_keys=True),
+            )
+            self._db.execute(
+                "INSERT INTO objective_revisions (receipt_digest,task_id,version,previous_contract_digest,new_contract_digest,invalidated_dependencies_json,reusable_evidence_json,receipt_json) VALUES (?,?,?,?,?,?,?,?)",
+                values,
+            )
+            updated = self._db.execute(
+                "UPDATE tasks SET snapshot_json = ?, state = 'REVISION_REQUIRED', version = ?, owner = ?, objective_contract_digest = ? WHERE task_id = ? AND version = ?",
+                (json.dumps(task.to_dict(), sort_keys=True), version, change_receipt.owner,
+                 changed_contract.contract_digest, task.task_id, expected_version),
+            )
+            if updated.rowcount != 1:
+                raise ConcurrentTransitionError("objective_revision_cas_rowcount_mismatch")
+            row = self._db.execute(
+                "SELECT * FROM objective_revisions WHERE receipt_digest = ?", (change_receipt.receipt_digest,)
+            ).fetchone()
+            return self._objective_revision_from_row(row)
+
+    def list_objective_revisions(self, task_id: str) -> list[ObjectiveRevision]:
+        rows = self._db.execute(
+            "SELECT * FROM objective_revisions WHERE task_id = ? ORDER BY id", (task_id,)
+        ).fetchall()
+        return [self._objective_revision_from_row(row) for row in rows]
 
     def admit_artifact(self, artifact: Mapping[str, Any], *, chain: Iterable[Mapping[str, Any]] | None = None) -> ArtifactRef:
         value = dict(artifact)
@@ -256,6 +369,7 @@ class ControlStateStore:
             raise ControlStateError("artifact_payload_identity_required")
         task_id, source_identity = payload["task_id"], payload["source_identity"]
         context_digest, graph_identity = payload["context_digest"], payload["graph_identity"]
+        objective_contract_digest = payload.get("objective_contract_digest")
         if not isinstance(task_id, str) or not task_id:
             raise ControlStateError("artifact_task_id_invalid")
         for name, candidate in (("source_identity", source_identity), ("context_digest", context_digest), ("graph_identity", graph_identity)):
@@ -269,6 +383,7 @@ class ControlStateStore:
                 raise ControlStateError(f"task_not_found:{task_id}")
             if source_identity != task["source_identity"]:
                 raise StaleContextError("source_identity_mismatch")
+            self._check_objective_binding(task, objective_contract_digest)
             existing = self._db.execute("SELECT artifact_json FROM artifacts WHERE artifact_digest = ?", (value["artifact_digest"],)).fetchone()
             if existing is not None:
                 if json.loads(existing["artifact_json"]) != value:
@@ -283,9 +398,10 @@ class ControlStateStore:
             if chain_errors:
                 raise ControlStateError(f"artifact_chain_invalid:{','.join(chain_errors)}")
             self._db.execute(
-                "INSERT INTO artifacts (artifact_digest,task_id,artifact_type,status,producer,source_identity,context_digest,graph_identity,artifact_json) VALUES (?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO artifacts (artifact_digest,task_id,artifact_type,status,producer,source_identity,context_digest,graph_identity,artifact_json,objective_contract_digest) VALUES (?,?,?,?,?,?,?,?,?,?)",
                 (value["artifact_digest"], task_id, value["artifact_type"], value["status"], value["producer"],
-                 source_identity, context_digest, graph_identity, json.dumps(value, ensure_ascii=False, sort_keys=True)),
+                 source_identity, context_digest, graph_identity, json.dumps(value, ensure_ascii=False, sort_keys=True),
+                 objective_contract_digest),
             )
         return ArtifactRef(value["artifact_type"], value["artifact_digest"])
 
@@ -293,7 +409,7 @@ class ControlStateStore:
 
     def list_admitted_artifacts(self, task_id: str) -> list[AdmittedArtifact]:
         rows = self._db.execute(
-            "SELECT artifact_type,artifact_digest,status,producer,task_id,source_identity,context_digest,graph_identity FROM artifacts WHERE task_id = ? ORDER BY rowid", (task_id,)
+            "SELECT artifact_type,artifact_digest,status,producer,task_id,source_identity,context_digest,graph_identity,objective_contract_digest FROM artifacts WHERE task_id = ? ORDER BY rowid", (task_id,)
         ).fetchall()
         return [AdmittedArtifact(**dict(row)) for row in rows]
 
@@ -315,11 +431,12 @@ class ControlStateStore:
             existing = self._db.execute("SELECT * FROM handoffs WHERE receipt_digest = ?", (receipt.receipt_digest,)).fetchone()
             if existing is None:
                 self._db.execute(
-                    "INSERT INTO handoffs (receipt_digest,task_id,task_version,from_owner,to_role,source_identity,context_digest,graph_identity,required_artifact_refs_json,accepted_or_rejected,reason,next_owner) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "INSERT INTO handoffs (receipt_digest,task_id,task_version,from_owner,to_role,source_identity,context_digest,graph_identity,required_artifact_refs_json,accepted_or_rejected,reason,next_owner,objective_contract_digest) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (receipt.receipt_digest, receipt.task_id, receipt.task_version, receipt.from_owner, receipt.to_role,
                      receipt.source_identity, receipt.context_digest, resolved_graph,
                      json.dumps([ref.to_dict() for ref in refs], sort_keys=True),
-                     receipt.accepted_or_rejected, receipt.reason, receipt.next_owner),
+                     receipt.accepted_or_rejected, receipt.reason, receipt.next_owner,
+                     receipt.objective_contract_digest),
                 )
         return receipt
 
@@ -336,6 +453,7 @@ class ControlStateStore:
             task = self._db.execute("SELECT * FROM tasks WHERE task_id = ?", (row["task_id"],)).fetchone()
             if task is None:
                 raise ControlStateError(f"task_not_found:{row['task_id']}")
+            self._check_objective_binding(task, row["objective_contract_digest"])
             if row["accepted"]:
                 return self._handoff_from_row(row)
             if task["version"] != row["task_version"]:
@@ -352,7 +470,18 @@ class ControlStateStore:
             return self._handoff_from_row(row)
 
     def record_run(self, run_id: str, **fields: Any) -> None:
-        self._record_index("runs", "run_id", run_id, fields, ("task_id", "task_version", "source_identity", "context_digest", "status"))
+        task_id = fields.get("task_id")
+        if isinstance(task_id, str):
+            task = self._db.execute("SELECT * FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+            if task is None:
+                raise ControlStateError(f"task_not_found:{task_id}")
+            self._check_objective_binding(task, fields.get("objective_contract_digest"))
+            if task["objective_contract_digest"] is not None and fields.get("task_version") != task["version"]:
+                raise ConcurrentTransitionError("run_task_version_stale")
+        self._record_index(
+            "runs", "run_id", run_id, fields,
+            ("task_id", "task_version", "source_identity", "context_digest", "status", "objective_contract_digest"),
+        )
 
     def record_tool_call(self, call_id: str, *, run_id: str, **fields: Any) -> None:
         self._record_index("tool_calls", "call_id", call_id, {"run_id": run_id, **fields}, ("run_id", "tool_id", "status"))
@@ -405,6 +534,8 @@ class ControlStateStore:
                 raise ControlStateError("evidence_type_mismatch")
             if row["task_id"] != task["task_id"] or row["source_identity"] != task["source_identity"]:
                 raise StaleContextError("evidence_identity_mismatch")
+            if row["objective_contract_digest"] != task["objective_contract_digest"]:
+                raise StaleContextError("evidence_objective_contract_mismatch")
             if context_digest is not None and row["context_digest"] != context_digest:
                 raise StaleContextError("evidence_context_mismatch")
             if required and (row["artifact_type"], row["status"], row["producer"]) != required:
@@ -417,6 +548,7 @@ class ControlStateStore:
             raise ConcurrentTransitionError("handoff_owner_stale")
         if receipt.source_identity != task["source_identity"]:
             raise StaleContextError("handoff_source_identity_mismatch")
+        self._check_objective_binding(task, receipt.objective_contract_digest)
         if not refs:
             raise ControlStateError("handoff_evidence_required")
         graph_ids = {self._artifact_graph_identity(ref) for ref in refs}
@@ -442,6 +574,16 @@ class ControlStateStore:
         return row["graph_identity"]
 
     @staticmethod
+    def _check_objective_binding(task: sqlite3.Row, supplied: Any) -> None:
+        expected = task["objective_contract_digest"]
+        if expected is None:
+            return
+        if supplied is None:
+            raise StaleContextError("objective_contract_digest_required")
+        if supplied != expected:
+            raise StaleContextError("objective_contract_digest_mismatch")
+
+    @staticmethod
     def _decode_refs(value: str | None) -> tuple[ArtifactRef, ...]:
         return tuple(ArtifactRef(**ref) for ref in json.loads(value or "[]"))
 
@@ -452,7 +594,7 @@ class ControlStateStore:
             to_role=row["to_role"], source_identity=row["source_identity"], context_digest=row["context_digest"],
             required_artifact_refs=ControlStateStore._decode_refs(row["required_artifact_refs_json"]),
             accepted_or_rejected=row["accepted_or_rejected"], reason=row["reason"], next_owner=row["next_owner"],
-            graph_identity=row["graph_identity"],
+            graph_identity=row["graph_identity"], objective_contract_digest=row["objective_contract_digest"],
         )
 
     @staticmethod
@@ -462,6 +604,19 @@ class ControlStateStore:
             next_state=row["next_state"], version=row["version"], owner=row["owner"], next_owner=row["next_owner"],
             reason=row["reason"], source_identity=row["source_identity"], transition_digest=row["transition_digest"],
             evidence_refs=ControlStateStore._decode_refs(row["evidence_refs_json"]),
+            objective_contract_digest=row["objective_contract_digest"],
+        )
+
+    @staticmethod
+    def _objective_revision_from_row(row: sqlite3.Row) -> ObjectiveRevision:
+        return ObjectiveRevision(
+            task_id=row["task_id"],
+            version=row["version"],
+            previous_contract_digest=row["previous_contract_digest"],
+            new_contract_digest=row["new_contract_digest"],
+            receipt_digest=row["receipt_digest"],
+            invalidated_dependencies=tuple(json.loads(row["invalidated_dependencies_json"])),
+            reusable_evidence=tuple(json.loads(row["reusable_evidence_json"])),
         )
 
 
@@ -471,5 +626,5 @@ def _valid_digest(value: Any) -> bool:
 
 __all__ = [
     "AdmittedArtifact", "ControlStateStore", "ControlStateError", "ConcurrentTransitionError",
-    "InvalidTransitionError", "REQUIRED_EVIDENCE", "TaskState", "Transition",
+    "InvalidTransitionError", "ObjectiveRevision", "REQUIRED_EVIDENCE", "TaskState", "Transition",
 ]

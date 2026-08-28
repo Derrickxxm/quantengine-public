@@ -149,6 +149,7 @@ class TaskSnapshot:
     required_approvals: tuple[str, ...]
     source_reference: str
     schema_version: str = SCHEMA_VERSION
+    objective_contract_digest: str | None = None
 
     def __post_init__(self) -> None:
         _text(self.task_id, "task_id")
@@ -158,6 +159,8 @@ class TaskSnapshot:
             values = _sequence(getattr(self, field_name), field_name)
             object.__setattr__(self, field_name, values)
         _text(self.source_reference, "source_reference")
+        if self.objective_contract_digest is not None:
+            _digest(self.objective_contract_digest, "objective_contract_digest")
         if self.schema_version != SCHEMA_VERSION:
             raise ContractError("schema_version_mismatch")
 
@@ -166,7 +169,7 @@ class TaskSnapshot:
         return content_digest(self._body())
 
     def _body(self) -> dict[str, Any]:
-        return {
+        body = {
             "schema_version": self.schema_version,
             "task_id": self.task_id,
             "task_revision": self.task_revision,
@@ -178,6 +181,9 @@ class TaskSnapshot:
             "required_approvals": list(self.required_approvals),
             "source_reference": self.source_reference,
         }
+        if self.objective_contract_digest is not None:
+            body["objective_contract_digest"] = self.objective_contract_digest
+        return body
 
     def to_dict(self) -> dict[str, Any]:
         return {**self._body(), "snapshot_digest": self.snapshot_digest}
@@ -221,6 +227,7 @@ class ContextSnapshot:
     upstream_artifact_refs: tuple[ArtifactRef, ...] = ()
     selected_context_refs: tuple[tuple[str, str, str], ...] = ()
     schema_version: str = SCHEMA_VERSION
+    objective_contract_digest: str | None = None
 
     def __post_init__(self) -> None:
         _text(self.task_id, "task_id")
@@ -231,6 +238,8 @@ class ContextSnapshot:
             _digest(self.graph_identity, "graph_identity")
         _text(self.skill_identity, "skill_identity")
         _text(self.tool_policy_identity, "tool_policy_identity")
+        if self.objective_contract_digest is not None:
+            _digest(self.objective_contract_digest, "objective_contract_digest")
         refs = tuple(self.upstream_artifact_refs)
         if any(not isinstance(ref, ArtifactRef) for ref in refs):
             raise ContractError("upstream_artifact_ref_invalid")
@@ -249,7 +258,7 @@ class ContextSnapshot:
         return content_digest(self._body())
 
     def _body(self) -> dict[str, Any]:
-        return {
+        body = {
             "schema_version": self.schema_version,
             "task_id": self.task_id,
             "task_revision": self.task_revision,
@@ -261,6 +270,9 @@ class ContextSnapshot:
             "upstream_artifact_refs": [ref.to_dict() for ref in self.upstream_artifact_refs],
             "selected_context_refs": [list(ref) for ref in self.selected_context_refs],
         }
+        if self.objective_contract_digest is not None:
+            body["objective_contract_digest"] = self.objective_contract_digest
+        return body
 
     def to_dict(self) -> dict[str, Any]:
         return {**self._body(), "context_digest": self.context_digest}
@@ -294,6 +306,7 @@ class RunRequest:
     upstream_artifact_refs: tuple[ArtifactRef, ...]
     timeout_policy: str
     idempotency_key: str
+    objective_contract_digest: str | None = None
 
     def __post_init__(self) -> None:
         for name in ("run_id", "task_id", "role", "collaboration_mode", "skill_identity", "allowed_tool_policy", "required_output_type", "timeout_policy", "idempotency_key"):
@@ -301,13 +314,15 @@ class RunRequest:
         if not isinstance(self.expected_task_version, int) or self.expected_task_version < 0:
             raise ContractError("expected_task_version_invalid")
         _digest(self.context_digest, "context_digest")
+        if self.objective_contract_digest is not None:
+            _digest(self.objective_contract_digest, "objective_contract_digest")
         refs = tuple(self.upstream_artifact_refs)
         if any(not isinstance(ref, ArtifactRef) for ref in refs):
             raise ContractError("upstream_artifact_ref_invalid")
         object.__setattr__(self, "upstream_artifact_refs", refs)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        body = {
             "schema_version": SCHEMA_VERSION,
             "run_id": self.run_id,
             "task_id": self.task_id,
@@ -322,6 +337,9 @@ class RunRequest:
             "timeout_policy": self.timeout_policy,
             "idempotency_key": self.idempotency_key,
         }
+        if self.objective_contract_digest is not None:
+            body["objective_contract_digest"] = self.objective_contract_digest
+        return body
 
 
 @dataclass(frozen=True, slots=True)
@@ -333,16 +351,19 @@ class RunResult:
     tool_call_refs: tuple[str, ...] = ()
     requested_next_action: str | None = None
     role: str | None = None
+    objective_contract_digest: str | None = None
 
     def __post_init__(self) -> None:
         _text(self.run_id, "run_id")
         _text(self.status, "status")
         _text(self.stop_reason, "stop_reason")
         _digest(self.result_digest, "result_digest")
+        if self.objective_contract_digest is not None:
+            _digest(self.objective_contract_digest, "objective_contract_digest")
         object.__setattr__(self, "tool_call_refs", _sequence(self.tool_call_refs, "tool_call_ref"))
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        body = {
             "schema_version": SCHEMA_VERSION,
             "run_id": self.run_id,
             "status": self.status,
@@ -352,6 +373,37 @@ class RunResult:
             "requested_next_action": self.requested_next_action,
             "role": self.role,
         }
+        if self.objective_contract_digest is not None:
+            body["objective_contract_digest"] = self.objective_contract_digest
+        return body
+
+
+def validate_run_binding(
+    request: RunRequest,
+    *,
+    task: TaskSnapshot,
+    context: ContextSnapshot,
+    result: RunResult | None = None,
+) -> None:
+    """Reject a v2 run before execution, or its result before admission."""
+    if request.task_id != task.task_id or context.task_id != task.task_id:
+        raise StaleContextError("run_task_mismatch")
+    if request.context_digest != context.context_digest:
+        raise StaleContextError("run_context_mismatch")
+    expected = task.objective_contract_digest
+    if expected is None:
+        return
+    if context.objective_contract_digest != expected:
+        raise StaleContextError("objective_contract_digest_mismatch")
+    if request.objective_contract_digest is None:
+        raise StaleContextError("objective_contract_digest_required")
+    if request.objective_contract_digest != expected:
+        raise StaleContextError("objective_contract_digest_mismatch")
+    if result is not None:
+        if result.run_id != request.run_id:
+            raise StaleContextError("run_result_identity_mismatch")
+        if result.objective_contract_digest != expected:
+            raise StaleContextError("objective_contract_digest_mismatch")
 
 
 @dataclass(frozen=True, slots=True)
@@ -368,6 +420,7 @@ class HandoffReceipt:
     next_owner: str
     graph_identity: str | None = None
     schema_version: str = SCHEMA_VERSION
+    objective_contract_digest: str | None = None
     receipt_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -382,6 +435,8 @@ class HandoffReceipt:
         _digest(self.context_digest, "context_digest")
         if self.graph_identity is not None:
             _digest(self.graph_identity, "graph_identity")
+        if self.objective_contract_digest is not None:
+            _digest(self.objective_contract_digest, "objective_contract_digest")
         refs = tuple(self.required_artifact_refs)
         if any(not isinstance(ref, ArtifactRef) for ref in refs):
             raise ContractError("handoff_artifact_ref_invalid")
@@ -391,7 +446,7 @@ class HandoffReceipt:
         object.__setattr__(self, "receipt_digest", content_digest(self._body()))
 
     def _body(self) -> dict[str, Any]:
-        return {
+        body = {
             "schema_version": self.schema_version,
             "task_id": self.task_id,
             "task_version": self.task_version,
@@ -405,6 +460,9 @@ class HandoffReceipt:
             "next_owner": self.next_owner,
             "graph_identity": self.graph_identity,
         }
+        if self.objective_contract_digest is not None:
+            body["objective_contract_digest"] = self.objective_contract_digest
+        return body
 
     def to_dict(self) -> dict[str, Any]:
         return {**self._body(), "receipt_digest": self.receipt_digest}
@@ -443,6 +501,11 @@ def validate_handoff_receipt(
         raise ContractError("handoff_context_task_mismatch")
     if receipt.context_digest != context.context_digest:
         raise StaleContextError("handoff_context_mismatch")
+    if task.objective_contract_digest is not None and (
+        context.objective_contract_digest != task.objective_contract_digest
+        or receipt.objective_contract_digest != task.objective_contract_digest
+    ):
+        raise StaleContextError("objective_contract_digest_mismatch")
     if receipt.graph_identity is not None and receipt.graph_identity != context.graph_identity:
         raise StaleContextError("handoff_graph_mismatch")
     if receipt.from_owner == receipt.to_role:
@@ -462,6 +525,7 @@ class EvidenceAdmission:
     upstream: tuple[ArtifactRef, ...]
     authority: dict[str, bool] = field(default_factory=lambda: {"deployment_allowed": False, "paper_allowed": False, "real_allowed": False})
     schema_version: str = SCHEMA_VERSION
+    objective_contract_digest: str | None = None
     admission_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -470,6 +534,8 @@ class EvidenceAdmission:
         _digest(self.context_digest, "context_digest")
         for name in ("artifact_type", "producer", "status"):
             _text(getattr(self, name), name)
+        if self.objective_contract_digest is not None:
+            _digest(self.objective_contract_digest, "objective_contract_digest")
         refs = tuple(self.upstream)
         if any(not isinstance(ref, ArtifactRef) for ref in refs):
             raise EvidenceAdmissionError("upstream_artifact_ref_invalid")
@@ -484,7 +550,7 @@ class EvidenceAdmission:
         object.__setattr__(self, "admission_digest", content_digest(self._body()))
 
     def _body(self) -> dict[str, Any]:
-        return {
+        body = {
             "schema_version": self.schema_version,
             "task_id": self.task_id,
             "source_identity": self.source_identity,
@@ -495,6 +561,9 @@ class EvidenceAdmission:
             "upstream": [ref.to_dict() for ref in self.upstream],
             "authority": dict(self.authority),
         }
+        if self.objective_contract_digest is not None:
+            body["objective_contract_digest"] = self.objective_contract_digest
+        return body
 
     def to_dict(self) -> dict[str, Any]:
         return {**self._body(), "admission_digest": self.admission_digest}
@@ -525,6 +594,8 @@ def admit_evidence(*, task: TaskSnapshot, source: SourceIdentity, context: Conte
         raise EvidenceAdmissionError("context_task_mismatch")
     if context.source_identity != source.identity_digest:
         raise EvidenceAdmissionError("context_source_mismatch")
+    if task.objective_contract_digest is not None and context.objective_contract_digest != task.objective_contract_digest:
+        raise EvidenceAdmissionError("objective_contract_digest_mismatch")
     return EvidenceAdmission(
         task_id=task.task_id,
         source_identity=source.identity_digest,
@@ -533,6 +604,7 @@ def admit_evidence(*, task: TaskSnapshot, source: SourceIdentity, context: Conte
         producer=producer,
         status=status,
         upstream=upstream,
+        objective_contract_digest=task.objective_contract_digest,
         authority=(
             {"deployment_allowed": False, "paper_allowed": False, "real_allowed": False}
             if authority is None

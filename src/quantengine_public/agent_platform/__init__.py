@@ -12,6 +12,7 @@ from .contracts import (
     TaskSnapshot,
     admit_evidence,
     validate_handoff_receipt,
+    validate_run_binding,
 )
 from .runtime import (
     AgentsSdkRuntime,
@@ -183,6 +184,7 @@ __all__ = [
     "evaluate_stage",
     "replay_historical_release_attacks",
     "validate_handoff_receipt",
+    "validate_run_binding",
     "validate_aar",
     "validate_downstream_binding",
     "validate_measure_verdict",
