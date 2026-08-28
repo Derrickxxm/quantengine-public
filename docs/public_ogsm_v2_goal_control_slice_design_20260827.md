@@ -11,8 +11,8 @@ Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 
 Acceptance boundary: PR and main CI accepted DEC-0031. The pre-existing
 `TASKSYS-1137` inventory-classification failure is unrelated and remains open.
-The Qwen Studio CI lane was configuration-skipped, so it is not evidence of a
-Qwen Studio pass. DEC-0032 may rely on the accepted public topology contract;
+The local Qwen CI lane was configuration-skipped, so it is not evidence of a
+local Qwen pass. DEC-0032 may rely on the accepted public topology contract;
 it must not upgrade either retained condition into a stronger claim.
 
 Decision-numbering note: commits `f281ddd` and `53c25d4` use `DEC-0032` in
