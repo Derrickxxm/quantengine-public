@@ -34,7 +34,36 @@ README.
 
 ## Pass 2 - Hiring Manager and Technical Interviewer
 
-Pending.
+### Findings
+
+- The README mixed five different proof levels in one narrative: deterministic
+  Golden Path, ScriptedModel SDK proof, recorded provider canaries, local Qwen
+  evidence, and a blocked Hosted-model preflight.
+- “Runnable” was technically qualified later, but a reader could still mistake
+  a regression oracle for a continuous live multi-Agent production run.
+- The first-pass three-minute path contained a stale receipt link that did not
+  exist in the repository.
+- Claims were present, but the reader had to search for their code, tests,
+  evidence, and non-authority boundaries.
+
+### Revision
+
+- Added an implementation-status table with one row per proof level.
+- For every row, paired the claim with code, tests or evidence, and an explicit
+  boundary.
+- Distinguished the deterministic harness, ScriptedModel SDK integration,
+  provider canaries, local Qwen experiment, blocked Hosted path, and synthetic
+  QuantEngine reference.
+- Replaced the stale proof link with the committed proof runner and adversarial
+  verifier tests.
+- Moved detailed task history, exact model lanes, and safety notes into a
+  collapsible technical section without deleting them.
+
+### Result
+
+A hiring manager can see what was built; a technical interviewer can reach the
+implementation and falsification path directly; neither has to infer production
+authority from a green demonstration.
 
 ## Pass 3 - Final Consistency and Claim Audit
 
