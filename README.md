@@ -122,6 +122,47 @@ flowchart LR
 The control plane coordinates identity, state, routing, and evidence. It does
 not replace specialist judgment and cannot turn missing evidence into PASS.
 
+## Public OGSM V2: Objective-Bound Golden Path
+
+Golden Path v1 remains the original 14-artifact, request-bound delivery
+harness. Golden Path V2 is a separate, domain-neutral extension: it starts only
+after an Owner has accepted an Objective Contract, carries that contract's
+digest through delivery, evaluates declared Measures, records the AAR and
+Owner decision, and fails closed when an accepted revision makes dependent
+work stale. V1 remains unchanged and reproducible; V2 does not upgrade or
+reinterpret v1 evidence.
+
+```mermaid
+flowchart LR
+    Accepted["Accepted Objective Contract"] --> Digest["Objective Contract digest"]
+    Digest --> Delivery["Task / context / run / handoff / evidence"]
+    Delivery --> Verdicts["Measure verdicts + AAR"]
+    Verdicts --> Decision["Owner decision"]
+    Decision -->|continue or stop| Accepted
+    Accepted --> Revision["Accepted revision"]
+    Revision --> Invalidate["Invalidate dependent work"]
+    Invalidate --> Delivery
+```
+
+The committed local [V2 proof](examples/golden_path_v2/proof.json) contains
+16 logical sections, eight positive delivery artifacts, and 14 typed attacks. Its
+independently recomputed proof digest is
+`f06df976a6b5ce850f55c1d3660ee9369832f35fefebf7e6b6a265a63738c123`.
+Its execution mode is `deterministic-domain-neutral-fixture`; it made no
+network model call and every authority field is false.
+
+| Presentation boundary | Current evidence |
+| --- | --- |
+| Local deterministic proof and tests | PASS through M5; M6A documents that evidence |
+| Remote CI | NOT RUN for this M6A branch; M6B requires separate Owner authorization |
+| Push, pull request, and public branch | NOT RUN; reserved for M6B |
+| Merge, tag, and GitHub Release | NOT RUN; reserved for M6C |
+| Deployment or runtime authority | zero authority; no network model, deployment, or QuantEngine Research, Paper, Replay, or Real action |
+
+This section presents locally executed evidence only. It does not claim that
+M6B or M6C has happened, and it does not convert a synthetic proof into a
+production runtime or release authorization.
+
 ## Responsibility Boundaries
 
 | Layer | Owns | Must not own |

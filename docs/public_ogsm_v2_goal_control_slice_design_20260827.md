@@ -2,13 +2,19 @@
 
 Date: 2026-08-27
 
-Status: `M3_IMPLEMENTED_LOCAL_ACCEPTANCE_PASS`
+Status: `M6A_LOCAL_PRESENTATION_COMPLETE`
 
 Design and M1 decision: DEC-0037
 
 M2 implementation decision: DEC-0038
 
 M3 Skill decision: DEC-0039
+
+M4 Thin Control decision: DEC-0040
+
+M5 proof decision: DEC-0041
+
+M6A presentation decision: DEC-0042
 
 Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 `320d6b21714a168214811faada3970c9ab241b89`.
@@ -382,7 +388,7 @@ Exit: M1 tests pass and v1 remains unchanged.
 Exit: a fresh Agent can prepare a complete proposed packet without changing
 accepted state.
 
-### M4 — Thin Control binding and invalidation
+### M4 — Thin Control binding and invalidation (`COMPLETE_LOCAL`)
 
 - add Objective Contract digest to the existing state identities;
 - reject stale runs and handoffs;
@@ -390,7 +396,7 @@ accepted state.
 
 Exit: accepted revision change blocks old dependent work before execution.
 
-### M5 — Golden Path V2 and adversarial proof
+### M5 — Golden Path V2 and adversarial proof (`COMPLETE_LOCAL`)
 
 - add one positive domain-neutral path;
 - execute all required attacks;
@@ -398,11 +404,27 @@ Exit: accepted revision change blocks old dependent work before execution.
 
 Exit: positive path passes; every attack blocks at the declared stage.
 
-### M6 — public presentation and release decision
+### M6A — local public presentation (`COMPLETE_LOCAL`)
 
 - update architecture docs and README with the control-loop diagram;
-- publish evidence assets only after CI and independent review;
 - label v1 versus v2 and all unexecuted boundaries.
+
+Exit: local documentation-contract tests, full suites, safety scan, and control
+review pass without making a remote-delivery claim.
+
+### M6B — push, pull request, and remote CI (`NOT_AUTHORIZED`)
+
+- push the reviewed branch and open the bounded pull request;
+- reproduce the proof in Remote CI and review its exact source identity;
+- do not merge, tag, or publish a Release.
+
+Exit: exact pull-request head and Remote CI evidence are inspectable.
+
+### M6C — merge, tag, and Release (`NOT_AUTHORIZED`)
+
+- independently review the admitted M6B evidence;
+- merge, tag, and publish only under a separate Owner decision;
+- retain zero deployment and runtime authority.
 
 Exit: commit -> CI -> tag -> Release proof is publicly inspectable.
 
@@ -459,13 +481,21 @@ The public OGSM V2 slice is complete only when:
 
 ## 13. Current Decision
 
-`M3_LOCAL_ACCEPTANCE_COMPLETE / WAIT_FOR_M4_AUTHORIZATION`
+`M6A_LOCAL_PRESENTATION_COMPLETE / WAIT_FOR_M6B_AUTHORIZATION`
 
-M1 through M3 are implemented locally through the DEC-0039 branch. The
-deterministic contract surface and the proposal-only `public-ogsm-control`
-Skill pass their target and full local suites. The Skill prepares Outcome
-Cards, three-pass reviews, Owner acceptance packets, revisions, and AARs while
-retaining zero acceptance, execution, Quality, release, or deployment
-authority. No M4 Thin Control integration, M5 Golden Path V2, M6 publication,
-push, PR, merge, release, or deployment is claimed. The full OGSM V2 capability
-remains incomplete.
+M1 through M5 are implemented locally. M4 binds the accepted Objective
+Contract digest through task, context, run, handoff, evidence, and verdict
+identities, and an accepted revision invalidates dependent work without
+rewriting history. M5 adds the side-by-side domain-neutral Golden Path V2 with
+16 logical sections and 14 typed attacks. The committed proof is
+[`examples/golden_path_v2/proof.json`](../examples/golden_path_v2/proof.json),
+with independently recomputed proof digest
+`f06df976a6b5ce850f55c1d3660ee9369832f35fefebf7e6b6a265a63738c123`.
+
+M6A documents that local evidence and retains zero authority. Remote CI is
+`NOT RUN`; M6B push, pull request, and CI work and M6C merge, tag, and Release
+work remain separate Owner authorization gates. No network model call,
+deployment, or QuantEngine Research, Paper, Replay, or Real action is claimed.
+The overall release acceptance criterion therefore remains incomplete until
+the separately authorized remote stages execute and their evidence is
+independently reviewed.
