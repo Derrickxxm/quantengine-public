@@ -1,0 +1,8 @@
+{
+  "schema_version": "public_delivery.native_canary_source.v1",
+  "repository": "Derrickxxm/evidence-controlled-ai-delivery",
+  "topology_contract_commit": "320d6b21714a168214811faada3970c9ab241b89",
+  "topology_contract_path": "src/quantengine_public/agent_platform/role_topology.py",
+  "decision_path": "docs/native_role_topology_dec0031.md",
+  "public_release": "v0.6.0"
+}

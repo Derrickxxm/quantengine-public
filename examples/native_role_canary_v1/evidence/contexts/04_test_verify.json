@@ -1,0 +1,7 @@
+{
+  "schema_version": "public_delivery.native_canary_context.v1",
+  "stage": "test_verify",
+  "accepted_goal": "Verify the repaired context binding without modifying the checkout.",
+  "allowed_changes": [],
+  "evidence_scope": "retrospective public summary"
+}

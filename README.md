@@ -33,9 +33,9 @@ cannot be treated as approximate. The architecture is broader than trading.
 1. Read the architecture above from accepted objective to bounded authority.
 2. Inspect the [14-artifact Golden Path](examples/golden_path/evidence/) and its
    [request-bound negative cases](examples/golden_path/negative/).
-3. Open the [Native-Agent proof runner](scripts/native_agent_public_proof.py),
-   its [adversarial verifier tests](tests/agent_platform/test_public_proof.py),
-   and the [current role topology](docs/native_role_topology_dec0031.md).
+3. Inspect the [current role topology](docs/native_role_topology_dec0031.md),
+   its [owner-attested native canary](examples/native_role_canary_v1/), and the
+   [offline verification design](docs/native_role_canary_attestation_v1.md).
 4. Check the [CI workflow](.github/workflows/ci.yml), [public safety scan](scripts/public_safety_scan.py),
    and [release history](https://github.com/Derrickxxm/evidence-controlled-ai-delivery/releases).
 5. Read the [public boundary](#public-boundary) before interpreting any runtime
@@ -62,7 +62,7 @@ authoritative state and content-addressed evidence.
 | Capability | What runs now | Where to verify it | Explicit boundary |
 | --- | --- | --- | --- |
 | Delivery contracts | A 14-artifact Golden Path plus request-bound negative paths | [`golden_path.py`](src/quantengine_public/delivery/golden_path.py), [positive evidence](examples/golden_path/evidence/), [negative evidence](examples/golden_path/negative/) | Deterministic regression harness; it does not call an external Agent |
-| Native role topology | Architecture, Test author, Development, Test verify, Ops, and independent Quality receipts are admitted in one declared order | [`role_topology.py`](src/quantengine_public/agent_platform/role_topology.py), [topology tests](tests/agent_platform/test_role_topology.py), [DEC-0031](docs/native_role_topology_dec0031.md) | Recorded provider canaries plus a retained topology oracle; not one uninterrupted production run |
+| Native role topology | Architecture, Test author, Development, Test verify, Ops, and independent Quality receipts are admitted in one declared order | [`role_topology.py`](src/quantengine_public/agent_platform/role_topology.py), [owner-attested canary](examples/native_role_canary_v1/), [offline verifier](src/quantengine_public/agent_platform/native_canary.py), [DEC-0031](docs/native_role_topology_dec0031.md) | Owner-signed retrospective evidence over separate provider canaries; not provider-signed evidence or one uninterrupted production run |
 | SDK control proof | Six OpenAI Agents SDK roles, identity-bound handoffs, deterministic Release, and retained attack replay run in CI | [proof runner](scripts/native_agent_public_proof.py), [verifier tests](tests/agent_platform/test_public_proof.py), [CI](.github/workflows/ci.yml) | Uses a local `ScriptedModel`; it proves SDK and control integration, not hosted-model quality |
 | Local-model experiment | A bounded OpenAI-compatible Qwen simulation and 24/24 repeatability run | [local receipt](docs/evidence/qwen_phase2_local_simulation_receipt_20260827.json), [acceptance summary](docs/evidence/qwen_phase2_overnight_acceptance_20260827.json) | Local Qwen only; no Hosted Luna, hosted-cost, write, Release, deployment, Replay, Paper, or Real claim |
 | Hosted-model path | A digest-bound preflight and dry-run receipt remain fail closed | [`hosted_phase2.py`](src/quantengine_public/agent_platform/hosted_phase2.py), [runner tests](tests/test_hosted_phase2_runner.py) | No hosted request, token spend, tool, handoff, write, trace, or release authority is enabled by the dry run |
@@ -100,6 +100,13 @@ another local model or broaden the receipt's file scope.
 Local Codex roles use ChatGPT subscription login and do not require an OpenAI
 API key. The local Qwen lane uses a temporary loopback path to the operator-local model.
 See [the DEC-0031 topology contract](docs/native_role_topology_dec0031.md).
+The public [native canary bundle](examples/native_role_canary_v1/) adds a
+pinned owner signature and byte-level offline verification around the retained
+DEC-0031 evidence. It authenticates publication by the repository owner; it
+does not claim that providers signed the receipts, that the six provider lanes
+ran as one continuous execution, or that a reviewer can replay private provider
+execution. The exact claim matrix is in the
+[attestation design](docs/native_role_canary_attestation_v1.md).
 
 The older `VerticalSliceRunner`, `ScriptedModel`, and all-Qwen Phase 2 material
 below remains a network-free regression oracle and historical evidence. It is
@@ -416,12 +423,16 @@ python -m venv .venv
 .venv/bin/python -m quantengine_public.delivery.golden_path \
   --artifact-dir artifacts/public-golden-path
 .venv/bin/quantengine-public demo-v2 --artifact-dir artifacts/demo-v2
+.venv/bin/quantengine-public verify-native-canary \
+  --bundle-dir examples/native_role_canary_v1
 ```
 
 ## Repository Map
 
 - `skills/`: high-judgment Architecture, Test, Development, and Ops contracts.
 - `contracts/public_delivery/`: versioned evidence and producer contracts.
+- `examples/native_role_canary_v1/`: owner-signed, offline-verifiable DEC-0031
+  evidence with an explicit non-provider claim boundary.
 - `src/quantengine_public/delivery/`: deterministic Golden Path mechanics.
 - `examples/golden_path/`: positive chain and request-bound negative receipts.
 - `src/quantengine_public/demo.py`: QuantEngine Paper/Replay reference runtime.

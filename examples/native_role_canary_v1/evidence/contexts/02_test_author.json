@@ -1,0 +1,9 @@
+{
+  "schema_version": "public_delivery.native_canary_context.v1",
+  "stage": "test_author",
+  "accepted_goal": "Author adversarial tests for missing or mismatched accepted context.",
+  "allowed_changes": [
+    "tests/agent_platform/test_role_topology.py"
+  ],
+  "evidence_scope": "retrospective public summary"
+}

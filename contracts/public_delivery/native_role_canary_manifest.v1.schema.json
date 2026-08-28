@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Derrickxxm/evidence-controlled-ai-delivery/main/contracts/public_delivery/native_role_canary_manifest.v1.schema.json",
+  "title": "Owner-Attested Native Role Canary Manifest V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_class",
+    "task_id",
+    "source_artifact",
+    "source_identity",
+    "request_artifact",
+    "initial_input_digest",
+    "expected_qwen_model",
+    "expected_development_paths",
+    "expected_context_digests",
+    "expected_execution_heads",
+    "stage_artifacts",
+    "receipts",
+    "artifacts",
+    "trust",
+    "authority",
+    "manifest_digest"
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "git_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "zero_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deployment_allowed", "paper_allowed", "real_allowed"],
+      "properties": {
+        "deployment_allowed": {"const": false},
+        "paper_allowed": {"const": false},
+        "real_allowed": {"const": false}
+      }
+    },
+    "stage_digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "architecture",
+        "test_author",
+        "development",
+        "test_verify",
+        "ops",
+        "quality"
+      ],
+      "properties": {
+        "architecture": {"$ref": "#/$defs/sha256"},
+        "test_author": {"$ref": "#/$defs/sha256"},
+        "development": {"$ref": "#/$defs/sha256"},
+        "test_verify": {"$ref": "#/$defs/sha256"},
+        "ops": {"$ref": "#/$defs/sha256"},
+        "quality": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "stage_heads": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "architecture",
+        "test_author",
+        "development",
+        "test_verify",
+        "ops",
+        "quality"
+      ],
+      "properties": {
+        "architecture": {"$ref": "#/$defs/git_sha"},
+        "test_author": {"$ref": "#/$defs/git_sha"},
+        "development": {"$ref": "#/$defs/git_sha"},
+        "test_verify": {"$ref": "#/$defs/git_sha"},
+        "ops": {"$ref": "#/$defs/git_sha"},
+        "quality": {"$ref": "#/$defs/git_sha"}
+      }
+    },
+    "stage_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context", "output"],
+      "properties": {
+        "context": {"type": "string", "minLength": 1},
+        "output": {"type": "string", "minLength": 1}
+      }
+    },
+    "stage_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "architecture",
+        "test_author",
+        "development",
+        "test_verify",
+        "ops",
+        "quality"
+      ],
+      "properties": {
+        "architecture": {"$ref": "#/$defs/stage_artifact"},
+        "test_author": {"$ref": "#/$defs/stage_artifact"},
+        "development": {"$ref": "#/$defs/stage_artifact"},
+        "test_verify": {"$ref": "#/$defs/stage_artifact"},
+        "ops": {"$ref": "#/$defs/stage_artifact"},
+        "quality": {"$ref": "#/$defs/stage_artifact"}
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "task_id",
+        "stage",
+        "role",
+        "runtime",
+        "model",
+        "source_identity",
+        "context_digest",
+        "execution_head_before",
+        "execution_head_after",
+        "input_digest",
+        "output_digest",
+        "changed_paths",
+        "status",
+        "authority",
+        "receipt_digest"
+      ],
+      "properties": {
+        "schema_version": {"const": "public_delivery.native_role_receipt.v1"},
+        "task_id": {"type": "string", "minLength": 1},
+        "stage": {
+          "enum": [
+            "architecture",
+            "test_author",
+            "development",
+            "test_verify",
+            "ops",
+            "quality"
+          ]
+        },
+        "role": {"type": "string", "minLength": 1},
+        "runtime": {"type": "string", "minLength": 1},
+        "model": {"type": ["string", "null"]},
+        "source_identity": {"$ref": "#/$defs/sha256"},
+        "context_digest": {"$ref": "#/$defs/sha256"},
+        "execution_head_before": {"$ref": "#/$defs/git_sha"},
+        "execution_head_after": {"$ref": "#/$defs/git_sha"},
+        "input_digest": {"$ref": "#/$defs/sha256"},
+        "output_digest": {"$ref": "#/$defs/sha256"},
+        "changed_paths": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "status": {"const": "PASS"},
+        "authority": {"$ref": "#/$defs/zero_authority"},
+        "receipt_digest": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  },
+  "properties": {
+    "schema_version": {"const": "public_delivery.native_role_canary_manifest.v1"},
+    "evidence_class": {"const": "retrospective_operator_attestation"},
+    "task_id": {"const": "TASKSYS-1329"},
+    "source_artifact": {"type": "string", "minLength": 1},
+    "source_identity": {"$ref": "#/$defs/sha256"},
+    "request_artifact": {"type": "string", "minLength": 1},
+    "initial_input_digest": {"$ref": "#/$defs/sha256"},
+    "expected_qwen_model": {"const": "qwen3.8:27b-mxfp8"},
+    "expected_development_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^src/"}
+    },
+    "expected_context_digests": {"$ref": "#/$defs/stage_digests"},
+    "expected_execution_heads": {"$ref": "#/$defs/stage_heads"},
+    "stage_artifacts": {"$ref": "#/$defs/stage_artifacts"},
+    "receipts": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {"$ref": "#/$defs/receipt"}
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "trust": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operator_attested",
+        "provider_signed",
+        "continuous_native_run",
+        "independently_replayable_provider_execution",
+        "owner_identity",
+        "signer_key_fingerprint",
+        "signature_namespace",
+        "signature_file",
+        "allowed_signers_file",
+        "statement"
+      ],
+      "properties": {
+        "operator_attested": {"const": true},
+        "provider_signed": {"const": false},
+        "continuous_native_run": {"const": false},
+        "independently_replayable_provider_execution": {"const": false},
+        "owner_identity": {"const": "derrick.xu84@gmail.com"},
+        "signer_key_fingerprint": {
+          "const": "SHA256:qBZ5C+UCkE2zP0dMCwEQBL23/dt/yPYUI2coTfAzV1I"
+        },
+        "signature_namespace": {"const": "evidence-controlled-ai-delivery"},
+        "signature_file": {"const": "native-role-canary-manifest.json.sig"},
+        "allowed_signers_file": {"const": "owner_allowed_signers"},
+        "statement": {
+          "const": "The owner signature authenticates publication and byte integrity only; the providers did not sign these retrospective canary records."
+        }
+      }
+    },
+    "authority": {"$ref": "#/$defs/zero_authority"},
+    "manifest_digest": {"$ref": "#/$defs/sha256"}
+  }
+}

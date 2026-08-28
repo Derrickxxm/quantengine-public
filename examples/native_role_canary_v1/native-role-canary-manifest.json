@@ -1,0 +1,269 @@
+{
+  "artifacts": [
+    {
+      "path": "evidence/source_identity.json",
+      "sha256": "58776f0218b14bedd832756e67caa4ca8a9ccf1dbd80f31a9ee3502b86a0124c"
+    },
+    {
+      "path": "evidence/00_request.json",
+      "sha256": "07dda74213b50a44c842c9d5ad3779d0f20ea4dccd0cc84ff96a9699271c1dbe"
+    },
+    {
+      "path": "evidence/contexts/01_architecture.json",
+      "sha256": "f0d0efe8cd68f36e12bc5de504554fbc8574ffa1b5cdf4c2b8cf5936874b7058"
+    },
+    {
+      "path": "evidence/outputs/01_architecture.json",
+      "sha256": "89f88d1ea62c11977bdcb27f8065df9bf8a6ac5dc7ecb68f1af452744c5b3de7"
+    },
+    {
+      "path": "evidence/contexts/02_test_author.json",
+      "sha256": "fc2ef750fd7cfb4de5b179af4c4aa645510b1486d9431299e18a3e90af8a35a8"
+    },
+    {
+      "path": "evidence/outputs/02_test_author.json",
+      "sha256": "365a569aa2054f1e39cb71259c1915062d530d53f2838b84fc7e4d9b8cb0862e"
+    },
+    {
+      "path": "evidence/contexts/03_development.json",
+      "sha256": "f88433495c0fc6e1e438416d75d6b5282b265811def2414f80cf0575a4fd862b"
+    },
+    {
+      "path": "evidence/outputs/03_development.json",
+      "sha256": "e8d1bcf78e02a01a9a1a199f9088f4e8330bec53eab0df38e4e4c59870e990b5"
+    },
+    {
+      "path": "evidence/contexts/04_test_verify.json",
+      "sha256": "3655b498b836c0da000812c21fb8f5c4802bcbd3543d5ccaf899b50e7daa6bd8"
+    },
+    {
+      "path": "evidence/outputs/04_test_verify.json",
+      "sha256": "60b75966863d6b6b848e3b0bcb3d1c3d011b5a08728922404e3c6f67f410307a"
+    },
+    {
+      "path": "evidence/contexts/05_ops.json",
+      "sha256": "2fa96a05c5d4b5b0a909b8a48dab2d51c3dc9c1c88d27181e92eb148bab59b68"
+    },
+    {
+      "path": "evidence/outputs/05_ops.json",
+      "sha256": "68ea2a97bcb594dd6846a52dd3ecb29a8cf268185b56815e8be36502ef312403"
+    },
+    {
+      "path": "evidence/contexts/06_quality.json",
+      "sha256": "81435af5ca251f35dc654999e497625df5d27a489e8a80bb71c5ce25306b85de"
+    },
+    {
+      "path": "evidence/outputs/06_quality.json",
+      "sha256": "c78deed4732ce077e75c4a672b5368060bfafcf5aede702bf772d80d4a5a5073"
+    }
+  ],
+  "authority": {
+    "deployment_allowed": false,
+    "paper_allowed": false,
+    "real_allowed": false
+  },
+  "evidence_class": "retrospective_operator_attestation",
+  "expected_context_digests": {
+    "architecture": "f0d0efe8cd68f36e12bc5de504554fbc8574ffa1b5cdf4c2b8cf5936874b7058",
+    "development": "f88433495c0fc6e1e438416d75d6b5282b265811def2414f80cf0575a4fd862b",
+    "ops": "2fa96a05c5d4b5b0a909b8a48dab2d51c3dc9c1c88d27181e92eb148bab59b68",
+    "quality": "81435af5ca251f35dc654999e497625df5d27a489e8a80bb71c5ce25306b85de",
+    "test_author": "fc2ef750fd7cfb4de5b179af4c4aa645510b1486d9431299e18a3e90af8a35a8",
+    "test_verify": "3655b498b836c0da000812c21fb8f5c4802bcbd3543d5ccaf899b50e7daa6bd8"
+  },
+  "expected_development_paths": [
+    "src/quantengine_public/agent_platform/role_topology.py"
+  ],
+  "expected_execution_heads": {
+    "architecture": "8602a5943f9b8b9af13432148300005b65da4209",
+    "development": "f9ddb74697caf89e7f602109759c40ce97179cde",
+    "ops": "53c25d40a686e83f46bd42a194272a60f53b3adf",
+    "quality": "53c25d40a686e83f46bd42a194272a60f53b3adf",
+    "test_author": "5f60abf00b720a115efdae3bcf136a822c814fee",
+    "test_verify": "8602a5943f9b8b9af13432148300005b65da4209"
+  },
+  "expected_qwen_model": "qwen3.8:27b-mxfp8",
+  "initial_input_digest": "07dda74213b50a44c842c9d5ad3779d0f20ea4dccd0cc84ff96a9699271c1dbe",
+  "manifest_digest": "371bc7e9cb6939f5a8e627e7e2abe791c154c9dbcbcf369f365426b381bca0a8",
+  "receipts": [
+    {
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "changed_paths": [],
+      "context_digest": "f0d0efe8cd68f36e12bc5de504554fbc8574ffa1b5cdf4c2b8cf5936874b7058",
+      "execution_head_after": "8602a5943f9b8b9af13432148300005b65da4209",
+      "execution_head_before": "8602a5943f9b8b9af13432148300005b65da4209",
+      "input_digest": "07dda74213b50a44c842c9d5ad3779d0f20ea4dccd0cc84ff96a9699271c1dbe",
+      "model": "gpt-5.6-terra",
+      "output_digest": "89f88d1ea62c11977bdcb27f8065df9bf8a6ac5dc7ecb68f1af452744c5b3de7",
+      "receipt_digest": "949cec99c8d01ef92fb3f13a358fe19280ee953ab818adba23359dfad6c2d24e",
+      "role": "Architecture",
+      "runtime": "codex-cli-chatgpt-subscription",
+      "schema_version": "public_delivery.native_role_receipt.v1",
+      "source_identity": "58776f0218b14bedd832756e67caa4ca8a9ccf1dbd80f31a9ee3502b86a0124c",
+      "stage": "architecture",
+      "status": "PASS",
+      "task_id": "TASKSYS-1329"
+    },
+    {
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "changed_paths": [
+        "tests/agent_platform/test_role_topology.py"
+      ],
+      "context_digest": "fc2ef750fd7cfb4de5b179af4c4aa645510b1486d9431299e18a3e90af8a35a8",
+      "execution_head_after": "5f60abf00b720a115efdae3bcf136a822c814fee",
+      "execution_head_before": "5f60abf00b720a115efdae3bcf136a822c814fee",
+      "input_digest": "89f88d1ea62c11977bdcb27f8065df9bf8a6ac5dc7ecb68f1af452744c5b3de7",
+      "model": "gpt-5.6-sol",
+      "output_digest": "365a569aa2054f1e39cb71259c1915062d530d53f2838b84fc7e4d9b8cb0862e",
+      "receipt_digest": "e441fb20ab5e603e59f6a25697b5c7efed5603f378b39cd8cfaaac6a20308a16",
+      "role": "Test",
+      "runtime": "codex-cli-chatgpt-subscription",
+      "schema_version": "public_delivery.native_role_receipt.v1",
+      "source_identity": "58776f0218b14bedd832756e67caa4ca8a9ccf1dbd80f31a9ee3502b86a0124c",
+      "stage": "test_author",
+      "status": "PASS",
+      "task_id": "TASKSYS-1329"
+    },
+    {
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "changed_paths": [
+        "src/quantengine_public/agent_platform/role_topology.py"
+      ],
+      "context_digest": "f88433495c0fc6e1e438416d75d6b5282b265811def2414f80cf0575a4fd862b",
+      "execution_head_after": "f9ddb74697caf89e7f602109759c40ce97179cde",
+      "execution_head_before": "f9ddb74697caf89e7f602109759c40ce97179cde",
+      "input_digest": "365a569aa2054f1e39cb71259c1915062d530d53f2838b84fc7e4d9b8cb0862e",
+      "model": "qwen3.8:27b-mxfp8",
+      "output_digest": "e8d1bcf78e02a01a9a1a199f9088f4e8330bec53eab0df38e4e4c59870e990b5",
+      "receipt_digest": "fead3b46cbceb6473e0266912b4132a0504147c4ee8e0e5e53627d630691ebd8",
+      "role": "Development",
+      "runtime": "qwen-code-cli-studio-local",
+      "schema_version": "public_delivery.native_role_receipt.v1",
+      "source_identity": "58776f0218b14bedd832756e67caa4ca8a9ccf1dbd80f31a9ee3502b86a0124c",
+      "stage": "development",
+      "status": "PASS",
+      "task_id": "TASKSYS-1329"
+    },
+    {
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "changed_paths": [],
+      "context_digest": "3655b498b836c0da000812c21fb8f5c4802bcbd3543d5ccaf899b50e7daa6bd8",
+      "execution_head_after": "8602a5943f9b8b9af13432148300005b65da4209",
+      "execution_head_before": "8602a5943f9b8b9af13432148300005b65da4209",
+      "input_digest": "e8d1bcf78e02a01a9a1a199f9088f4e8330bec53eab0df38e4e4c59870e990b5",
+      "model": "gpt-5.6-sol",
+      "output_digest": "60b75966863d6b6b848e3b0bcb3d1c3d011b5a08728922404e3c6f67f410307a",
+      "receipt_digest": "1d88c436f37bd752965b917847f751b7434fd9f3172c9523d5bd6f974f4188b3",
+      "role": "Test",
+      "runtime": "codex-cli-chatgpt-subscription",
+      "schema_version": "public_delivery.native_role_receipt.v1",
+      "source_identity": "58776f0218b14bedd832756e67caa4ca8a9ccf1dbd80f31a9ee3502b86a0124c",
+      "stage": "test_verify",
+      "status": "PASS",
+      "task_id": "TASKSYS-1329"
+    },
+    {
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "changed_paths": [],
+      "context_digest": "2fa96a05c5d4b5b0a909b8a48dab2d51c3dc9c1c88d27181e92eb148bab59b68",
+      "execution_head_after": "53c25d40a686e83f46bd42a194272a60f53b3adf",
+      "execution_head_before": "53c25d40a686e83f46bd42a194272a60f53b3adf",
+      "input_digest": "60b75966863d6b6b848e3b0bcb3d1c3d011b5a08728922404e3c6f67f410307a",
+      "model": null,
+      "output_digest": "68ea2a97bcb594dd6846a52dd3ecb29a8cf268185b56815e8be36502ef312403",
+      "receipt_digest": "d4f4eeb814b19d4a76bd32732fd86c146cd37d3841692932c2b7345863e1155d",
+      "role": "Ops",
+      "runtime": "deterministic-local",
+      "schema_version": "public_delivery.native_role_receipt.v1",
+      "source_identity": "58776f0218b14bedd832756e67caa4ca8a9ccf1dbd80f31a9ee3502b86a0124c",
+      "stage": "ops",
+      "status": "PASS",
+      "task_id": "TASKSYS-1329"
+    },
+    {
+      "authority": {
+        "deployment_allowed": false,
+        "paper_allowed": false,
+        "real_allowed": false
+      },
+      "changed_paths": [],
+      "context_digest": "81435af5ca251f35dc654999e497625df5d27a489e8a80bb71c5ce25306b85de",
+      "execution_head_after": "53c25d40a686e83f46bd42a194272a60f53b3adf",
+      "execution_head_before": "53c25d40a686e83f46bd42a194272a60f53b3adf",
+      "input_digest": "68ea2a97bcb594dd6846a52dd3ecb29a8cf268185b56815e8be36502ef312403",
+      "model": null,
+      "output_digest": "c78deed4732ce077e75c4a672b5368060bfafcf5aede702bf772d80d4a5a5073",
+      "receipt_digest": "35f9acb29d4e1a83546f83576980d3284c194eae1cc16423d49489810c73c67a",
+      "role": "Quality Shield",
+      "runtime": "quality-shield.observe_delivery",
+      "schema_version": "public_delivery.native_role_receipt.v1",
+      "source_identity": "58776f0218b14bedd832756e67caa4ca8a9ccf1dbd80f31a9ee3502b86a0124c",
+      "stage": "quality",
+      "status": "PASS",
+      "task_id": "TASKSYS-1329"
+    }
+  ],
+  "request_artifact": "evidence/00_request.json",
+  "schema_version": "public_delivery.native_role_canary_manifest.v1",
+  "source_artifact": "evidence/source_identity.json",
+  "source_identity": "58776f0218b14bedd832756e67caa4ca8a9ccf1dbd80f31a9ee3502b86a0124c",
+  "stage_artifacts": {
+    "architecture": {
+      "context": "evidence/contexts/01_architecture.json",
+      "output": "evidence/outputs/01_architecture.json"
+    },
+    "development": {
+      "context": "evidence/contexts/03_development.json",
+      "output": "evidence/outputs/03_development.json"
+    },
+    "ops": {
+      "context": "evidence/contexts/05_ops.json",
+      "output": "evidence/outputs/05_ops.json"
+    },
+    "quality": {
+      "context": "evidence/contexts/06_quality.json",
+      "output": "evidence/outputs/06_quality.json"
+    },
+    "test_author": {
+      "context": "evidence/contexts/02_test_author.json",
+      "output": "evidence/outputs/02_test_author.json"
+    },
+    "test_verify": {
+      "context": "evidence/contexts/04_test_verify.json",
+      "output": "evidence/outputs/04_test_verify.json"
+    }
+  },
+  "task_id": "TASKSYS-1329",
+  "trust": {
+    "allowed_signers_file": "owner_allowed_signers",
+    "continuous_native_run": false,
+    "independently_replayable_provider_execution": false,
+    "operator_attested": true,
+    "owner_identity": "derrick.xu84@gmail.com",
+    "provider_signed": false,
+    "signature_file": "native-role-canary-manifest.json.sig",
+    "signature_namespace": "evidence-controlled-ai-delivery",
+    "signer_key_fingerprint": "SHA256:qBZ5C+UCkE2zP0dMCwEQBL23/dt/yPYUI2coTfAzV1I",
+    "statement": "The owner signature authenticates publication and byte integrity only; the providers did not sign these retrospective canary records."
+  }
+}

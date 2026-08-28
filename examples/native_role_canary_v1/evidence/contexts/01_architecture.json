@@ -1,0 +1,7 @@
+{
+  "schema_version": "public_delivery.native_canary_context.v1",
+  "stage": "architecture",
+  "accepted_goal": "Review the topology contract against the accepted per-stage context boundary.",
+  "allowed_changes": [],
+  "evidence_scope": "retrospective public summary"
+}

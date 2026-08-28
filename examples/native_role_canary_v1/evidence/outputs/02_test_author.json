@@ -1,0 +1,14 @@
+{
+  "schema_version": "public_delivery.native_canary_stage_record.v1",
+  "stage": "test_author",
+  "runtime": "codex-cli-chatgpt-subscription",
+  "model": "gpt-5.6-sol",
+  "status": "PASS",
+  "execution_head": "5f60abf00b720a115efdae3bcf136a822c814fee",
+  "changed_paths": [
+    "tests/agent_platform/test_role_topology.py"
+  ],
+  "recorded_result": "Adversarial tests exposed the missing accepted-context binding.",
+  "public_reference": "f9ddb74697caf89e7f602109759c40ce97179cde",
+  "provider_signed": false
+}

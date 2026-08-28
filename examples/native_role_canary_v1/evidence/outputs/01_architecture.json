@@ -1,0 +1,12 @@
+{
+  "schema_version": "public_delivery.native_canary_stage_record.v1",
+  "stage": "architecture",
+  "runtime": "codex-cli-chatgpt-subscription",
+  "model": "gpt-5.6-terra",
+  "status": "PASS",
+  "execution_head": "8602a5943f9b8b9af13432148300005b65da4209",
+  "changed_paths": [],
+  "recorded_result": "The recheck accepted the repaired per-stage context binding.",
+  "public_reference": "docs/native_role_topology_dec0031.md",
+  "provider_signed": false
+}

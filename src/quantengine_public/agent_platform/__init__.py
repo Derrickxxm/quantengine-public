@@ -93,6 +93,14 @@ from .role_topology import (
     derive_native_role_release,
     validate_native_role_topology,
 )
+from .native_canary import (
+    EVIDENCE_CLASS as NATIVE_CANARY_EVIDENCE_CLASS,
+    MANIFEST_SCHEMA as NATIVE_CANARY_MANIFEST_SCHEMA,
+    NativeCanaryError,
+    canonical_manifest_digest,
+    validate_native_canary_manifest,
+    verify_native_canary_bundle,
+)
 from .ogsm_v2 import (
     MeasureVerdict,
     ObjectiveChangeReceipt,
@@ -155,6 +163,9 @@ __all__ = [
     "RoleReceipt",
     "NativeRoleReceipt",
     "NativeRoleReleaseVerdict",
+    "NativeCanaryError",
+    "NATIVE_CANARY_EVIDENCE_CLASS",
+    "NATIVE_CANARY_MANIFEST_SCHEMA",
     "RoleTopologyError",
     "RoleTopologyVerdict",
     "STUDIO_QWEN_MODEL",
@@ -202,6 +213,9 @@ __all__ = [
     "validate_downstream_binding",
     "validate_measure_verdict",
     "validate_native_role_topology",
+    "validate_native_canary_manifest",
+    "verify_native_canary_bundle",
+    "canonical_manifest_digest",
     "validate_objective_change",
     "validate_objective_contract",
     "validate_wip",

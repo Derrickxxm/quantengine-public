@@ -31,6 +31,7 @@ jobs:
       - run: quantengine-public demo-v2 --artifact-dir artifacts/ci-demo-v2
       - run: python -m quantengine_public.delivery.golden_path --artifact-dir artifacts/ci-golden-path
       - run: python scripts/native_agent_public_proof.py --artifact-dir artifacts/native-agent-public-proof
+      - run: quantengine-public verify-native-canary --bundle-dir examples/native_role_canary_v1
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: matrix.python-version == '3.11'
         with:
