@@ -40,10 +40,10 @@ def test_readme_shows_the_accepted_objective_control_and_revision_loops():
         assert phrase in README
 
 
-def test_public_presentation_labels_local_evidence_and_unexecuted_boundaries():
+def test_public_presentation_labels_remote_evidence_and_unchanged_authority():
     for document in (README, DESIGN):
         assert "Remote CI" in document
-        assert "NOT RUN" in document
+        assert "33140279809" in document
         assert "M6B" in document
         assert "M6C" in document
         assert "network model" in document
@@ -56,7 +56,9 @@ def test_design_records_completed_local_milestones_without_claiming_release():
         "### M4 — Thin Control binding and invalidation (`COMPLETE_LOCAL`)",
         "### M5 — Golden Path V2 and adversarial proof (`COMPLETE_LOCAL`)",
         "### M6A — local public presentation (`COMPLETE_LOCAL`)",
-        "`M6A_LOCAL_PRESENTATION_COMPLETE / WAIT_FOR_M6B_AUTHORIZATION`",
+        "### M6B — push, pull request, and remote CI (`COMPLETE_REMOTE`)",
+        "### M6C — merge, tag, and Release (`OWNER_AUTHORIZED_RELEASE_GATE`)",
+        "`M6C_RELEASE_CANDIDATE / REQUIRE_EXACT_HEAD_CI_AND_POST_MERGE_READBACK`",
         PROOF_DIGEST,
     )
     for phrase in required:

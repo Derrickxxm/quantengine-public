@@ -154,14 +154,15 @@ network model call and every authority field is false.
 | Presentation boundary | Current evidence |
 | --- | --- |
 | Local deterministic proof and tests | PASS through M5; M6A documents that evidence |
-| Remote CI | NOT RUN for this M6A branch; M6B requires separate Owner authorization |
-| Push, pull request, and public branch | NOT RUN; reserved for M6B |
-| Merge, tag, and GitHub Release | NOT RUN; reserved for M6C |
+| Remote CI | M6B PASS on [PR run 33140279809](https://github.com/Derrickxxm/evidence-controlled-ai-delivery/actions/runs/33140279809), Python 3.11 and 3.14 |
+| Push, pull request, and public branch | M6B COMPLETE on PR #17 at reviewed head `c0da831e8cd05faf7386157879129c759e4dc95c` |
+| Merge, tag, and GitHub Release | M6C Owner-authorized for the `v0.6.0` release candidate; exact-head CI and post-merge readback remain mandatory |
 | Deployment or runtime authority | zero authority; no network model, deployment, or QuantEngine Research, Paper, Replay, or Real action |
 
-This section presents locally executed evidence only. It does not claim that
-M6B or M6C has happened, and it does not convert a synthetic proof into a
-production runtime or release authorization.
+M6B proves the reviewed PR head and its merge with then-current main. M6C may
+publish `v0.6.0` only after the final release-candidate head passes the same
+checks and the merged main identity is read back. A repository tag or GitHub
+Release never converts this synthetic proof into production runtime authority.
 
 ## Responsibility Boundaries
 

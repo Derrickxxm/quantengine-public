@@ -2,7 +2,7 @@
 
 Date: 2026-08-27
 
-Status: `M6A_LOCAL_PRESENTATION_COMPLETE`
+Status: `M6C_RELEASE_CANDIDATE`
 
 Design and M1 decision: DEC-0037
 
@@ -15,6 +15,10 @@ M4 Thin Control decision: DEC-0040
 M5 proof decision: DEC-0041
 
 M6A presentation decision: DEC-0042
+
+M6B remote-delivery decision: DEC-0043
+
+M6C release decision: DEC-0044
 
 Dependency: DEC-0031 role-topology slice accepted through PR #12 at main commit
 `320d6b21714a168214811faada3970c9ab241b89`.
@@ -412,7 +416,7 @@ Exit: positive path passes; every attack blocks at the declared stage.
 Exit: local documentation-contract tests, full suites, safety scan, and control
 review pass without making a remote-delivery claim.
 
-### M6B — push, pull request, and remote CI (`NOT_AUTHORIZED`)
+### M6B — push, pull request, and remote CI (`COMPLETE_REMOTE`)
 
 - push the reviewed branch and open the bounded pull request;
 - reproduce the proof in Remote CI and review its exact source identity;
@@ -420,7 +424,13 @@ review pass without making a remote-delivery claim.
 
 Exit: exact pull-request head and Remote CI evidence are inspectable.
 
-### M6C — merge, tag, and Release (`NOT_AUTHORIZED`)
+The admitted M6B pull-request run is
+[`33140279809`](https://github.com/Derrickxxm/evidence-controlled-ai-delivery/actions/runs/33140279809).
+It binds PR head `c0da831e8cd05faf7386157879129c759e4dc95c` and passes
+Python 3.11 and 3.14, 274 tests per lane, public safety, and the 84 percent
+coverage gate.
+
+### M6C — merge, tag, and Release (`OWNER_AUTHORIZED_RELEASE_GATE`)
 
 - independently review the admitted M6B evidence;
 - merge, tag, and publish only under a separate Owner decision;
@@ -481,7 +491,7 @@ The public OGSM V2 slice is complete only when:
 
 ## 13. Current Decision
 
-`M6A_LOCAL_PRESENTATION_COMPLETE / WAIT_FOR_M6B_AUTHORIZATION`
+`M6C_RELEASE_CANDIDATE / REQUIRE_EXACT_HEAD_CI_AND_POST_MERGE_READBACK`
 
 M1 through M5 are implemented locally. M4 binds the accepted Objective
 Contract digest through task, context, run, handoff, evidence, and verdict
@@ -492,10 +502,10 @@ rewriting history. M5 adds the side-by-side domain-neutral Golden Path V2 with
 with independently recomputed proof digest
 `f06df976a6b5ce850f55c1d3660ee9369832f35fefebf7e6b6a265a63738c123`.
 
-M6A documents that local evidence and retains zero authority. Remote CI is
-`NOT RUN`; M6B push, pull request, and CI work and M6C merge, tag, and Release
-work remain separate Owner authorization gates. No network model call,
-deployment, or QuantEngine Research, Paper, Replay, or Real action is claimed.
-The overall release acceptance criterion therefore remains incomplete until
-the separately authorized remote stages execute and their evidence is
-independently reviewed.
+M6A documents that local evidence and retains zero authority. M6B Remote CI is
+complete through run `33140279809` on the reviewed PR head. DEC-0044 authorizes
+the `v0.6.0` M6C release gate, but acceptance still requires the final
+release-candidate head to pass both Python lanes and public safety, followed by
+exact merged-main readback before tag and GitHub Release creation. No network model
+call, deployment, or QuantEngine Research, Paper, Replay, or Real action
+is authorized or claimed.

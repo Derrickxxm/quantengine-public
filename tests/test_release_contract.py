@@ -36,7 +36,7 @@ def test_package_identity_and_python_support_are_bounded() -> None:
 
     assert project["description"] == CANONICAL_DESCRIPTION
     assert project["requires-python"] == ">=3.11,<3.15"
-    assert __version__ == "0.5.2"
+    assert __version__ == "0.6.0"
 
 
 def test_published_qwen_acceptance_stays_local_and_zero_authority() -> None:
